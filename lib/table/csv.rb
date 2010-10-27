@@ -80,14 +80,14 @@ class Table
       CSV::Writer.generate(out) {|csvgen|
         csvgen << fields
         rowids.each {|rowid|
-          csvgen << lookup_rowid(rowid, *fields)
+          csvgen << values_at_row(rowid, *fields)
         }
       }
     else
       # Ruby 1.9
       out << fields.to_csv
       rowids.each {|rowid|
-        out << lookup_rowid(rowid, *fields).to_csv
+        out << values_at_row(rowid, *fields).to_csv
       }
     end
     out
