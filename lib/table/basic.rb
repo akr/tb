@@ -114,7 +114,7 @@ class Table
   end
 
   # call-seq:
-  #   table.concat(table2, table3, ...) -> table
+  #   table1.concat(table2, table3, ...) -> table1
   def concat(*tables)
     tables.each {|t|
       t.each_row {|row|
