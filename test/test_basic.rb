@@ -34,6 +34,15 @@ class TestTableBasic < Test::Unit::TestCase
     assert_raise(IndexError) { t.get_cell(:invalid_rowid, :g) }
   end
 
+  def test_each_row
+    t = Table.new
+    t.insert({"a"=>1})
+    t.insert({"a"=>2})
+    rows = []
+    t.each {|row| rows << row }
+    assert_equal([{"_rowid"=>0, "a"=>1}, {"_rowid"=>1, "a"=>2}], rows)
+  end
+
   def test_make_hash
     t = Table.new
     t.insert({"a"=>1, "b"=>2, "c"=>3})

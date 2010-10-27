@@ -168,6 +168,7 @@ class Table
   end
 
   # call-seq:
+  #   table.each {|row| ... }
   #   table.each_row {|row| ... }
   def each_row
     each_rowid {|rowid|
@@ -175,6 +176,7 @@ class Table
       yield get_row(rowid)
     }
   end
+  alias each each_row
 
   # call-seq:
   #   table.each_row_array(field1, ...) {|value1, ...| ... }
