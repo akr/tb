@@ -179,8 +179,8 @@ class Table
   alias each each_row
 
   # call-seq:
-  #   table.each_row_array(field1, ...) {|value1, ...| ... }
-  def each_row_array(*fields)
+  #   table.each_row_values(field1, ...) {|value1, ...| ... }
+  def each_row_values(*fields)
     each_rowid {|rowid|
       vs = values_at_row(rowid, *fields)
       yield vs
@@ -206,7 +206,7 @@ class Table
     value_array_p = value_field.kind_of?(Array)
     all_fields = key_fields + (value_array_p ? value_field : [value_field])
     result = {}
-    each_row_array(*all_fields) {|all_values|
+    each_row_values(*all_fields) {|all_values|
       if value_array_p
         value = all_values.last(value_field.length)
         vs = all_values[0, key_fields.length]
