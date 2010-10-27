@@ -36,6 +36,10 @@ class Table
     t
   end
 
+  # :call-seq:
+  #   generate_csv(out='', fields=nil) {|rowids| modified_rowids }
+  #   generate_csv(out='', fields=nil)
+  #
   def generate_csv(out='', fields=nil, &block)
     if fields.nil?
       fields = @tbl.keys
