@@ -2,7 +2,6 @@ class Table
   def initialize
     @free_rowids = []
     @tbl = {"_rowid"=>[]}
-    @indexes = {}
   end
 
   def make_dict(*args)
