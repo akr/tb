@@ -169,23 +169,11 @@ class Table
 
   # call-seq:
   #   table.each_row {|row| ... }
-  def each_row(*fields)
-    if fields.empty?
-      each_rowid {|rowid|
-        next if rowid.nil?
-        yield get_row(rowid)
-      }
-    else
-      each_rowid {|rowid|
-        next if rowid.nil?
-        values = lookup_rowid(rowid, *fields)
-        h = {}
-        fields.each_with_index {|f, i|
-          h[f] = values[i]
-        }
-        yield h
-      }
-    end
+  def each_row
+    each_rowid {|rowid|
+      next if rowid.nil?
+      yield get_row(rowid)
+    }
   end
 
   # call-seq:
