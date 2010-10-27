@@ -64,5 +64,6 @@ class Table
         out << lookup_rowid(rowid, *fields).to_csv
       }
     end
+    out
   end
 end

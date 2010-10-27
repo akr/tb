@@ -36,4 +36,28 @@ class TestTableCSV < Test::Unit::TestCase
       rows)
   end
 
+  def test_generate
+    t = Table.new
+    t.insert({"a"=>1, "b"=>2})
+    t.insert({"a"=>3, "b"=>4})
+    out = t.generate_csv('', ['a', 'b'])
+    assert_equal(<<-'End'.gsub(/^\s+/, ''), out)
+    a,b
+    1,2
+    3,4
+    End
+  end
+
+  def test_generate_empty
+    t = Table.new
+    t.insert({"a"=>1, "b"=>nil, "c"=>2})
+    t.insert({"a"=>3, "b"=>"", "c"=>4})
+    out = t.generate_csv('', ['a', 'b', 'c'])
+    assert_equal(<<-'End'.gsub(/^\s+/, ''), out)
+    a,b,c
+    1,,2
+    3,"",4
+    End
+  end
+
 end
