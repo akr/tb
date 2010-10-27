@@ -1,7 +1,7 @@
 class Table
   def initialize
-    @idmaker = IDMaker.new
-    @tbl = {"_rowid"=>{}}
+    @free_rowids = []
+    @tbl = {"_rowid"=>[]}
     @indexes = {}
   end
 
@@ -20,47 +20,49 @@ class Table
   end
 
   def all_rowids
-    @tbl["_rowid"].keys.sort
+    @tbl["_rowid"].compact
   end
 
   def allocate_rowid
-    rowid = @idmaker.allocate_id
-    @tbl["_rowid"][rowid] = rowid
+    if @free_rowids.empty?
+      rowid = @tbl["_rowid"].length
+      @tbl["_rowid"] << rowid
+    else
+      rowid = @free_rowids.pop
+    end
     rowid
   end
 
   def store_cell(rowid, field, value)
     check_rowid(rowid)
     field = field.to_s
-    h = (@tbl[field] ||= {})
-    if value.nil?
-      h.delete(rowid)
-    else
-      h[rowid] = value
-    end
+    ary = (@tbl[field] ||= [])
+    ary[rowid] = value
   end
 
   def lookup_cell(rowid, field)
     check_rowid(rowid)
     field = field.to_s
-    h = @tbl[field]
-    h ? h[rowid] : nil
+    ary = @tbl[field]
+    ary ? ary[rowid] : nil
   end
 
   def delete_cell(rowid, field)
     check_rowid(rowid)
     field = field.to_s
-    h = @tbl[field]
-    h ? h.delete(rowid) : nil
+    ary = @tbl[field]
+    ary[rowid] = nil
   end
 
   def delete_rowid(rowid)
     check_rowid(rowid)
     row = {}
-    @tbl.each {|f, h|
-      v = h.delete(rowid)
+    @tbl.each {|f, ary|
+      v = ary[rowid]
+      ary[rowid] = nil
       row[f] = v if !v.nil?
     }
+    @free_rowids.push rowid
     row
   end
 
@@ -88,21 +90,30 @@ class Table
 
   def get_by_rowid(rowid)
     result = {}
-    @tbl.each {|f, h|
-      v = h[rowid]
+    @tbl.each {|f, ary|
+      v = ary[rowid]
       next if v.nil?
       result[f] = v
     }
     result
   end
 
+  def each_rowid
+    @tbl["_rowid"].each {|rowid|
+      next if rowid.nil?
+      yield rowid
+    }
+  end
+
   def each_row(*fields)
     if fields.empty?
-      @tbl["_rowid"].each_key {|rowid|
+      each_rowid {|rowid|
+        next if rowid.nil?
         yield get_by_rowid(rowid)
       }
     else
-      @tbl["_rowid"].each_key {|rowid|
+      each_rowid {|rowid|
+        next if rowid.nil?
         values = lookup_rowid(rowid, *fields)
         h = {}
         fields.each_with_index {|f, i|
@@ -114,7 +125,7 @@ class Table
   end
 
   def each_row_array(*fields)
-    @tbl["_rowid"].each_key {|rowid|
+    each_rowid {|rowid|
       vs = lookup_rowid(rowid, *fields)
       yield vs
     }
