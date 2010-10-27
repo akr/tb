@@ -11,13 +11,13 @@ class Table
     if defined? CSV::Reader
       # Ruby 1.8
       CSV::Reader.parse(csv) {|ary|
-        ary = ary.map {|cell| cell.to_s }
+        ary = ary.map {|cell| cell.nil? ? nil : cell.to_s }
         aa << ary
       }
     else
       # Ruby 1.9
       CSV.parse(csv) {|ary|
-        ary = ary.map {|cell| cell.to_s }
+        ary = ary.map {|val| val.nil? ? nil : val.to_s }
         aa << ary
       }
     end
