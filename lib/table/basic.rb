@@ -1,41 +1,6 @@
 require 'pp'
 
 class Table
-
-  def Table.load_csv(filename, *header_fields)
-    Table.parse_csv(File.read(filename), *header_fields)
-  end
-
-  def Table.parse_csv(csv, *header_fields)
-    t = Table.new
-    require 'csv'
-    aa = []
-    if defined? CSV::Reader
-      # 1.8
-      CSV::Reader.parse(csv) {|ary|
-        ary = ary.map {|cell| cell.to_s }
-        aa << ary
-      }
-    else
-      CSV.parse(csv) {|ary|
-        ary = ary.map {|cell| cell.to_s }
-        aa << ary
-      }
-    end
-    if header_fields.empty?
-      header_fields = aa.shift
-    end
-    t = Table.new
-    aa.each {|ary|
-      h = {}
-      header_fields.each_with_index {|f, i|
-        h[f] = ary[i]
-      }
-      t.insert(h)
-    }
-    t
-  end
-
   def initialize
     @free_rowids = []
     @tbl = {"_rowid"=>[]}
@@ -102,15 +67,25 @@ class Table
     row
   end
 
-  def insert(hash)
+  def insert(row)
     rowid = allocate_rowid
-    update_rowid(rowid, hash)
+    update_rowid(rowid, row)
     rowid
   end
 
-  def update_rowid(rowid, hash)
+  def concat(*tables)
+    tables.each {|t|
+      t.each_row {|row|
+        row.delete "_rowid"
+        self.insert row
+      }
+    }
+    self
+  end
+
+  def update_rowid(rowid, row)
     check_rowid(rowid)
-    hash.each {|f, v|
+    row.each {|f, v|
       f = f.to_s
       store_cell(rowid, f, v)
     }
