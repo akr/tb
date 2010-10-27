@@ -180,4 +180,12 @@ class Table
     }
     result
   end
+
+  def make_hash_array(*args)
+    make_hash(*args) {|seed, value| !seed ? [value] : (seed << value) }
+  end
+
+  def make_hash_count(*args)
+    make_hash(*args) {|seed, value| !seed ? 1 : seed+1 }
+  end
 end
