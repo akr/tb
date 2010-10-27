@@ -9,12 +9,6 @@ class Table
     Table::Dict.new(self, *args)
   end
 
-  def add_hash_index(*field)
-  end
-
-  def delete_hash_index(*field)
-  end
-
   def check_rowid(rowid)
     raise IndexError, "unexpected rowid: #{rowid}" if !rowid.kind_of?(Integer) || rowid < 0
   end
