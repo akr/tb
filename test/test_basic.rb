@@ -36,20 +36,20 @@ class TestTableBasic < Test::Unit::TestCase
 
   def test_make_hash
     t = Table.new
-    t.insert_row({"a"=>1, "b"=>2, "c"=>3})
-    t.insert_row({"a"=>2, "b"=>4, "c"=>4})
+    t.insert({"a"=>1, "b"=>2, "c"=>3})
+    t.insert({"a"=>2, "b"=>4, "c"=>4})
     assert_equal({1=>3, 2=>4}, t.make_hash("a", "c"))
     assert_equal({1=>[3], 2=>[4]}, t.make_hash("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
     assert_equal({1=>1, 2=>1}, t.make_hash("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
     assert_equal({1=>{2=>3}, 2=>{4=>4}}, t.make_hash("a", "b", "c"))
-    t.insert_row({"a"=>2, "b"=>7, "c"=>8})
+    t.insert({"a"=>2, "b"=>7, "c"=>8})
     assert_equal({1=>{2=>3}, 2=>{4=>4, 7=>8}}, t.make_hash("a", "b", "c"))
   end
 
   def test_make_hash_ambiguous
     t = Table.new
-    t.insert_row({"a"=>1, "b"=>2, "c"=>3})
-    t.insert_row({"a"=>1, "b"=>4, "c"=>4})
+    t.insert({"a"=>1, "b"=>2, "c"=>3})
+    t.insert({"a"=>1, "b"=>4, "c"=>4})
     assert_raise(ArgumentError) { t.make_hash("a", "c") }
     assert_equal({1=>[3,4]}, t.make_hash("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
     assert_equal({1=>2}, t.make_hash("a", "c") {|seed, v| !seed ? 1 : seed + 1 })

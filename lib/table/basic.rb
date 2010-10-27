@@ -59,7 +59,7 @@ class Table
     row
   end
 
-  def insert_row(hash)
+  def insert(hash)
     rowid = allocate_rowid
     update_rowid(rowid, hash)
     rowid
