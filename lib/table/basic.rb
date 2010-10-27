@@ -4,10 +4,6 @@ class Table
     @tbl = {"_rowid"=>[]}
   end
 
-  def make_dict(*args)
-    Table::Dict.new(self, *args)
-  end
-
   def check_rowid(rowid)
     raise IndexError, "unexpected rowid: #{rowid}" if !rowid.kind_of?(Integer) || rowid < 0
   end
