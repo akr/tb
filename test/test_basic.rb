@@ -2,36 +2,36 @@ require 'table'
 require 'test/unit'
 
 class TestTableBasic < Test::Unit::TestCase
-  def test_all_rowids
+  def test_list_rowids
     t = Table.new
-    assert_equal([], t.all_rowids)
+    assert_equal([], t.list_rowids)
     rowid1 = t.allocate_rowid
-    assert_equal([rowid1], t.all_rowids)
+    assert_equal([rowid1], t.list_rowids)
     rowid2 = t.allocate_rowid
-    assert_equal([rowid1, rowid2], t.all_rowids)
-    assert_equal({"_rowid"=>rowid1}, t.delete_rowid(rowid1))
-    assert_equal([rowid2], t.all_rowids)
+    assert_equal([rowid1, rowid2], t.list_rowids)
+    assert_equal({"_rowid"=>rowid1}, t.delete_row(rowid1))
+    assert_equal([rowid2], t.list_rowids)
   end
 
   def test_cell
     t = Table.new
     rowid = t.allocate_rowid
-    assert_equal(nil, t.lookup_cell(rowid, :f))
-    t.store_cell(rowid, :f, 1)
-    assert_equal(1, t.lookup_cell(rowid, :f))
+    assert_equal(nil, t.get_cell(rowid, :f))
+    t.set_cell(rowid, :f, 1)
+    assert_equal(1, t.get_cell(rowid, :f))
     t.delete_cell(rowid, :f)
-    assert_equal(nil, t.lookup_cell(rowid, :f))
-    t.store_cell(rowid, :f, nil)
-    assert_equal(nil, t.lookup_cell(rowid, :f))
-    t.store_cell(rowid, :g, 2)
-    assert_equal(2, t.lookup_cell(rowid, :g))
-    t.store_cell(rowid, :g, nil)
-    assert_equal(nil, t.lookup_cell(rowid, :g))
+    assert_equal(nil, t.get_cell(rowid, :f))
+    t.set_cell(rowid, :f, nil)
+    assert_equal(nil, t.get_cell(rowid, :f))
+    t.set_cell(rowid, :g, 2)
+    assert_equal(2, t.get_cell(rowid, :g))
+    t.set_cell(rowid, :g, nil)
+    assert_equal(nil, t.get_cell(rowid, :g))
     t.delete_cell(rowid, :g)
-    assert_equal(nil, t.lookup_cell(rowid, :g))
-    assert_equal(nil, t.lookup_cell(100, :g))
-    assert_raise(IndexError) { t.lookup_cell(-1, :g) }
-    assert_raise(IndexError) { t.lookup_cell(:invalid_rowid, :g) }
+    assert_equal(nil, t.get_cell(rowid, :g))
+    assert_equal(nil, t.get_cell(100, :g))
+    assert_raise(IndexError) { t.get_cell(-1, :g) }
+    assert_raise(IndexError) { t.get_cell(:invalid_rowid, :g) }
   end
 
   def test_make_hash

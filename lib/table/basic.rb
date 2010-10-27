@@ -46,10 +46,14 @@ class Table
     raise IndexError, "unexpected rowid: #{rowid}" if !rowid.kind_of?(Integer) || rowid < 0
   end
 
-  def all_rowids
+  # call-seq:
+  #   table.list_rowids -> [rowid1, rowid2, ...]
+  def list_rowids
     @tbl["_rowid"].compact
   end
 
+  # call-seq:
+  #   table.allocate_rowid -> fresh_rowid
   def allocate_rowid
     if @free_rowids.empty?
       rowid = @tbl["_rowid"].length
@@ -60,20 +64,25 @@ class Table
     rowid
   end
 
-  def store_cell(rowid, field, value)
+  # call-seq:
+  #   table.set_cell(rowid, field, value) -> value
+  def set_cell(rowid, field, value)
     check_rowid(rowid)
     field = field.to_s
     ary = (@tbl[field] ||= [])
     ary[rowid] = value
   end
 
-  def lookup_cell(rowid, field)
+  # call-seq:
+  #   table.get_cell(rowid, field) -> value
+  def get_cell(rowid, field)
     check_rowid(rowid)
     field = field.to_s
     ary = @tbl[field]
     ary ? ary[rowid] : nil
   end
 
+  # same as set_cell(rowid, field, nil)
   def delete_cell(rowid, field)
     check_rowid(rowid)
     field = field.to_s
@@ -81,7 +90,9 @@ class Table
     ary[rowid] = nil
   end
 
-  def delete_rowid(rowid)
+  # call-seq:
+  #   table.delete_row(rowid) -> {field1=>value1, ...}
+  def delete_row(rowid)
     check_rowid(rowid)
     row = {}
     @tbl.each {|f, ary|
@@ -93,12 +104,17 @@ class Table
     row
   end
 
+  # call-seq:
+  #   table.insert({field1=>value1, ...})
+  #
   def insert(row)
     rowid = allocate_rowid
-    update_rowid(rowid, row)
+    update_row(rowid, row)
     rowid
   end
 
+  # call-seq:
+  #   table.concat(table2, table3, ...) -> table
   def concat(*tables)
     tables.each {|t|
       t.each_row {|row|
@@ -109,23 +125,30 @@ class Table
     self
   end
 
-  def update_rowid(rowid, row)
+  # call-seq:
+  #   table.update_row(rowid, {field1=>value1, ...}) -> nil
+  def update_row(rowid, row)
     check_rowid(rowid)
     row.each {|f, v|
       f = f.to_s
-      store_cell(rowid, f, v)
+      set_cell(rowid, f, v)
     }
+    nil
   end
 
+  # call-seq:
+  #   table.lookup_rowid(rowid, field1, field2, ...) -> [value1, value2, ...]
   def lookup_rowid(rowid, *fields)
     check_rowid(rowid)
     fields.map {|f|
       f = f.to_s
-      lookup_cell(rowid, f)
+      get_cell(rowid, f)
     }
   end
 
-  def get_by_rowid(rowid)
+  # call-seq:
+  #   table.get_row(rowid) -> {field1=>value1, ...}
+  def get_row(rowid)
     result = {}
     @tbl.each {|f, ary|
       v = ary[rowid]
@@ -135,6 +158,8 @@ class Table
     result
   end
 
+  # call-seq:
+  #   table.each_rowid {|rowid| ... }
   def each_rowid
     @tbl["_rowid"].each {|rowid|
       next if rowid.nil?
@@ -142,11 +167,13 @@ class Table
     }
   end
 
+  # call-seq:
+  #   table.each_row {|row| ... }
   def each_row(*fields)
     if fields.empty?
       each_rowid {|rowid|
         next if rowid.nil?
-        yield get_by_rowid(rowid)
+        yield get_row(rowid)
       }
     else
       each_rowid {|rowid|
@@ -161,6 +188,8 @@ class Table
     end
   end
 
+  # call-seq:
+  #   table.each_row_array(field1, ...) {|value1, ...| ... }
   def each_row_array(*fields)
     each_rowid {|rowid|
       vs = lookup_rowid(rowid, *fields)
@@ -168,6 +197,17 @@ class Table
     }
   end
 
+  # call-seq:
+  #   table.make_hash(key_field1, key_field2, ..., value_field, :seed=>initial_seed) {|seed, value| ... } -> hash
+  #
+  # make_hash takes following arguments:
+  # - one or more key fields
+  # - value field which can be a single field name or an array of field names
+  # - optional option hash which may contains:
+  # -- :seed option
+  #
+  # make_hash takes optional block.
+  #
   def make_hash(*args)
     opts = args.last.kind_of?(Hash) ? args.pop : {}
     seed_value = opts[:seed]
@@ -207,10 +247,14 @@ class Table
     result
   end
 
+  # call-seq:
+  #   table.make_hash_array(key_field1, key_field2, ..., value_field)
   def make_hash_array(*args)
     make_hash(*args) {|seed, value| !seed ? [value] : (seed << value) }
   end
 
+  # call-seq:
+  #   table.make_hash_count(key_field1, key_field2, ..., value_field)
   def make_hash_count(*args)
     make_hash(*args) {|seed, value| !seed ? 1 : seed+1 }
   end

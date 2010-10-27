@@ -71,7 +71,7 @@ class Table
       fields = @tbl.keys
     end
     require 'csv'
-    rowids = all_rowids
+    rowids = list_rowids
     if block_given?
       rowids = yield(rowids)
     end
