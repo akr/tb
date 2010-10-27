@@ -1,8 +1,55 @@
+require 'pp'
+
 class Table
+
+  def Table.load_csv(filename, *header_fields)
+    Table.parse_csv(File.read(filename), *header_fields)
+  end
+
+  def Table.parse_csv(csv, *header_fields)
+    t = Table.new
+    require 'csv'
+    aa = []
+    if defined? CSV::Reader
+      # 1.8
+      CSV::Reader.parse(csv) {|ary|
+        ary = ary.map {|cell| cell.to_s }
+        aa << ary
+      }
+    else
+      CSV.parse(csv) {|ary|
+        ary = ary.map {|cell| cell.to_s }
+        aa << ary
+      }
+    end
+    if header_fields.empty?
+      header_fields = aa.shift
+    end
+    t = Table.new
+    aa.each {|ary|
+      h = {}
+      header_fields.each_with_index {|f, i|
+        h[f] = ary[i]
+      }
+      t.insert(h)
+    }
+    t
+  end
+
   def initialize
     @free_rowids = []
     @tbl = {"_rowid"=>[]}
   end
+
+  def pretty_print(q)
+    q.object_group(self) {
+      each_row {|row|
+        q.breakable
+        q.pp row
+      }
+    }
+  end
+  alias inspect pretty_print_inspect
 
   def check_rowid(rowid)
     raise IndexError, "unexpected rowid: #{rowid}" if !rowid.kind_of?(Integer) || rowid < 0
