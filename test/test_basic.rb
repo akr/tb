@@ -64,4 +64,13 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal({1=>2}, t.make_hash("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
   end
 
+  def test_natjoin2
+    t1 = Table.parse_csv("a,b\n1,2\n3,4\n0,4\n")
+    t2 = Table.parse_csv("b,c\n2,3\n4,5\n")
+    t3 = t1.natjoin2(t2)
+    assert_equal([{"_rowid"=>0, "a"=>"1", "b"=>"2", "c"=>"3"},
+                  {"_rowid"=>1, "a"=>"3", "b"=>"4", "c"=>"5"},
+                  {"_rowid"=>2, "a"=>"0", "b"=>"4", "c"=>"5"}], t3.to_a)
+  end
+
 end

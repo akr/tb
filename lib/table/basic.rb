@@ -47,6 +47,12 @@ class Table
   end
 
   # call-seq:
+  #   table.list_fields -> [field1, field2, ...]
+  def list_fields
+    @tbl.keys
+  end
+
+  # call-seq:
   #   table.list_rowids -> [rowid1, rowid2, ...]
   def list_rowids
     @tbl["_rowid"].compact
@@ -170,6 +176,16 @@ class Table
   end
 
   # call-seq:
+  #   table.to_a -> [{field1=>value1, ...}, ...]
+  def to_a
+    ary = []
+    each_rowid {|rowid|
+      ary << get_row(rowid)
+    }
+    ary
+  end
+
+  # call-seq:
   #   table.each {|row| ... }
   #   table.each_row {|row| ... }
   def each_row
@@ -270,5 +286,43 @@ class Table
       end
     }
     t
+  end
+
+  # call-seq:
+  #   table1.natjoin2(table2, rename_field1={}, rename_field2={}) {|row| ... }
+  def natjoin2(table2, rename_field1={}, rename_field2={})
+    table1 = self
+    fields1 = table1.list_fields.map {|f| rename_field1.fetch(f, f) }
+    fields2 = table2.list_fields.map {|f| rename_field2.fetch(f, f) }
+    fields1.delete("_rowid")
+    fields2.delete("_rowid")
+    common_fields = fields1 & fields2
+    hash = table2.make_hash_array(*(common_fields + ["_rowid"]))
+    result = Table.new
+    table1.each_row {|row1|
+      row = {}
+      row1.each {|k, v|
+        row[rename_field1.fetch(k, k)] = v
+      }
+      common_values = row.values_at(*common_fields)
+      val = hash
+      common_values.each {|cv|
+        val = val[cv]
+      }
+      val.each {|rowid|
+        row0 = row.dup
+        row1 = table2.get_row(rowid)
+        row1.each {|k, v|
+          row0[rename_field1.fetch(k, k)] = v
+        }
+        row0.delete("_rowid")
+        if block_given?
+          result.insert row0 if yield(row0)
+        else
+          result.insert row0
+        end
+      }
+    }
+    result
   end
 end
