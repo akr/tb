@@ -27,9 +27,34 @@
 require 'pp'
 
 class Table
-  def initialize
+  def initialize(*args)
     @free_rowids = []
     @tbl = {"_rowid"=>[]}
+    if !args.empty?
+      insert_values(*args)
+    end
+  end
+
+  # call-seq
+  #   table.insert_values(fields, values1, values2, ...)
+  #
+  # Example:
+  #   # same as:
+  #   #   table.insert({"a"=>1, "b"=>2})
+  #   #   table.insert({"a"=>3, "b"=>4})
+  #   table.insert_values(%w[a b], [1, 2], [3, 4])
+  def insert_values(fields, *values_list)
+    values_list.each {|values|
+      if values.length != fields.length
+        raise ArgumentError, "#{fields.length} fields expected but #{values.length} values given"
+      end
+      h = {}
+      fields.each_with_index {|f, i|
+        v = values[i]
+        h[f] = v
+      }
+      insert h
+    }
   end
 
   def pretty_print(q)

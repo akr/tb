@@ -81,7 +81,7 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_delete_field
-    t = Table.parse_csv("a,b\n1,2\n3,4\n")
+    t = Table.new(%w[a b], %w[1 2], %w[3 4])
     t.delete_field("a")
     assert_equal([{"_rowid"=>0, "b"=>"2"},
                   {"_rowid"=>1, "b"=>"4"}], t.to_a)
