@@ -334,4 +334,17 @@ class Table
       set_cell(rowid, field, value)
     }
   end
+
+  # call-seq:
+  #   table.delete_field(field1, ...)
+  #
+  # deletes zero or more fields destructively.
+  # This method returns nil.
+  def delete_field(*fields)
+    fields.each {|f|
+      f = f.to_s
+      @tbl.delete(f)
+    }
+    nil
+  end
 end
