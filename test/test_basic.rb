@@ -73,4 +73,11 @@ class TestTableBasic < Test::Unit::TestCase
                   {"_rowid"=>2, "a"=>"0", "b"=>"4", "c"=>"5"}], t3.to_a)
   end
 
+  def test_fmap!
+    t = Table.parse_csv("a,b\n1,2\n3,4\n")
+    t.fmap!("a") {|v| "foo" + v }
+    assert_equal([{"_rowid"=>0, "a"=>"foo1", "b"=>"2"},
+                  {"_rowid"=>1, "a"=>"foo3", "b"=>"4"}], t.to_a)
+  end
+
 end

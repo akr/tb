@@ -325,4 +325,13 @@ class Table
     }
     result
   end
+
+  # call-seq:
+  #   table.fmap!(field) {|rowid, value| new_value }
+  def fmap!(field)
+    each_rowid {|rowid|
+      value = yield get_cell(rowid, field)
+      set_cell(rowid, field, value)
+    }
+  end
 end
