@@ -46,7 +46,7 @@ class Table
   alias inspect pretty_print_inspect
 
   def check_rowid(rowid)
-    raise IndexError, "unexpected rowid: #{rowid}" if !rowid.kind_of?(Integer) || rowid < 0
+    raise IndexError, "unexpected rowid: #{rowid.inspect}" if !rowid.kind_of?(Integer) || rowid < 0
   end
 
   # call-seq:
