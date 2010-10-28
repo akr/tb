@@ -139,8 +139,8 @@ class Table
   end
 
   # call-seq:
-  #   table.values_at_row(rowid, field1, field2, ...) -> [value1, value2, ...]
-  def values_at_row(rowid, *fields)
+  #   table.get_values(rowid, field1, field2, ...) -> [value1, value2, ...]
+  def get_values(rowid, *fields)
     check_rowid(rowid)
     fields.map {|f|
       f = f.to_s
@@ -184,7 +184,7 @@ class Table
   #   table.each_row_values(field1, ...) {|value1, ...| ... }
   def each_row_values(*fields)
     each_rowid {|rowid|
-      vs = values_at_row(rowid, *fields)
+      vs = get_values(rowid, *fields)
       yield vs
     }
   end
