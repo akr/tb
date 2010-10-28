@@ -69,6 +69,7 @@ class Table
   def set_cell(rowid, field, value)
     check_rowid(rowid)
     field = field.to_s
+    raise ArgumentError, "can not set _rowid" if field == "_rowid"
     ary = (@tbl[field] ||= [])
     ary[rowid] = value
   end
@@ -86,6 +87,7 @@ class Table
   def delete_cell(rowid, field)
     check_rowid(rowid)
     field = field.to_s
+    raise ArgumentError, "can not delete _rowid" if field == "_rowid"
     ary = @tbl[field]
     ary[rowid] = nil
   end
@@ -193,6 +195,9 @@ class Table
   # make_hash takes following arguments:
   # - one or more key fields
   # - value field which can be a single field name or an array of field names
+  # -- a single field
+  # -- an array of field names
+  # -- true
   # - optional option hash which may contains:
   # -- :seed option
   #
@@ -203,17 +208,22 @@ class Table
     seed_value = opts[:seed]
     value_field = args.pop
     key_fields = args
-    value_array_p = value_field.kind_of?(Array)
-    all_fields = key_fields + (value_array_p ? value_field : [value_field])
+    case value_field
+    when Array
+      value_field_list = value_field.map {|f| f.to_s }
+      gen_value = lambda {|all_values| all_values.last(value_field.length) }
+    when true
+      value_field_list = []
+      gen_value = lambda {|all_values| true }
+    else
+      value_field_list = [value_field.to_s]
+      gen_value = lambda {|all_values| all_values.last }
+    end
+    all_fields = key_fields + value_field_list
     result = {}
     each_row_values(*all_fields) {|all_values|
-      if value_array_p
-        value = all_values.last(value_field.length)
-        vs = all_values[0, key_fields.length]
-      else
-        value = all_values.last
-        vs = all_values[0, key_fields.length]
-      end
+      value = gen_value.call(all_values)
+      vs = all_values[0, key_fields.length]
       lastv = vs.pop
       h = result
       vs.each {|v|
@@ -244,8 +254,21 @@ class Table
   end
 
   # call-seq:
-  #   table.make_hash_count(key_field1, key_field2, ..., value_field)
+  #   table.make_hash_count(key_field1, key_field2, ...)
   def make_hash_count(*args)
-    make_hash(*args) {|seed, value| !seed ? 1 : seed+1 }
+    make_hash(*(args + [true])) {|seed, value| !seed ? 1 : seed+1 }
+  end
+
+  # call-seq:
+  #   table.reject {|row| ... }
+  def reject
+    t = Table.new
+    each_row {|row|
+      if !yield(row)
+        row.delete "_rowid"
+        t.insert row
+      end
+    }
+    t
   end
 end
