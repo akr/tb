@@ -42,7 +42,7 @@ require 'pp'
 #
 # The fields are strings.
 # The field names starts with "_" is reserved.
-# "_itemid" is a reserved field to identify an item.
+# "_itemid" is a reserved field always defined to identify an item.
 #
 # Non-reserved fields can be defined by Table.new and Table#define_field.
 # It is an error to access a field which is not defined.
@@ -63,7 +63,7 @@ class Table
   #
   # If the first argument, _fields_, is given, it should be an array of strings.
   # The strings are used as field names to define fields.
-  # If the first argument is not given, no fields are defined.
+  # If the first argument is not given, only "_itemid" field is defined.
   #
   # If the second argument and subsequent arguments, valuesN, are given, they should be an array.
   # The arrays are used as items to define items.

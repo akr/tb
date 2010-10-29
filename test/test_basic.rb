@@ -2,6 +2,21 @@ require 'table'
 require 'test/unit'
 
 class TestTableBasic < Test::Unit::TestCase
+  def test_initialize
+    t = Table.new
+    assert_equal(["_itemid"], t.list_fields)
+    t = Table.new %w[fruit color],
+                  %w[apple red],
+                  %w[banana yellow],
+                  %w[orange orange]
+    assert_equal(%w[_itemid fruit color].sort, t.list_fields.sort)
+    a = t.to_a
+    assert_operator(a, :include?, {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"})
+    assert_operator(a, :include?, {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"})
+    assert_operator(a, :include?, {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"})
+    assert_equal(3, a.length)
+  end
+
   def test_list_itemids
     t = Table.new
     assert_equal([], t.list_itemids)
