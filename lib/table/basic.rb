@@ -178,6 +178,10 @@ class Table
     @tbl["_itemid"].compact
   end
 
+  # :call-seq:
+  #   table.size
+  #
+  # returns the number of items.
   def size
     @tbl["_itemid"].length - @free_itemids.length
   end
