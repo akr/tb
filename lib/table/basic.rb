@@ -493,14 +493,12 @@ class Table
   #
   # deletes zero or more fields destructively.
   #
-  # This method returns the number of fields which is not exists
-  # before deletion.
+  # This method returns nil.
   def delete_field(*fields)
-    num_not_exist = 0
     fields.each {|f|
       f = check_field(f)
-      @tbl.delete(f) {|_| num_not_exist += 1 }
+      @tbl.delete(f)
     }
-    num_not_exist
+    nil
   end
 end
