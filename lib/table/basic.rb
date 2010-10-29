@@ -164,6 +164,8 @@ class Table
 
   # :call-seq:
   #   table.list_fields -> [field1, field2, ...]
+  #
+  # returns the list of field names as an array of strings.
   def list_fields
     @tbl.keys
   end
