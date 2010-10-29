@@ -26,8 +26,8 @@
 
 require 'pp'
 
-# Table represents set of items.
-# An item contains fields accessed by field names.
+# Table represents a set of items.
+# An item contains field values accessed by field names.
 #
 # A table can be visualized as follows.
 #
@@ -36,7 +36,7 @@ require 'pp'
 #   1       v11 v12 v13
 #   2       v21 v22 v23
 #
-# This table has 4 fields and 4 items:
+# This table has 4 fields and 3 items:
 # - fields: _itemid, f1, f2 and f3.
 # - items: [0, v01, v02, v03], [1, v11, v12, v13] and [2, v21, v22, v23]
 #
@@ -49,11 +49,13 @@ require 'pp'
 #
 # A value in an item is identified by an itemid and field name.
 # A value for non-reserved fields can be any Ruby values.
-# A value for _itemid is an non-negative integer and it is automatically allocated when new item is inserted.
+# A value for _itemid is an non-negative integer and it is automatically allocated when a new item is inserted.
 # It is an error to access an item by itemid which is not allocated.
 #
 class Table
-  # call-seq
+  ##
+  #
+  # :call-seq:
   #   Table.new
   #   Table.new(fields, values1, values2, ...)
   #
@@ -88,7 +90,7 @@ class Table
     end
   end
 
-  def pretty_print(q)
+  def pretty_print(q) # :nodoc:
     q.object_group(self) {
       each_item {|item|
         q.breakable
@@ -96,7 +98,7 @@ class Table
       }
     }
   end
-  alias inspect pretty_print_inspect
+  alias inspect pretty_print_inspect # :nodoc:
 
   def check_itemid(itemid)
     raise TypeError, "invalid itemid: #{itemid.inspect}" if itemid.kind_of?(Symbol) # Ruby 1.8 has Symbol#to_int.
@@ -108,6 +110,7 @@ class Table
     end
     itemid
   end
+  private :check_itemid
 
   def check_field(field)
     field = field.to_s
@@ -116,7 +119,19 @@ class Table
     end
     field
   end
+  private :check_field
 
+  # :call-seq:
+  #   table.define_field(field)
+  #   table.define_field(field) {|itemid| value_for_the_field }
+  #
+  # defines a new field.
+  #
+  # If no block is given, the initial value for the field is nil.
+  #
+  # If a block is given, the block is called for each itemid.
+  # The return value of the block is used for the initial value of the field.
+  #
   def define_field(field)
     field = field.to_s
     if field.start_with?("_")
@@ -136,13 +151,13 @@ class Table
     end
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.list_fields -> [field1, field2, ...]
   def list_fields
     @tbl.keys
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.list_itemids -> [itemid1, itemid2, ...]
   def list_itemids
     @tbl["_itemid"].compact
@@ -152,7 +167,7 @@ class Table
     @tbl["_itemid"].length - @free_itemids.length
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.allocate_itemid -> fresh_itemid
   def allocate_itemid
     if @free_itemids.empty?
@@ -165,7 +180,7 @@ class Table
     itemid
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.set_cell(itemid, field, value) -> value
   def set_cell(itemid, field, value)
     itemid = check_itemid(itemid)
@@ -175,7 +190,7 @@ class Table
     ary[itemid] = value
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.get_cell(itemid, field) -> value
   def get_cell(itemid, field)
     itemid = check_itemid(itemid)
@@ -193,7 +208,7 @@ class Table
     ary[itemid] = nil
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.delete_item(itemid) -> {field1=>value1, ...}
   def delete_item(itemid)
     itemid = check_itemid(itemid)
@@ -207,7 +222,7 @@ class Table
     item
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.insert({field1=>value1, ...})
   #
   def insert(item)
@@ -238,7 +253,7 @@ class Table
     }
   end
 
-  # call-seq:
+  # :call-seq:
   #   table1.concat(table2, table3, ...) -> table1
   def concat(*tables)
     tables.each {|t|
@@ -250,7 +265,7 @@ class Table
     self
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.update_item(itemid, {field1=>value1, ...}) -> nil
   def update_item(itemid, item)
     itemid = check_itemid(itemid)
@@ -261,7 +276,7 @@ class Table
     nil
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.get_values(itemid, field1, field2, ...) -> [value1, value2, ...]
   def get_values(itemid, *fields)
     itemid = check_itemid(itemid)
@@ -271,7 +286,7 @@ class Table
     }
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.get_item(itemid) -> {field1=>value1, ...}
   def get_item(itemid)
     result = {}
@@ -283,7 +298,7 @@ class Table
     result
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.each_itemid {|itemid| ... }
   def each_itemid
     @tbl["_itemid"].each {|itemid|
@@ -292,7 +307,7 @@ class Table
     }
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.to_a -> [{field1=>value1, ...}, ...]
   def to_a
     ary = []
@@ -302,7 +317,7 @@ class Table
     ary
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.each {|item| ... }
   #   table.each_item {|item| ... }
   def each_item
@@ -313,7 +328,7 @@ class Table
   end
   alias each each_item
 
-  # call-seq:
+  # :call-seq:
   #   table.each_item_values(field1, ...) {|value1, ...| ... }
   def each_item_values(*fields)
     each_itemid {|itemid|
@@ -322,7 +337,7 @@ class Table
     }
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.make_hash(key_field1, key_field2, ..., value_field, :seed=>initial_seed) {|seed, value| ... } -> hash
   #
   # make_hash takes following arguments:
@@ -380,19 +395,19 @@ class Table
     result
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.make_hash_array(key_field1, key_field2, ..., value_field)
   def make_hash_array(*args)
     make_hash(*args) {|seed, value| !seed ? [value] : (seed << value) }
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.make_hash_count(key_field1, key_field2, ...)
   def make_hash_count(*args)
     make_hash(*(args + [true])) {|seed, value| !seed ? 1 : seed+1 }
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.reject {|item| ... }
   def reject
     t = Table.new
@@ -405,7 +420,7 @@ class Table
     t
   end
 
-  # call-seq:
+  # :call-seq:
   #   table1.natjoin2(table2, rename_field1={}, rename_field2={}) {|item| ... }
   def natjoin2(table2, rename_field1={}, rename_field2={})
     table1 = self
@@ -443,7 +458,7 @@ class Table
     result
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.fmap!(field) {|itemid, value| new_value }
   def fmap!(field)
     each_itemid {|itemid|
@@ -452,7 +467,7 @@ class Table
     }
   end
 
-  # call-seq:
+  # :call-seq:
   #   table.delete_field(field1, ...)
   #
   # deletes zero or more fields destructively.
