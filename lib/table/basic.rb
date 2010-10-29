@@ -186,6 +186,10 @@ class Table
 
   # :call-seq:
   #   table.allocate_item -> fresh_itemid
+  #
+  # inserts an item.
+  # All fields of the item are initialized to nil.
+  #
   def allocate_item
     if @free_itemids.empty?
       itemid = @tbl["_itemid"].length
