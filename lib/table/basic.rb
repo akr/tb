@@ -217,7 +217,7 @@ class Table
     itemid = check_itemid(itemid)
     field = check_field(field)
     ary = @tbl[field]
-    ary ? ary[itemid] : nil
+    ary[itemid]
   end
 
   # same as set_cell(itemid, field, nil)
