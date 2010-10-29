@@ -49,7 +49,12 @@ class Table
   alias inspect pretty_print_inspect
 
   def check_itemid(itemid)
-    raise IndexError, "unexpected itemid: #{itemid.inspect}" if !itemid.kind_of?(Integer) || itemid < 0
+    raise TypeError, "invalid itemid: #{itemid.inspect}" unless itemid.respond_to? :to_int
+    itemid = itemid.to_int
+    raise TypeError, "invalid itemid: #{itemid.inspect}" if !itemid.kind_of?(Integer)
+    if itemid < 0 || @tbl["_itemid"].length <= itemid || @tbl["_itemid"][itemid] != itemid
+      raise IndexError, "unexpected itemid: #{itemid.inspect}"
+    end
     itemid
   end
 

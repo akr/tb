@@ -29,9 +29,11 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal(nil, t.get_cell(itemid, :g))
     t.delete_cell(itemid, :g)
     assert_equal(nil, t.get_cell(itemid, :g))
-    assert_equal(nil, t.get_cell(100, :g))
+    t.delete_item(itemid)
+    assert_raise(IndexError) { t.get_cell(itemid, :g) }
+    assert_raise(IndexError) { t.get_cell(100, :g) }
     assert_raise(IndexError) { t.get_cell(-1, :g) }
-    assert_raise(IndexError) { t.get_cell(:invalid_itemid, :g) }
+    assert_raise(TypeError) { t.get_cell(:invalid_itemid, :g) }
   end
 
   def test_each_item
