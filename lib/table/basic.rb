@@ -28,8 +28,8 @@ require 'pp'
 
 class Table
   def initialize(*args)
-    @free_rowids = []
-    @tbl = {"_rowid"=>[]}
+    @free_itemids = []
+    @tbl = {"_itemid"=>[]}
     if !args.empty?
       insert_values(*args)
     end
@@ -37,16 +37,16 @@ class Table
 
   def pretty_print(q)
     q.object_group(self) {
-      each_row {|row|
+      each_item {|item|
         q.breakable
-        q.pp row
+        q.pp item
       }
     }
   end
   alias inspect pretty_print_inspect
 
-  def check_rowid(rowid)
-    raise IndexError, "unexpected rowid: #{rowid.inspect}" if !rowid.kind_of?(Integer) || rowid < 0
+  def check_itemid(itemid)
+    raise IndexError, "unexpected itemid: #{itemid.inspect}" if !itemid.kind_of?(Integer) || itemid < 0
   end
 
   # call-seq:
@@ -56,77 +56,77 @@ class Table
   end
 
   # call-seq:
-  #   table.list_rowids -> [rowid1, rowid2, ...]
-  def list_rowids
-    @tbl["_rowid"].compact
+  #   table.list_itemids -> [itemid1, itemid2, ...]
+  def list_itemids
+    @tbl["_itemid"].compact
   end
 
   def size
-    @tbl["_rowid"].length - @free_rowids.length
+    @tbl["_itemid"].length - @free_itemids.length
   end
 
   # call-seq:
-  #   table.allocate_rowid -> fresh_rowid
-  def allocate_rowid
-    if @free_rowids.empty?
-      rowid = @tbl["_rowid"].length
-      @tbl["_rowid"] << rowid
+  #   table.allocate_itemid -> fresh_itemid
+  def allocate_itemid
+    if @free_itemids.empty?
+      itemid = @tbl["_itemid"].length
+      @tbl["_itemid"] << itemid
     else
-      rowid = @free_rowids.pop
-      @tbl["_rowid"][rowid] = rowid
+      itemid = @free_itemids.pop
+      @tbl["_itemid"][itemid] = itemid
     end
-    rowid
+    itemid
   end
 
   # call-seq:
-  #   table.set_cell(rowid, field, value) -> value
-  def set_cell(rowid, field, value)
-    check_rowid(rowid)
+  #   table.set_cell(itemid, field, value) -> value
+  def set_cell(itemid, field, value)
+    check_itemid(itemid)
     field = field.to_s
-    raise ArgumentError, "can not set _rowid" if field == "_rowid"
+    raise ArgumentError, "can not set _itemid" if field == "_itemid"
     ary = (@tbl[field] ||= [])
-    ary[rowid] = value
+    ary[itemid] = value
   end
 
   # call-seq:
-  #   table.get_cell(rowid, field) -> value
-  def get_cell(rowid, field)
-    check_rowid(rowid)
+  #   table.get_cell(itemid, field) -> value
+  def get_cell(itemid, field)
+    check_itemid(itemid)
     field = field.to_s
     ary = @tbl[field]
-    ary ? ary[rowid] : nil
+    ary ? ary[itemid] : nil
   end
 
-  # same as set_cell(rowid, field, nil)
-  def delete_cell(rowid, field)
-    check_rowid(rowid)
+  # same as set_cell(itemid, field, nil)
+  def delete_cell(itemid, field)
+    check_itemid(itemid)
     field = field.to_s
-    raise ArgumentError, "can not delete _rowid" if field == "_rowid"
+    raise ArgumentError, "can not delete _itemid" if field == "_itemid"
     ary = @tbl[field]
-    ary[rowid] = nil
+    ary[itemid] = nil
   end
 
   # call-seq:
-  #   table.delete_row(rowid) -> {field1=>value1, ...}
-  def delete_row(rowid)
-    check_rowid(rowid)
-    row = {}
+  #   table.delete_item(itemid) -> {field1=>value1, ...}
+  def delete_item(itemid)
+    check_itemid(itemid)
+    item = {}
     @tbl.each {|f, ary|
-      v = ary[rowid]
-      ary[rowid] = nil
-      row[f] = v if !v.nil?
+      v = ary[itemid]
+      ary[itemid] = nil
+      item[f] = v if !v.nil?
     }
-    @free_rowids.push rowid
-    row
+    @free_itemids.push itemid
+    item
   end
 
   # call-seq:
   #   table.insert({field1=>value1, ...})
   #
-  def insert(row)
-    rowid = allocate_rowid
-    update_row(rowid, row)
-    rowid
+  def insert(item)
+    itemid = allocate_itemid
+    update_item(itemid, item)
+    itemid
   end
 
   # call-seq
@@ -155,41 +155,41 @@ class Table
   #   table1.concat(table2, table3, ...) -> table1
   def concat(*tables)
     tables.each {|t|
-      t.each_row {|row|
-        row.delete "_rowid"
-        self.insert row
+      t.each_item {|item|
+        item.delete "_itemid"
+        self.insert item
       }
     }
     self
   end
 
   # call-seq:
-  #   table.update_row(rowid, {field1=>value1, ...}) -> nil
-  def update_row(rowid, row)
-    check_rowid(rowid)
-    row.each {|f, v|
+  #   table.update_item(itemid, {field1=>value1, ...}) -> nil
+  def update_item(itemid, item)
+    check_itemid(itemid)
+    item.each {|f, v|
       f = f.to_s
-      set_cell(rowid, f, v)
+      set_cell(itemid, f, v)
     }
     nil
   end
 
   # call-seq:
-  #   table.get_values(rowid, field1, field2, ...) -> [value1, value2, ...]
-  def get_values(rowid, *fields)
-    check_rowid(rowid)
+  #   table.get_values(itemid, field1, field2, ...) -> [value1, value2, ...]
+  def get_values(itemid, *fields)
+    check_itemid(itemid)
     fields.map {|f|
       f = f.to_s
-      get_cell(rowid, f)
+      get_cell(itemid, f)
     }
   end
 
   # call-seq:
-  #   table.get_row(rowid) -> {field1=>value1, ...}
-  def get_row(rowid)
+  #   table.get_item(itemid) -> {field1=>value1, ...}
+  def get_item(itemid)
     result = {}
     @tbl.each {|f, ary|
-      v = ary[rowid]
+      v = ary[itemid]
       next if v.nil?
       result[f] = v
     }
@@ -197,11 +197,11 @@ class Table
   end
 
   # call-seq:
-  #   table.each_rowid {|rowid| ... }
-  def each_rowid
-    @tbl["_rowid"].each {|rowid|
-      next if rowid.nil?
-      yield rowid
+  #   table.each_itemid {|itemid| ... }
+  def each_itemid
+    @tbl["_itemid"].each {|itemid|
+      next if itemid.nil?
+      yield itemid
     }
   end
 
@@ -209,28 +209,28 @@ class Table
   #   table.to_a -> [{field1=>value1, ...}, ...]
   def to_a
     ary = []
-    each_rowid {|rowid|
-      ary << get_row(rowid)
+    each_itemid {|itemid|
+      ary << get_item(itemid)
     }
     ary
   end
 
   # call-seq:
-  #   table.each {|row| ... }
-  #   table.each_row {|row| ... }
-  def each_row
-    each_rowid {|rowid|
-      next if rowid.nil?
-      yield get_row(rowid)
+  #   table.each {|item| ... }
+  #   table.each_item {|item| ... }
+  def each_item
+    each_itemid {|itemid|
+      next if itemid.nil?
+      yield get_item(itemid)
     }
   end
-  alias each each_row
+  alias each each_item
 
   # call-seq:
-  #   table.each_row_values(field1, ...) {|value1, ...| ... }
-  def each_row_values(*fields)
-    each_rowid {|rowid|
-      vs = get_values(rowid, *fields)
+  #   table.each_item_values(field1, ...) {|value1, ...| ... }
+  def each_item_values(*fields)
+    each_itemid {|itemid|
+      vs = get_values(itemid, *fields)
       yield vs
     }
   end
@@ -267,7 +267,7 @@ class Table
     end
     all_fields = key_fields + value_field_list
     result = {}
-    each_row_values(*all_fields) {|all_values|
+    each_item_values(*all_fields) {|all_values|
       value = gen_value.call(all_values)
       vs = all_values[0, key_fields.length]
       lastv = vs.pop
@@ -306,50 +306,50 @@ class Table
   end
 
   # call-seq:
-  #   table.reject {|row| ... }
+  #   table.reject {|item| ... }
   def reject
     t = Table.new
-    each_row {|row|
-      if !yield(row)
-        row.delete "_rowid"
-        t.insert row
+    each_item {|item|
+      if !yield(item)
+        item.delete "_itemid"
+        t.insert item
       end
     }
     t
   end
 
   # call-seq:
-  #   table1.natjoin2(table2, rename_field1={}, rename_field2={}) {|row| ... }
+  #   table1.natjoin2(table2, rename_field1={}, rename_field2={}) {|item| ... }
   def natjoin2(table2, rename_field1={}, rename_field2={})
     table1 = self
     fields1 = table1.list_fields.map {|f| rename_field1.fetch(f, f) }
     fields2 = table2.list_fields.map {|f| rename_field2.fetch(f, f) }
-    fields1.delete("_rowid")
-    fields2.delete("_rowid")
+    fields1.delete("_itemid")
+    fields2.delete("_itemid")
     common_fields = fields1 & fields2
-    hash = table2.make_hash_array(*(common_fields + ["_rowid"]))
+    hash = table2.make_hash_array(*(common_fields + ["_itemid"]))
     result = Table.new
-    table1.each_row {|row1|
-      row = {}
-      row1.each {|k, v|
-        row[rename_field1.fetch(k, k)] = v
+    table1.each_item {|item1|
+      item = {}
+      item1.each {|k, v|
+        item[rename_field1.fetch(k, k)] = v
       }
-      common_values = row.values_at(*common_fields)
+      common_values = item.values_at(*common_fields)
       val = hash
       common_values.each {|cv|
         val = val[cv]
       }
-      val.each {|rowid|
-        row0 = row.dup
-        row1 = table2.get_row(rowid)
-        row1.each {|k, v|
-          row0[rename_field1.fetch(k, k)] = v
+      val.each {|itemid|
+        item0 = item.dup
+        item1 = table2.get_item(itemid)
+        item1.each {|k, v|
+          item0[rename_field1.fetch(k, k)] = v
         }
-        row0.delete("_rowid")
+        item0.delete("_itemid")
         if block_given?
-          result.insert row0 if yield(row0)
+          result.insert item0 if yield(item0)
         else
-          result.insert row0
+          result.insert item0
         end
       }
     }
@@ -357,11 +357,11 @@ class Table
   end
 
   # call-seq:
-  #   table.fmap!(field) {|rowid, value| new_value }
+  #   table.fmap!(field) {|itemid, value| new_value }
   def fmap!(field)
-    each_rowid {|rowid|
-      value = yield rowid, get_cell(rowid, field)
-      set_cell(rowid, field, value)
+    each_itemid {|itemid|
+      value = yield itemid, get_cell(itemid, field)
+      set_cell(itemid, field, value)
     }
   end
 

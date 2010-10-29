@@ -70,7 +70,7 @@ class Table
   end
 
   # :call-seq:
-  #   generate_csv(out='', fields=nil) {|rowids| modified_rowids }
+  #   generate_csv(out='', fields=nil) {|itemids| modified_itemids }
   #   generate_csv(out='', fields=nil)
   #
   def generate_csv(out='', fields=nil, &block)
@@ -78,23 +78,23 @@ class Table
       fields = @tbl.keys
     end
     require 'csv'
-    rowids = list_rowids
+    itemids = list_itemids
     if block_given?
-      rowids = yield(rowids)
+      itemids = yield(itemids)
     end
     if defined? CSV::Writer
       # Ruby 1.8
       CSV::Writer.generate(out) {|csvgen|
         csvgen << fields
-        rowids.each {|rowid|
-          csvgen << get_values(rowid, *fields)
+        itemids.each {|itemid|
+          csvgen << get_values(itemid, *fields)
         }
       }
     else
       # Ruby 1.9
       out << fields.to_csv
-      rowids.each {|rowid|
-        out << get_values(rowid, *fields).to_csv
+      itemids.each {|itemid|
+        out << get_values(itemid, *fields).to_csv
       }
     end
     out

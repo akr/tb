@@ -2,45 +2,45 @@ require 'table'
 require 'test/unit'
 
 class TestTableBasic < Test::Unit::TestCase
-  def test_list_rowids
+  def test_list_itemids
     t = Table.new
-    assert_equal([], t.list_rowids)
-    rowid1 = t.allocate_rowid
-    assert_equal([rowid1], t.list_rowids)
-    rowid2 = t.allocate_rowid
-    assert_equal([rowid1, rowid2], t.list_rowids)
-    assert_equal({"_rowid"=>rowid1}, t.delete_row(rowid1))
-    assert_equal([rowid2], t.list_rowids)
+    assert_equal([], t.list_itemids)
+    itemid1 = t.allocate_itemid
+    assert_equal([itemid1], t.list_itemids)
+    itemid2 = t.allocate_itemid
+    assert_equal([itemid1, itemid2], t.list_itemids)
+    assert_equal({"_itemid"=>itemid1}, t.delete_item(itemid1))
+    assert_equal([itemid2], t.list_itemids)
   end
 
   def test_cell
     t = Table.new
-    rowid = t.allocate_rowid
-    assert_equal(nil, t.get_cell(rowid, :f))
-    t.set_cell(rowid, :f, 1)
-    assert_equal(1, t.get_cell(rowid, :f))
-    t.delete_cell(rowid, :f)
-    assert_equal(nil, t.get_cell(rowid, :f))
-    t.set_cell(rowid, :f, nil)
-    assert_equal(nil, t.get_cell(rowid, :f))
-    t.set_cell(rowid, :g, 2)
-    assert_equal(2, t.get_cell(rowid, :g))
-    t.set_cell(rowid, :g, nil)
-    assert_equal(nil, t.get_cell(rowid, :g))
-    t.delete_cell(rowid, :g)
-    assert_equal(nil, t.get_cell(rowid, :g))
+    itemid = t.allocate_itemid
+    assert_equal(nil, t.get_cell(itemid, :f))
+    t.set_cell(itemid, :f, 1)
+    assert_equal(1, t.get_cell(itemid, :f))
+    t.delete_cell(itemid, :f)
+    assert_equal(nil, t.get_cell(itemid, :f))
+    t.set_cell(itemid, :f, nil)
+    assert_equal(nil, t.get_cell(itemid, :f))
+    t.set_cell(itemid, :g, 2)
+    assert_equal(2, t.get_cell(itemid, :g))
+    t.set_cell(itemid, :g, nil)
+    assert_equal(nil, t.get_cell(itemid, :g))
+    t.delete_cell(itemid, :g)
+    assert_equal(nil, t.get_cell(itemid, :g))
     assert_equal(nil, t.get_cell(100, :g))
     assert_raise(IndexError) { t.get_cell(-1, :g) }
-    assert_raise(IndexError) { t.get_cell(:invalid_rowid, :g) }
+    assert_raise(IndexError) { t.get_cell(:invalid_itemid, :g) }
   end
 
-  def test_each_row
+  def test_each_item
     t = Table.new
     t.insert({"a"=>1})
     t.insert({"a"=>2})
-    rows = []
-    t.each {|row| rows << row }
-    assert_equal([{"_rowid"=>0, "a"=>1}, {"_rowid"=>1, "a"=>2}], rows)
+    items = []
+    t.each {|item| items << item }
+    assert_equal([{"_itemid"=>0, "a"=>1}, {"_itemid"=>1, "a"=>2}], items)
   end
 
   def test_make_hash
@@ -68,38 +68,38 @@ class TestTableBasic < Test::Unit::TestCase
     t1 = Table.parse_csv("a,b\n1,2\n3,4\n0,4\n")
     t2 = Table.parse_csv("b,c\n2,3\n4,5\n")
     t3 = t1.natjoin2(t2)
-    assert_equal([{"_rowid"=>0, "a"=>"1", "b"=>"2", "c"=>"3"},
-                  {"_rowid"=>1, "a"=>"3", "b"=>"4", "c"=>"5"},
-                  {"_rowid"=>2, "a"=>"0", "b"=>"4", "c"=>"5"}], t3.to_a)
+    assert_equal([{"_itemid"=>0, "a"=>"1", "b"=>"2", "c"=>"3"},
+                  {"_itemid"=>1, "a"=>"3", "b"=>"4", "c"=>"5"},
+                  {"_itemid"=>2, "a"=>"0", "b"=>"4", "c"=>"5"}], t3.to_a)
   end
 
   def test_fmap!
     t = Table.parse_csv("a,b\n1,2\n3,4\n")
-    t.fmap!("a") {|rowid, v| "foo" + v }
-    assert_equal([{"_rowid"=>0, "a"=>"foo1", "b"=>"2"},
-                  {"_rowid"=>1, "a"=>"foo3", "b"=>"4"}], t.to_a)
+    t.fmap!("a") {|itemid, v| "foo" + v }
+    assert_equal([{"_itemid"=>0, "a"=>"foo1", "b"=>"2"},
+                  {"_itemid"=>1, "a"=>"foo3", "b"=>"4"}], t.to_a)
   end
 
   def test_delete_field
     t = Table.new(%w[a b], %w[1 2], %w[3 4])
     t.delete_field("a")
-    assert_equal([{"_rowid"=>0, "b"=>"2"},
-                  {"_rowid"=>1, "b"=>"4"}], t.to_a)
+    assert_equal([{"_itemid"=>0, "b"=>"2"},
+                  {"_itemid"=>1, "b"=>"4"}], t.to_a)
   end
 
-  def test_delete_row
+  def test_delete_item
     t = Table.new
     t.insert({"a"=>"foo"})
     t.insert({"a"=>"bar"})
-    t.delete_row(0)
+    t.delete_item(0)
     t.insert({"a"=>"foo"})
-    rows = []
-    t.each {|row|
-      row.delete('_rowid')
-      rows << row
+    items = []
+    t.each {|item|
+      item.delete('_itemid')
+      items << item
     }
-    rows = rows.sort_by {|row| row['a'] }
-    assert_equal([{"a"=>"bar"}, {"a"=>"foo"}], rows)
+    items = items.sort_by {|item| item['a'] }
+    assert_equal([{"a"=>"bar"}, {"a"=>"foo"}], items)
   end
 
 end
