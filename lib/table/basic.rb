@@ -31,6 +31,9 @@ class Table
     @free_itemids = []
     @tbl = {"_itemid"=>[]}
     if !args.empty?
+      args.first.each {|f|
+        define_field(f)
+      }
       insert_values(*args)
     end
   end
@@ -47,6 +50,31 @@ class Table
 
   def check_itemid(itemid)
     raise IndexError, "unexpected itemid: #{itemid.inspect}" if !itemid.kind_of?(Integer) || itemid < 0
+    itemid
+  end
+
+  def check_field(field)
+    field = field.to_s
+    unless @tbl.include? field
+      raise ArgumentError, "field not defined: #{field.inspect}"
+    end
+    field
+  end
+
+  def define_field(field)
+    field = field.to_s
+    if @tbl.include? field
+      raise ArgumentError, "field already defined: #{field.inspect}"
+    end
+    @tbl[field] = []
+    if block_given?
+      each_rowid {|rowid|
+        v = yield(rowid)
+        if !v.nil?
+          set_cell(rowid, field, v)
+        end
+      }
+    end
   end
 
   # call-seq:
@@ -81,8 +109,8 @@ class Table
   # call-seq:
   #   table.set_cell(itemid, field, value) -> value
   def set_cell(itemid, field, value)
-    check_itemid(itemid)
-    field = field.to_s
+    itemid = check_itemid(itemid)
+    field = check_field(field)
     raise ArgumentError, "can not set _itemid" if field == "_itemid"
     ary = (@tbl[field] ||= [])
     ary[itemid] = value
@@ -91,16 +119,16 @@ class Table
   # call-seq:
   #   table.get_cell(itemid, field) -> value
   def get_cell(itemid, field)
-    check_itemid(itemid)
-    field = field.to_s
+    itemid = check_itemid(itemid)
+    field = check_field(field)
     ary = @tbl[field]
     ary ? ary[itemid] : nil
   end
 
   # same as set_cell(itemid, field, nil)
   def delete_cell(itemid, field)
-    check_itemid(itemid)
-    field = field.to_s
+    itemid = check_itemid(itemid)
+    field = check_field(field)
     raise ArgumentError, "can not delete _itemid" if field == "_itemid"
     ary = @tbl[field]
     ary[itemid] = nil
@@ -109,7 +137,7 @@ class Table
   # call-seq:
   #   table.delete_item(itemid) -> {field1=>value1, ...}
   def delete_item(itemid)
-    check_itemid(itemid)
+    itemid = check_itemid(itemid)
     item = {}
     @tbl.each {|f, ary|
       v = ary[itemid]
@@ -166,9 +194,9 @@ class Table
   # call-seq:
   #   table.update_item(itemid, {field1=>value1, ...}) -> nil
   def update_item(itemid, item)
-    check_itemid(itemid)
+    itemid = check_itemid(itemid)
     item.each {|f, v|
-      f = f.to_s
+      f = check_field(f)
       set_cell(itemid, f, v)
     }
     nil
@@ -177,9 +205,9 @@ class Table
   # call-seq:
   #   table.get_values(itemid, field1, field2, ...) -> [value1, value2, ...]
   def get_values(itemid, *fields)
-    check_itemid(itemid)
+    itemid = check_itemid(itemid)
     fields.map {|f|
-      f = f.to_s
+      f = check_field(f)
       get_cell(itemid, f)
     }
   end
@@ -256,13 +284,13 @@ class Table
     key_fields = args
     case value_field
     when Array
-      value_field_list = value_field.map {|f| f.to_s }
+      value_field_list = value_field.map {|f| check_field(f) }
       gen_value = lambda {|all_values| all_values.last(value_field.length) }
     when true
       value_field_list = []
       gen_value = lambda {|all_values| true }
     else
-      value_field_list = [value_field.to_s]
+      value_field_list = [check_field(value_field)]
       gen_value = lambda {|all_values| all_values.last }
     end
     all_fields = key_fields + value_field_list
@@ -328,7 +356,7 @@ class Table
     fields2.delete("_itemid")
     common_fields = fields1 & fields2
     hash = table2.make_hash_array(*(common_fields + ["_itemid"]))
-    result = Table.new
+    result = Table.new(fields1 | fields2)
     table1.each_item {|item1|
       item = {}
       item1.each {|k, v|
@@ -375,7 +403,7 @@ class Table
   def delete_field(*fields)
     num_not_exist = 0
     fields.each {|f|
-      f = f.to_s
+      f = check_field(f)
       @tbl.delete(f) {|_| num_not_exist += 1 }
     }
     num_not_exist

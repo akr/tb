@@ -14,7 +14,7 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_cell
-    t = Table.new
+    t = Table.new %w[f g]
     itemid = t.allocate_itemid
     assert_equal(nil, t.get_cell(itemid, :f))
     t.set_cell(itemid, :f, 1)
@@ -35,18 +35,14 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_each_item
-    t = Table.new
-    t.insert({"a"=>1})
-    t.insert({"a"=>2})
+    t = Table.new %w[a], [1], [2]
     items = []
     t.each {|item| items << item }
     assert_equal([{"_itemid"=>0, "a"=>1}, {"_itemid"=>1, "a"=>2}], items)
   end
 
   def test_make_hash
-    t = Table.new
-    t.insert({"a"=>1, "b"=>2, "c"=>3})
-    t.insert({"a"=>2, "b"=>4, "c"=>4})
+    t = Table.new %w[a b c], [1,2,3], [2,4,4]
     assert_equal({1=>3, 2=>4}, t.make_hash("a", "c"))
     assert_equal({1=>[3], 2=>[4]}, t.make_hash("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
     assert_equal({1=>1, 2=>1}, t.make_hash("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
@@ -56,17 +52,15 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_make_hash_ambiguous
-    t = Table.new
-    t.insert({"a"=>1, "b"=>2, "c"=>3})
-    t.insert({"a"=>1, "b"=>4, "c"=>4})
+    t = Table.new %w[a b c], [1,2,3], [1,4,4]
     assert_raise(ArgumentError) { t.make_hash("a", "c") }
     assert_equal({1=>[3,4]}, t.make_hash("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
     assert_equal({1=>2}, t.make_hash("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
   end
 
   def test_natjoin2
-    t1 = Table.parse_csv("a,b\n1,2\n3,4\n0,4\n")
-    t2 = Table.parse_csv("b,c\n2,3\n4,5\n")
+    t1 = Table.new %w[a b], %w[1 2], %w[3 4], %w[0 4]
+    t2 = Table.new %w[b c], %w[2 3], %w[4 5]
     t3 = t1.natjoin2(t2)
     assert_equal([{"_itemid"=>0, "a"=>"1", "b"=>"2", "c"=>"3"},
                   {"_itemid"=>1, "a"=>"3", "b"=>"4", "c"=>"5"},
@@ -74,7 +68,7 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_fmap!
-    t = Table.parse_csv("a,b\n1,2\n3,4\n")
+    t = Table.new %w[a b], %w[1 2], %w[3 4]
     t.fmap!("a") {|itemid, v| "foo" + v }
     assert_equal([{"_itemid"=>0, "a"=>"foo1", "b"=>"2"},
                   {"_itemid"=>1, "a"=>"foo3", "b"=>"4"}], t.to_a)
@@ -88,10 +82,10 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_delete_item
-    t = Table.new
-    t.insert({"a"=>"foo"})
+    t = Table.new %w[a]
+    itemid = t.insert({"a"=>"foo"})
     t.insert({"a"=>"bar"})
-    t.delete_item(0)
+    t.delete_item(itemid)
     t.insert({"a"=>"foo"})
     items = []
     t.each {|item|

@@ -31,7 +31,6 @@ class Table
   end
 
   def Table.parse_csv(csv, *header_fields)
-    t = Table.new
     require 'csv'
     aa = []
     if defined? CSV::Reader
@@ -58,7 +57,7 @@ class Table
         end
       }
     end
-    t = Table.new
+    t = Table.new(header_fields)
     aa.each {|ary|
       h = {}
       header_fields.each_with_index {|f, i|
