@@ -75,7 +75,7 @@ class TestTableBasic < Test::Unit::TestCase
 
   def test_fmap!
     t = Table.parse_csv("a,b\n1,2\n3,4\n")
-    t.fmap!("a") {|v| "foo" + v }
+    t.fmap!("a") {|rowid, v| "foo" + v }
     assert_equal([{"_rowid"=>0, "a"=>"foo1", "b"=>"2"},
                   {"_rowid"=>1, "a"=>"foo3", "b"=>"4"}], t.to_a)
   end
@@ -85,6 +85,21 @@ class TestTableBasic < Test::Unit::TestCase
     t.delete_field("a")
     assert_equal([{"_rowid"=>0, "b"=>"2"},
                   {"_rowid"=>1, "b"=>"4"}], t.to_a)
+  end
+
+  def test_delete_row
+    t = Table.new
+    t.insert({"a"=>"foo"})
+    t.insert({"a"=>"bar"})
+    t.delete_row(0)
+    t.insert({"a"=>"foo"})
+    rows = []
+    t.each {|row|
+      row.delete('_rowid')
+      rows << row
+    }
+    rows = rows.sort_by {|row| row['a'] }
+    assert_equal([{"a"=>"bar"}, {"a"=>"foo"}], rows)
   end
 
 end

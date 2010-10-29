@@ -61,6 +61,10 @@ class Table
     @tbl["_rowid"].compact
   end
 
+  def size
+    @tbl["_rowid"].length - @free_rowids.length
+  end
+
   # call-seq:
   #   table.allocate_rowid -> fresh_rowid
   def allocate_rowid
@@ -69,6 +73,7 @@ class Table
       @tbl["_rowid"] << rowid
     else
       rowid = @free_rowids.pop
+      @tbl["_rowid"][rowid] = rowid
     end
     rowid
   end
@@ -355,7 +360,7 @@ class Table
   #   table.fmap!(field) {|rowid, value| new_value }
   def fmap!(field)
     each_rowid {|rowid|
-      value = yield get_cell(rowid, field)
+      value = yield rowid, get_cell(rowid, field)
       set_cell(rowid, field, value)
     }
   end
@@ -364,12 +369,15 @@ class Table
   #   table.delete_field(field1, ...)
   #
   # deletes zero or more fields destructively.
-  # This method returns nil.
+  #
+  # This method returns the number of fields which is not exists
+  # before deletion.
   def delete_field(*fields)
+    num_not_exist = 0
     fields.each {|f|
       f = f.to_s
-      @tbl.delete(f)
+      @tbl.delete(f) {|_| num_not_exist += 1 }
     }
-    nil
+    num_not_exist
   end
 end
