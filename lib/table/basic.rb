@@ -204,7 +204,7 @@ class Table
   def set_cell(itemid, field, value)
     itemid = check_itemid(itemid)
     field = check_field(field)
-    raise ArgumentError, "can not set _itemid" if field == "_itemid"
+    raise ArgumentError, "can not set for reserved field: #{field.inspect}" if field.start_with?("_")
     ary = (@tbl[field] ||= [])
     ary[itemid] = value
   end
@@ -222,7 +222,7 @@ class Table
   def delete_cell(itemid, field)
     itemid = check_itemid(itemid)
     field = check_field(field)
-    raise ArgumentError, "can not delete _itemid" if field == "_itemid"
+    raise ArgumentError, "can not delete reserved field: #{field.inspect}" if field.start_with?("_") 
     ary = @tbl[field]
     ary[itemid] = nil
   end
