@@ -207,7 +207,7 @@ class Table
     itemid = check_itemid(itemid)
     field = check_field(field)
     raise ArgumentError, "can not set for reserved field: #{field.inspect}" if field.start_with?("_")
-    ary = (@tbl[field] ||= [])
+    ary = @tbl[field]
     ary[itemid] = value
   end
 
