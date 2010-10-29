@@ -20,9 +20,9 @@ class TestTableBasic < Test::Unit::TestCase
   def test_list_itemids
     t = Table.new
     assert_equal([], t.list_itemids)
-    itemid1 = t.allocate_itemid
+    itemid1 = t.allocate_item
     assert_equal([itemid1], t.list_itemids)
-    itemid2 = t.allocate_itemid
+    itemid2 = t.allocate_item
     assert_equal([itemid1, itemid2], t.list_itemids)
     assert_equal({"_itemid"=>itemid1}, t.delete_item(itemid1))
     assert_equal([itemid2], t.list_itemids)
@@ -30,7 +30,7 @@ class TestTableBasic < Test::Unit::TestCase
 
   def test_cell
     t = Table.new %w[f g]
-    itemid = t.allocate_itemid
+    itemid = t.allocate_item
     assert_equal(nil, t.get_cell(itemid, :f))
     t.set_cell(itemid, :f, 1)
     assert_equal(1, t.get_cell(itemid, :f))

@@ -187,8 +187,8 @@ class Table
   end
 
   # :call-seq:
-  #   table.allocate_itemid -> fresh_itemid
-  def allocate_itemid
+  #   table.allocate_item -> fresh_itemid
+  def allocate_item
     if @free_itemids.empty?
       itemid = @tbl["_itemid"].length
       @tbl["_itemid"] << itemid
@@ -245,7 +245,7 @@ class Table
   #   table.insert({field1=>value1, ...})
   #
   def insert(item)
-    itemid = allocate_itemid
+    itemid = allocate_item
     update_item(itemid, item)
     itemid
   end
