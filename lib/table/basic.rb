@@ -53,8 +53,6 @@ require 'pp'
 # It is an error to access an item by itemid which is not allocated.
 #
 class Table
-  ##
-  #
   # :call-seq:
   #   Table.new
   #   Table.new(fields, values1, values2, ...)
