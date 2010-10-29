@@ -50,6 +50,13 @@ class Table
     if header_fields.empty?
       aa.shift while aa.first.all? {|elt| elt.nil? || elt == '' }
       header_fields = aa.shift
+      h = Hash.new(0)
+      header_fields.each {|f| h[f] += 1 }
+      h.each {|f, n|
+        if 1 < n
+          raise ArgumentError, "ambiguous header: #{f.inspect}"
+        end
+      }
     end
     t = Table.new
     aa.each {|ary|
