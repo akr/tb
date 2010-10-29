@@ -26,7 +26,57 @@
 
 require 'pp'
 
+# Table represents set of items.
+# An item contains fields accessed by field names.
+#
+# A table can be visualized as follows.
+#
+#   _itemid f1  f2  f3
+#   0       v01 v02 v03
+#   1       v11 v12 v13
+#   2       v21 v22 v23
+#
+# This table has 4 fields and 4 items:
+# - fields: _itemid, f1, f2 and f3.
+# - items: [0, v01, v02, v03], [1, v11, v12, v13] and [2, v21, v22, v23]
+#
+# The fields are strings.
+# The field names starts with "_" is reserved.
+# "_itemid" is a reserved field to identify an item.
+#
+# Non-reserved fields can be defined by Table.new and Table#define_field.
+# It is an error to access a field which is not defined.
+#
+# A value in an item is identified by an itemid and field name.
+# A value for non-reserved fields can be any Ruby values.
+# A value for _itemid is an non-negative integer and it is automatically allocated when new item is inserted.
+# It is an error to access an item by itemid which is not allocated.
+#
 class Table
+  # call-seq
+  #   Table.new
+  #   Table.new(fields, values1, values2, ...)
+  #
+  # creates an instance of Table class.
+  #
+  # If the first argument, _fields_, is given, it should be an array of strings.
+  # The strings are used as field names to define fields.
+  # If the first argument is not given, no fields are defined.
+  #
+  # If the second argument and subsequent arguments, valuesN, are given, they should be an array.
+  # The arrays are used as items to define items.
+  # A value in the array is used for a value of corresponding field defined by the first argument.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #     {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #     {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}>
+  #   #     {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #
   def initialize(*args)
     @free_itemids = []
     @tbl = {"_itemid"=>[]}
@@ -49,6 +99,7 @@ class Table
   alias inspect pretty_print_inspect
 
   def check_itemid(itemid)
+    raise TypeError, "invalid itemid: #{itemid.inspect}" if itemid.kind_of?(Symbol) # Ruby 1.8 has Symbol#to_int.
     raise TypeError, "invalid itemid: #{itemid.inspect}" unless itemid.respond_to? :to_int
     itemid = itemid.to_int
     raise TypeError, "invalid itemid: #{itemid.inspect}" if !itemid.kind_of?(Integer)
@@ -68,15 +119,18 @@ class Table
 
   def define_field(field)
     field = field.to_s
+    if field.start_with?("_")
+      raise ArgumentError, "field begins with underscore: #{field.inspect}"
+    end
     if @tbl.include? field
       raise ArgumentError, "field already defined: #{field.inspect}"
     end
     @tbl[field] = []
     if block_given?
-      each_rowid {|rowid|
-        v = yield(rowid)
+      each_itemid {|itemid|
+        v = yield(itemid)
         if !v.nil?
-          set_cell(rowid, field, v)
+          set_cell(itemid, field, v)
         end
       }
     end
