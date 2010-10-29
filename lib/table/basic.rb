@@ -132,6 +132,17 @@ class Table
   # If a block is given, the block is called for each itemid.
   # The return value of the block is used for the initial value of the field.
   #
+  #   t = Table.new
+  #   itemid = t.insert({})
+  #   t.define_field("fruit")
+  #   t.set_cell(itemid, "fruit", "apple")
+  #   t.insert({"fruit"=>"orange"})
+  #   t.define_field("namelen") {|itemid| t.get_cell(itemid, "fruit").length }
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "namelen"=>5}
+  #   #    {"_itemid"=>1, "fruit"=>"orange", "namelen"=>6}>
+  #
   def define_field(field)
     field = field.to_s
     if field.start_with?("_")
