@@ -172,6 +172,8 @@ class Table
 
   # :call-seq:
   #   table.list_itemids -> [itemid1, itemid2, ...]
+  #
+  # returns the list of itemids as an array of integers.
   def list_itemids
     @tbl["_itemid"].compact
   end
