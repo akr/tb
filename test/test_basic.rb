@@ -34,7 +34,7 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal(nil, t.get_cell(itemid, :f))
     t.set_cell(itemid, :f, 1)
     assert_equal(1, t.get_cell(itemid, :f))
-    t.delete_cell(itemid, :f)
+    assert_equal(1, t.delete_cell(itemid, :f))
     assert_equal(nil, t.get_cell(itemid, :f))
     t.set_cell(itemid, :f, nil)
     assert_equal(nil, t.get_cell(itemid, :f))
