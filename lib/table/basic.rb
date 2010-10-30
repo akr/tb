@@ -288,6 +288,20 @@ class Table
 
   # :call-seq:
   #   table.get_cell(itemid, field) -> value
+  #
+  # returns the value of the cell identified by _itemid_ and _field_.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.get_cell(1, "fruit") #=> "banana"
+  #
   def get_cell(itemid, field)
     itemid = check_itemid(itemid)
     field = check_field(field)
@@ -295,13 +309,38 @@ class Table
     ary[itemid]
   end
 
-  # same as set_cell(itemid, field, nil)
+  # :call-seq:
+  #   table.delete_cell(itemid, field) -> oldvalue
+  #
+  # sets nil to the cell identified by _itemid_ and _field_.
+  #
+  # This method returns the old value.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange] 
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.delete_cell(1, "color") #=> "yellow"
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.get_cell(1, "color") #=> nil
+  #
   def delete_cell(itemid, field)
     itemid = check_itemid(itemid)
     field = check_field(field)
     raise ArgumentError, "can not delete reserved field: #{field.inspect}" if field.start_with?("_") 
     ary = @tbl[field]
+    old = ary[itemid]
     ary[itemid] = nil
+    old
   end
 
   # :call-seq:
