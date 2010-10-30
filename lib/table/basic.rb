@@ -130,16 +130,21 @@ class Table
   # If a block is given, the block is called for each itemid.
   # The return value of the block is used for the initial value of the field.
   #
-  #   t = Table.new
-  #   itemid = t.insert({})
-  #   t.define_field("fruit")
-  #   t.set_cell(itemid, "fruit", "apple")
-  #   t.insert({"fruit"=>"orange"})
-  #   t.define_field("namelen") {|itemid| t.get_cell(itemid, "fruit").length }
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "namelen"=>5}
-  #   #    {"_itemid"=>1, "fruit"=>"orange", "namelen"=>6}>
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   t.define_field("namelen") {|itemid| t.get_cell(itemid, "fruit").length }
+  #   pp t
+  #   #=>  #<Table
+  #   #     {"_itemid"=>0, "fruit"=>"apple", "color"=>"red", "namelen"=>5}
+  #   #     {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow", "namelen"=>6}
+  #   #     {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange", "namelen"=>6}>
   #
   def define_field(field)
     field = field.to_s
@@ -164,6 +169,18 @@ class Table
   #   table.list_fields -> [field1, field2, ...]
   #
   # returns the list of field names as an array of strings.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.list_fields #=> ["_itemid", "fruit", "color"]
+  #
   def list_fields
     @tbl.keys
   end
@@ -172,6 +189,18 @@ class Table
   #   table.list_itemids -> [itemid1, itemid2, ...]
   #
   # returns the list of itemids as an array of integers.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.list_itemids #=> [0, 1, 2]
+  #   
   def list_itemids
     @tbl["_itemid"].compact
   end
@@ -180,6 +209,17 @@ class Table
   #   table.size
   #
   # returns the number of items.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.size #=> 3
   def size
     @tbl["_itemid"].length - @free_itemids.length
   end
@@ -189,6 +229,23 @@ class Table
   #
   # inserts an item.
   # All fields of the item are initialized to nil.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.allocate_item #=> 3
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}
+  #   #    {"_itemid"=>3}>
   #
   def allocate_item
     if @free_itemids.empty?
@@ -203,6 +260,24 @@ class Table
 
   # :call-seq:
   #   table.set_cell(itemid, field, value) -> value
+  #
+  # sets the value of the cell identified by _itemid_ and _field_.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   t.set_cell(1, "color", "green")
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"green"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   def set_cell(itemid, field, value)
     itemid = check_itemid(itemid)
     field = check_field(field)
