@@ -132,13 +132,13 @@ class TestTableBasic < Test::Unit::TestCase
     assert(recordid3 != recordid2)
   end
 
-  def test_reorder_fields
+  def test_reorder_fields!
     t = Table.new %w[fruit color],
                   %w[apple red],
                   %w[banana yellow],
                   %w[orange orange]
     assert_equal(%w[_recordid fruit color], t.list_fields)
-    t.reorder_fields %w[_recordid color fruit]
+    t.reorder_fields! %w[_recordid color fruit]
     assert_equal(%w[_recordid color fruit], t.list_fields)
   end
 

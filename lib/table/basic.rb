@@ -216,7 +216,7 @@ class Table
   end
 
   # :call-seq:
-  #   table.reorder_fields(fields)
+  #   table.reorder_fields!(fields)
   #
   # reorder the fields.
   #
@@ -231,7 +231,7 @@ class Table
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   t.reorder_fields %w[_recordid color fruit]
+  #   t.reorder_fields! %w[_recordid color fruit]
   #   p t.list_fields
   #   #=> ["_recordid", "color", "fruit"]
   #   pp t
@@ -240,7 +240,7 @@ class Table
   #   #    {"_recordid"=>1, "color"=>"yellow", "fruit"=>"banana"}
   #   #    {"_recordid"=>2, "color"=>"orange", "fruit"=>"orange"}>
   #
-  def reorder_fields(fields)
+  def reorder_fields!(fields)
     @field_list = @field_list.sort_by {|f| fields.index(f) || (fields.length + @field_list.index(f)) }
   end
 
