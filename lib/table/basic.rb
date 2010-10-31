@@ -941,22 +941,18 @@ class Table
       rh[of] = nf
     }
     result = Table.new
-    next_recordid = @next_recordid
-    recordid2index = @recordid2index
-    free_index = @free_index
-    tbl = @tbl
-    result.instance_eval {
-      @tbl.clear # delete _recordid.
-      tbl.each {|old_field, ary|
-        new_field = rh.fetch(old_field) {|f| f }
-        if @tbl.include? new_field
-          raise ArgumentError, "field name crash: #{new_field.inspect}"
-        end
-        @tbl[new_field] = ary.dup
+    field_list = @field_list.reject {|f| f.start_with?("_") }
+    field_list.each {|of|
+      nf = rh[of]
+      result.define_field(nf)
+    }
+    each_recordid {|recordid|
+      values = get_values(recordid, *field_list)
+      result.allocate_record(recordid)
+      field_list.each_with_index {|of, i|
+        nf = rh[of]
+        result.set_cell(recordid, nf, values[i])
       }
-      @next_recordid = next_recordid
-      @recordid2index.replace recordid2index
-      @free_index.replace free_index
     }
     result
   end
