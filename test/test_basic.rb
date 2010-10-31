@@ -24,7 +24,7 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal([itemid1], t.list_itemids)
     itemid2 = t.allocate_item
     assert_equal([itemid1, itemid2], t.list_itemids)
-    assert_equal({"_itemid"=>itemid1}, t.delete_item(itemid1))
+    assert_equal(nil, t.delete_item(itemid1))
     assert_equal([itemid2], t.list_itemids)
   end
 

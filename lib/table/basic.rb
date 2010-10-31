@@ -350,7 +350,7 @@ class Table
   #
   # deletes an item identified by _itemid_.
   #
-  # This method returns the deleted item.
+  # This method returns nil.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -362,7 +362,7 @@ class Table
   #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.delete_item(1)
-  #   #=> {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #=> nil
   #   pp t
   #   #=> #<Table
   #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
@@ -370,14 +370,11 @@ class Table
   #
   def delete_item(itemid)
     itemid = check_itemid(itemid)
-    item = {}
     @tbl.each {|f, ary|
-      v = ary[itemid]
       ary[itemid] = nil
-      item[f] = v if !v.nil?
     }
     @free_itemids.push itemid
-    item
+    nil
   end
 
   # :call-seq:
