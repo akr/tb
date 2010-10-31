@@ -636,11 +636,31 @@ class Table
   # :call-seq:
   #   table.each {|item| ... }
   #   table.each_item {|item| ... }
+  #
+  # iterates over all items and yields them as hashes.
+  #
+  # This method returns nil.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   t.each_item {|item| p item }   
+  #   #=> {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #   {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #   {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}
+  #
   def each_item
     each_itemid {|itemid|
       next if itemid.nil?
       yield get_item(itemid)
     }
+    nil
   end
   alias each each_item
 
