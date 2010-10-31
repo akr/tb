@@ -78,7 +78,9 @@ class Table
   #   #     {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #
   def initialize(*args)
-    @free_itemids = []
+    @next_itemid = 0
+    @itemid2index = {}
+    @free_index = []
     @tbl = {"_itemid"=>[]}
     if !args.empty?
       args.first.each {|f|
@@ -103,7 +105,7 @@ class Table
     raise TypeError, "invalid itemid: #{itemid.inspect}" unless itemid.respond_to? :to_int
     itemid = itemid.to_int
     raise TypeError, "invalid itemid: #{itemid.inspect}" if !itemid.kind_of?(Integer)
-    if itemid < 0 || @tbl["_itemid"].length <= itemid || @tbl["_itemid"][itemid] != itemid
+    if !@itemid2index.include?(itemid)
       raise IndexError, "unexpected itemid: #{itemid.inspect}"
     end
     itemid
@@ -223,7 +225,7 @@ class Table
   #   #=> 3
   #
   def size
-    @tbl["_itemid"].length - @free_itemids.length
+    @itemid2index.size
   end
 
   # :call-seq:
@@ -250,13 +252,15 @@ class Table
   #   #    {"_itemid"=>3}>
   #
   def allocate_item
-    if @free_itemids.empty?
-      itemid = @tbl["_itemid"].length
-      @tbl["_itemid"] << itemid
+    itemid = @next_itemid
+    @next_itemid += 1
+    if @free_index.empty?
+      index = @tbl["_itemid"].length
     else
-      itemid = @free_itemids.pop
-      @tbl["_itemid"][itemid] = itemid
+      index = @free_index.pop
     end
+    @itemid2index[itemid] = index
+    @tbl["_itemid"][index] = itemid
     itemid
   end
 
@@ -285,7 +289,7 @@ class Table
     field = check_field(field)
     raise ArgumentError, "can not set for reserved field: #{field.inspect}" if field.start_with?("_")
     ary = @tbl[field]
-    ary[itemid] = value
+    ary[@itemid2index[itemid]] = value
   end
 
   # :call-seq:
@@ -308,7 +312,7 @@ class Table
     itemid = check_itemid(itemid)
     field = check_field(field)
     ary = @tbl[field]
-    ary[itemid]
+    ary[@itemid2index[itemid]]
   end
 
   # :call-seq:
@@ -340,8 +344,9 @@ class Table
     field = check_field(field)
     raise ArgumentError, "can not delete reserved field: #{field.inspect}" if field.start_with?("_") 
     ary = @tbl[field]
-    old = ary[itemid]
-    ary[itemid] = nil
+    index = @itemid2index[itemid]
+    old = ary[index]
+    ary[index] = nil
     old
   end
 
@@ -370,10 +375,11 @@ class Table
   #
   def delete_item(itemid)
     itemid = check_itemid(itemid)
+    index = @itemid2index.delete(itemid)
     @tbl.each {|f, ary|
-      ary[itemid] = nil
+      ary[index] = nil
     }
-    @free_itemids.push itemid
+    @free_index.push index
     nil
   end
 
@@ -569,8 +575,9 @@ class Table
   #
   def get_item(itemid)
     result = {}
+    index = @itemid2index[itemid]
     @tbl.each {|f, ary|
-      v = ary[itemid]
+      v = ary[index]
       next if v.nil?
       result[f] = v
     }
@@ -812,6 +819,7 @@ class Table
   def delete_field(*fields)
     fields.each {|f|
       f = check_field(f)
+      raise ArgumentError, "can not delete reserved field: #{f.inspect}" if f.start_with?("_") 
       @tbl.delete(f)
     }
     nil
@@ -845,8 +853,10 @@ class Table
       rh[of] = nf
     }
     result = Table.new
+    next_itemid = @next_itemid
+    itemid2index = @itemid2index
+    free_index = @free_index
     tbl = @tbl
-    free_itemids = @free_itemids
     result.instance_eval {
       @tbl.clear # delete _itemid.
       tbl.each {|old_field, ary|
@@ -856,7 +866,9 @@ class Table
         end
         @tbl[new_field] = ary.dup
       }
-      @free_itemids.replace free_itemids
+      @next_itemid = next_itemid
+      @itemid2index.replace itemid2index
+      @free_index.replace free_index
     }
     result
   end
