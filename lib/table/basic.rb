@@ -82,6 +82,7 @@ class Table
     @recordid2index = {}
     @free_index = []
     @tbl = {"_recordid"=>[]}
+    @field_list = ["_recordid"]
     if !args.empty?
       args.first.each {|f|
         define_field(f)
@@ -92,9 +93,23 @@ class Table
 
   def pretty_print(q) # :nodoc:
     q.object_group(self) {
-      each_record {|record|
+      each_recordid {|recordid|
         q.breakable
-        q.pp record
+        record = get_record(recordid)
+        fs = @field_list.reject {|f| get_cell(recordid, f).nil? }
+        q.group(1, '{', '}') {
+          q.seplist(fs, nil, :each) {|f|
+            v = get_cell(recordid, f)
+            q.group {
+              q.pp f
+              q.text '=>'
+              q.group(1) {
+                q.breakable ''
+                q.pp v
+              }
+            }
+          }
+        }
       }
     }
   end
@@ -160,7 +175,7 @@ class Table
   #   #     {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange", "namelen"=>6}>
   #
   def define_field(field)
-    field = field.to_s
+    field = check_field_type(field).dup.freeze
     if field.start_with?("_")
       raise ArgumentError, "field begins with underscore: #{field.inspect}"
     end
@@ -168,6 +183,7 @@ class Table
       raise ArgumentError, "field already defined: #{field.inspect}"
     end
     @tbl[field] = []
+    @field_list << field
     if block_given?
       each_recordid {|recordid|
         v = yield(recordid)
@@ -195,7 +211,7 @@ class Table
   #   p t.list_fields #=> ["_recordid", "fruit", "color"]
   #
   def list_fields
-    @tbl.keys
+    @field_list.dup
   end
 
   # :call-seq:
@@ -862,6 +878,7 @@ class Table
       f = check_field(f)
       raise ArgumentError, "can not delete reserved field: #{f.inspect}" if f.start_with?("_") 
       @tbl.delete(f)
+      @field_list.delete(f)
     }
     nil
   end
@@ -890,7 +907,7 @@ class Table
     rh = {}
     rename_hash.each {|of, nf|
       of = check_field(of)
-      nf = nf.to_s
+      nf = check_field_type(nf)
       rh[of] = nf
     }
     result = Table.new
