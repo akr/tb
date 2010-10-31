@@ -95,7 +95,6 @@ class Table
     q.object_group(self) {
       each_recordid {|recordid|
         q.breakable
-        record = get_record(recordid)
         fs = @field_list.reject {|f| get_cell(recordid, f).nil? }
         q.group(1, '{', '}') {
           q.seplist(fs, nil, :each) {|f|
@@ -134,7 +133,9 @@ class Table
   private :check_recordid
 
   def check_field_type(field)
-    field.to_s
+    field = field.to_s
+    raise TypeError, "invalid field name: #{field.inspect}" if !field.kind_of?(String)
+    field
   end
   private :check_field_type
 
