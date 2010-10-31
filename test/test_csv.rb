@@ -9,14 +9,14 @@ class TestTableCSV < Test::Unit::TestCase
     3,4
     End
     t = Table.parse_csv(csv)
-    items = []
-    t.each_item {|item|
-      items << item
+    records = []
+    t.each_record {|record|
+      records << record
     }
     assert_equal(
-      [{"_itemid"=>0, "a"=>"1", "b"=>"2"},
-       {"_itemid"=>1, "a"=>"3", "b"=>"4"}],
-      items)
+      [{"_recordid"=>0, "a"=>"1", "b"=>"2"},
+       {"_recordid"=>1, "a"=>"3", "b"=>"4"}],
+      records)
   end
 
   def test_parse_empty
@@ -26,14 +26,14 @@ class TestTableCSV < Test::Unit::TestCase
     3,"",4
     End
     t = Table.parse_csv(csv)
-    items = []
-    t.each_item {|item|
-      items << item
+    records = []
+    t.each_record {|record|
+      records << record
     }
     assert_equal(
-      [{"_itemid"=>0, "a"=>"1", "c"=>"2"},
-       {"_itemid"=>1, "a"=>"3", "b"=>"", "c"=>"4"}],
-      items)
+      [{"_recordid"=>0, "a"=>"1", "c"=>"2"},
+       {"_recordid"=>1, "a"=>"3", "b"=>"", "c"=>"4"}],
+      records)
   end
 
   def test_generate

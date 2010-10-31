@@ -26,31 +26,31 @@
 
 require 'pp'
 
-# Table represents a set of items.
-# An item contains field values accessed by field names.
+# Table represents a set of records.
+# A record contains field values accessed by field names.
 #
 # A table can be visualized as follows.
 #
-#   _itemid f1  f2  f3
-#   0       v01 v02 v03
-#   1       v11 v12 v13
-#   2       v21 v22 v23
+#   _recordid f1  f2  f3
+#   0         v01 v02 v03
+#   1         v11 v12 v13
+#   2         v21 v22 v23
 #
-# This table has 4 fields and 3 items:
-# - fields: _itemid, f1, f2 and f3.
-# - items: [0, v01, v02, v03], [1, v11, v12, v13] and [2, v21, v22, v23]
+# This table has 4 fields and 3 records:
+# - fields: _recordid, f1, f2 and f3.
+# - records: [0, v01, v02, v03], [1, v11, v12, v13] and [2, v21, v22, v23]
 #
 # The fields are strings.
 # The field names starts with "_" is reserved.
-# "_itemid" is a reserved field always defined to identify an item.
+# "_recordid" is a reserved field always defined to identify a record.
 #
 # Non-reserved fields can be defined by Table.new and Table#define_field.
 # It is an error to access a field which is not defined.
 #
-# A value in an item is identified by an itemid and field name.
+# A value in a record is identified by a recordid and field name.
 # A value for non-reserved fields can be any Ruby values.
-# A value for _itemid is an non-negative integer and it is automatically allocated when a new item is inserted.
-# It is an error to access an item by itemid which is not allocated.
+# A value for _recordid is an non-negative integer and it is automatically allocated when a new record is inserted.
+# It is an error to access a record by recordid which is not allocated.
 #
 class Table
   # :call-seq:
@@ -61,10 +61,10 @@ class Table
   #
   # If the first argument, _fields_, is given, it should be an array of strings.
   # The strings are used as field names to define fields.
-  # If the first argument is not given, only "_itemid" field is defined.
+  # If the first argument is not given, only "_recordid" field is defined.
   #
   # If the second argument and subsequent arguments, valuesN, are given, they should be an array.
-  # The arrays are used as items to define items.
+  # The arrays are used as records to define records.
   # A value in the array is used for a value of corresponding field defined by the first argument.
   #
   #   t = Table.new %w[fruit color],
@@ -73,15 +73,15 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #     {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #     {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}>
-  #   #     {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   #     {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #     {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}>
+  #   #     {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #
   def initialize(*args)
-    @next_itemid = 0
-    @itemid2index = {}
+    @next_recordid = 0
+    @recordid2index = {}
     @free_index = []
-    @tbl = {"_itemid"=>[]}
+    @tbl = {"_recordid"=>[]}
     if !args.empty?
       args.first.each {|f|
         define_field(f)
@@ -92,25 +92,25 @@ class Table
 
   def pretty_print(q) # :nodoc:
     q.object_group(self) {
-      each_item {|item|
+      each_record {|record|
         q.breakable
-        q.pp item
+        q.pp record
       }
     }
   end
   alias inspect pretty_print_inspect # :nodoc:
 
-  def check_itemid(itemid)
-    raise TypeError, "invalid itemid: #{itemid.inspect}" if itemid.kind_of?(Symbol) # Ruby 1.8 has Symbol#to_int.
-    raise TypeError, "invalid itemid: #{itemid.inspect}" unless itemid.respond_to? :to_int
-    itemid = itemid.to_int
-    raise TypeError, "invalid itemid: #{itemid.inspect}" if !itemid.kind_of?(Integer)
-    if !@itemid2index.include?(itemid)
-      raise IndexError, "unexpected itemid: #{itemid.inspect}"
+  def check_recordid(recordid)
+    raise TypeError, "invalid recordid: #{recordid.inspect}" if recordid.kind_of?(Symbol) # Ruby 1.8 has Symbol#to_int.
+    raise TypeError, "invalid recordid: #{recordid.inspect}" unless recordid.respond_to? :to_int
+    recordid = recordid.to_int
+    raise TypeError, "invalid recordid: #{recordid.inspect}" if !recordid.kind_of?(Integer)
+    if !@recordid2index.include?(recordid)
+      raise IndexError, "unexpected recordid: #{recordid.inspect}"
     end
-    itemid
+    recordid
   end
-  private :check_itemid
+  private :check_recordid
 
   def check_field(field)
     field = field.to_s
@@ -123,13 +123,13 @@ class Table
 
   # :call-seq:
   #   table.define_field(field)
-  #   table.define_field(field) {|itemid| value_for_the_field }
+  #   table.define_field(field) {|recordid| value_for_the_field }
   #
   # defines a new field.
   #
   # If no block is given, the initial value for the field is nil.
   #
-  # If a block is given, the block is called for each itemid.
+  # If a block is given, the block is called for each recordid.
   # The return value of the block is used for the initial value of the field.
   #
   #   t = Table.new %w[fruit color],
@@ -138,15 +138,15 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   t.define_field("namelen") {|itemid| t.get_cell(itemid, "fruit").length }
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   t.define_field("namelen") {|recordid| t.get_cell(recordid, "fruit").length }
   #   pp t
   #   #=>  #<Table
-  #   #     {"_itemid"=>0, "fruit"=>"apple", "color"=>"red", "namelen"=>5}
-  #   #     {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow", "namelen"=>6}
-  #   #     {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange", "namelen"=>6}>
+  #   #     {"_recordid"=>0, "fruit"=>"apple", "color"=>"red", "namelen"=>5}
+  #   #     {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow", "namelen"=>6}
+  #   #     {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange", "namelen"=>6}>
   #
   def define_field(field)
     field = field.to_s
@@ -158,10 +158,10 @@ class Table
     end
     @tbl[field] = []
     if block_given?
-      each_itemid {|itemid|
-        v = yield(itemid)
+      each_recordid {|recordid|
+        v = yield(recordid)
         if !v.nil?
-          set_cell(itemid, field, v)
+          set_cell(recordid, field, v)
         end
       }
     end
@@ -178,19 +178,19 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   p t.list_fields #=> ["_itemid", "fruit", "color"]
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.list_fields #=> ["_recordid", "fruit", "color"]
   #
   def list_fields
     @tbl.keys
   end
 
   # :call-seq:
-  #   table.list_itemids -> [itemid1, itemid2, ...]
+  #   table.list_recordids -> [recordid1, recordid2, ...]
   #
-  # returns the list of itemids as an array of integers.
+  # returns the list of recordids as an array of integers.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -198,19 +198,19 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   p t.list_itemids #=> [0, 1, 2]
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.list_recordids #=> [0, 1, 2]
   #   
-  def list_itemids
-    @tbl["_itemid"].compact
+  def list_recordids
+    @tbl["_recordid"].compact
   end
 
   # :call-seq:
   #   table.size
   #
-  # returns the number of items.
+  # returns the number of records.
   #
   #   t = Table.new %w[fruit],      
   #                 %w[apple],    
@@ -218,21 +218,21 @@ class Table
   #                 %w[orange]       
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange"}>
   #   p t.size
   #   #=> 3
   #
   def size
-    @itemid2index.size
+    @recordid2index.size
   end
 
   # :call-seq:
-  #   table.allocate_item -> fresh_itemid
+  #   table.allocate_record -> fresh_recordid
   #
-  # inserts an item.
-  # All fields of the item are initialized to nil.
+  # inserts a record.
+  # All fields of the record are initialized to nil.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -240,34 +240,34 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   p t.allocate_item #=> 3
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.allocate_record #=> 3
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}
-  #   #    {"_itemid"=>3}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
+  #   #    {"_recordid"=>3}>
   #
-  def allocate_item
-    itemid = @next_itemid
-    @next_itemid += 1
+  def allocate_record
+    recordid = @next_recordid
+    @next_recordid += 1
     if @free_index.empty?
-      index = @tbl["_itemid"].length
+      index = @tbl["_recordid"].length
     else
       index = @free_index.pop
     end
-    @itemid2index[itemid] = index
-    @tbl["_itemid"][index] = itemid
-    itemid
+    @recordid2index[recordid] = index
+    @tbl["_recordid"][index] = recordid
+    recordid
   end
 
   # :call-seq:
-  #   table.set_cell(itemid, field, value) -> value
+  #   table.set_cell(recordid, field, value) -> value
   #
-  # sets the value of the cell identified by _itemid_ and _field_.
+  # sets the value of the cell identified by _recordid_ and _field_.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -275,27 +275,27 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   t.set_cell(1, "color", "green")
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"green"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  def set_cell(itemid, field, value)
-    itemid = check_itemid(itemid)
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"green"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  def set_cell(recordid, field, value)
+    recordid = check_recordid(recordid)
     field = check_field(field)
     raise ArgumentError, "can not set for reserved field: #{field.inspect}" if field.start_with?("_")
     ary = @tbl[field]
-    ary[@itemid2index[itemid]] = value
+    ary[@recordid2index[recordid]] = value
   end
 
   # :call-seq:
-  #   table.get_cell(itemid, field) -> value
+  #   table.get_cell(recordid, field) -> value
   #
-  # returns the value of the cell identified by _itemid_ and _field_.
+  # returns the value of the cell identified by _recordid_ and _field_.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -303,22 +303,22 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.get_cell(1, "fruit") #=> "banana"
   #
-  def get_cell(itemid, field)
-    itemid = check_itemid(itemid)
+  def get_cell(recordid, field)
+    recordid = check_recordid(recordid)
     field = check_field(field)
     ary = @tbl[field]
-    ary[@itemid2index[itemid]]
+    ary[@recordid2index[recordid]]
   end
 
   # :call-seq:
-  #   table.delete_cell(itemid, field) -> oldvalue
+  #   table.delete_cell(recordid, field) -> oldvalue
   #
-  # sets nil to the cell identified by _itemid_ and _field_.
+  # sets nil to the cell identified by _recordid_ and _field_.
   #
   # This method returns the old value.
   #
@@ -328,32 +328,32 @@ class Table
   #                 %w[orange orange] 
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.delete_cell(1, "color") #=> "yellow"
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.get_cell(1, "color") #=> nil
   #
-  def delete_cell(itemid, field)
-    itemid = check_itemid(itemid)
+  def delete_cell(recordid, field)
+    recordid = check_recordid(recordid)
     field = check_field(field)
     raise ArgumentError, "can not delete reserved field: #{field.inspect}" if field.start_with?("_") 
     ary = @tbl[field]
-    index = @itemid2index[itemid]
+    index = @recordid2index[recordid]
     old = ary[index]
     ary[index] = nil
     old
   end
 
   # :call-seq:
-  #   table.delete_item(itemid) -> {field1=>value1, ...}
+  #   table.delete_record(recordid) -> {field1=>value1, ...}
   #
-  # deletes an item identified by _itemid_.
+  # deletes a record identified by _recordid_.
   #
   # This method returns nil.
   #
@@ -363,19 +363,19 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   p t.delete_item(1)
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.delete_record(1)
   #   #=> nil
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #
-  def delete_item(itemid)
-    itemid = check_itemid(itemid)
-    index = @itemid2index.delete(itemid)
+  def delete_record(recordid)
+    recordid = check_recordid(recordid)
+    index = @recordid2index.delete(recordid)
     @tbl.each {|f, ary|
       ary[index] = nil
     }
@@ -386,10 +386,10 @@ class Table
   # :call-seq:
   #   table.insert({field1=>value1, ...})
   #
-  # inserts an item.
-  # The item is represented as a hash which keys are field names.
+  # inserts a record.
+  # The record is represented as a hash which keys are field names.
   #
-  # This method returned the itemid of the inserted item.
+  # This method returned the recordid of the inserted record.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -397,36 +397,36 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   itemid = t.insert({"fruit"=>"grape", "color"=>"purple"})
-  #   p itemid
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   recordid = t.insert({"fruit"=>"grape", "color"=>"purple"})
+  #   p recordid
   #   #=> 3
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}
-  #   #    {"_itemid"=>3, "fruit"=>"grape", "color"=>"purple"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
+  #   #    {"_recordid"=>3, "fruit"=>"grape", "color"=>"purple"}>
   #
-  def insert(item)
-    itemid = allocate_item
-    update_item(itemid, item)
-    itemid
+  def insert(record)
+    recordid = allocate_record
+    update_record(recordid, record)
+    recordid
   end
 
   # call-seq
-  #   table.insert_values(fields, values1, values2, ...) -> [itemid1, itemid2, ...]
+  #   table.insert_values(fields, values1, values2, ...) -> [recordid1, recordid2, ...]
   #
-  # inserts items.
-  # The items are represented by fields and values separately.
+  # inserts records.
+  # The records are represented by fields and values separately.
   # The first argument specifies the field names as an array.
-  # The second argument specifies the first item values as an array.
-  # The third argument specifies the second item values and so on.
+  # The second argument specifies the first record values as an array.
+  # The third argument specifies the second record values and so on.
   # The third and subsequent arguments are optional.
   #
-  # This method return an array of itemids.
+  # This method return an array of recordids.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -434,21 +434,21 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.insert_values(["fruit", "color"], ["grape", "purple"], ["cherry", "red"])
   #   #=> [3, 4]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}
-  #   #    {"_itemid"=>3, "fruit"=>"grape", "color"=>"purple"}
-  #   #    {"_itemid"=>4, "fruit"=>"cherry", "color"=>"red"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
+  #   #    {"_recordid"=>3, "fruit"=>"grape", "color"=>"purple"}
+  #   #    {"_recordid"=>4, "fruit"=>"cherry", "color"=>"red"}>
   #
   def insert_values(fields, *values_list)
-    itemids = []
+    recordids = []
     values_list.each {|values|
       if values.length != fields.length
         raise ArgumentError, "#{fields.length} fields expected but #{values.length} values given"
@@ -458,9 +458,9 @@ class Table
         v = values[i]
         h[f] = v
       }
-      itemids << insert(h)
+      recordids << insert(h)
     }
-    itemids
+    recordids
   end
 
   # :call-seq:
@@ -476,32 +476,32 @@ class Table
   #                  %w[banana yellow],
   #                  %w[orange orange]
   #   pp t1
-  #   #=> #<Table {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}>
+  #   #=> #<Table {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}>
   #   pp t2
   #   #=> #<Table
-  #        {"_itemid"=>0, "fruit"=>"banana", "color"=>"yellow"}
-  #        {"_itemid"=>1, "fruit"=>"orange", "color"=>"orange"}>
+  #        {"_recordid"=>0, "fruit"=>"banana", "color"=>"yellow"}
+  #        {"_recordid"=>1, "fruit"=>"orange", "color"=>"orange"}>
   #   t1.concat(t2)
   #   pp t1
   #   #=> #<Table
-  #        {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #        {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #        {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #        {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #        {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #        {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #
   def concat(*tables)
     tables.each {|t|
-      t.each_item {|item|
-        item.delete "_itemid"
-        self.insert item
+      t.each_record {|record|
+        record.delete "_recordid"
+        self.insert record
       }
     }
     self
   end
 
   # :call-seq:
-  #   table.update_item(itemid, {field1=>value1, ...}) -> nil
+  #   table.update_record(recordid, {field1=>value1, ...}) -> nil
   #
-  # updates the item specified by _itemid_.
+  # updates the record specified by _recordid_.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -509,30 +509,30 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   p t.update_item(1, {"color"=>"green"}) 
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.update_record(1, {"color"=>"green"}) 
   #   #=> nil
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"green"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"green"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #
-  def update_item(itemid, item)
-    itemid = check_itemid(itemid)
-    item.each {|f, v|
+  def update_record(recordid, record)
+    recordid = check_recordid(recordid)
+    record.each {|f, v|
       f = check_field(f)
-      set_cell(itemid, f, v)
+      set_cell(recordid, f, v)
     }
     nil
   end
 
   # :call-seq:
-  #   table.get_values(itemid, field1, field2, ...) -> [value1, value2, ...]
+  #   table.get_values(recordid, field1, field2, ...) -> [value1, value2, ...]
   #
-  # extracts specified fields of the specified item.
+  # extracts specified fields of the specified record.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -540,26 +540,26 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.get_values(1, "fruit", "color")
   #   #=> ["banana", "yellow"]
   #   p t.get_values(0, "fruit")
   #   #=> ["apple"]
   #
-  def get_values(itemid, *fields)
-    itemid = check_itemid(itemid)
+  def get_values(recordid, *fields)
+    recordid = check_recordid(recordid)
     fields.map {|f|
       f = check_field(f)
-      get_cell(itemid, f)
+      get_cell(recordid, f)
     }
   end
 
   # :call-seq:
-  #   table.get_item(itemid) -> {field1=>value1, ...}
+  #   table.get_record(recordid) -> {field1=>value1, ...}
   #
-  # get the item specified by _itemid_ as a hash.
+  # get the record specified by _recordid_ as a hash.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -567,15 +567,15 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   p t.get_item(1)                    
-  #   #=> {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.get_record(1)                    
+  #   #=> {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #
-  def get_item(itemid)
+  def get_record(recordid)
     result = {}
-    index = @itemid2index[itemid]
+    index = @recordid2index[recordid]
     @tbl.each {|f, ary|
       v = ary[index]
       next if v.nil?
@@ -585,9 +585,9 @@ class Table
   end
 
   # :call-seq:
-  #   table.each_itemid {|itemid| ... }
+  #   table.each_recordid {|recordid| ... }
   #
-  # iterates over all items and yield the itemids of them.
+  # iterates over all records and yield the recordids of them.
   #
   # This method returns nil.
   #
@@ -597,18 +597,18 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   t.each_itemid {|itemid| p itemid }
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   t.each_recordid {|recordid| p recordid }
   #   #=> 0
   #   #   1
   #   #   2
   #
-  def each_itemid
-    @tbl["_itemid"].each {|itemid|
-      next if itemid.nil?
-      yield itemid
+  def each_recordid
+    @tbl["_recordid"].each {|recordid|
+      next if recordid.nil?
+      yield recordid
     }
     nil
   end
@@ -616,7 +616,7 @@ class Table
   # :call-seq:
   #   table.to_a -> [{field1=>value1, ...}, ...]
   #
-  # returns an array containing all items as hashes.
+  # returns an array containing all records as hashes.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -624,27 +624,27 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   pp t.to_a                         
-  #   #=> [{"_itemid"=>0, "fruit"=>"apple", "color"=>"red"},
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"},
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}]
+  #   #=> [{"_recordid"=>0, "fruit"=>"apple", "color"=>"red"},
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"},
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}]
   #
   def to_a
     ary = []
-    each_itemid {|itemid|
-      ary << get_item(itemid)
+    each_recordid {|recordid|
+      ary << get_record(recordid)
     }
     ary
   end
 
   # :call-seq:
-  #   table.each {|item| ... }
-  #   table.each_item {|item| ... }
+  #   table.each {|record| ... }
+  #   table.each_record {|record| ... }
   #
-  # iterates over all items and yields them as hashes.
+  # iterates over all records and yields them as hashes.
   #
   # This method returns nil.
   #
@@ -654,28 +654,28 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   t.each_item {|item| p item }   
-  #   #=> {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #   {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #   {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   t.each_record {|record| p record }   
+  #   #=> {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #   {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #   {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
   #
-  def each_item
-    each_itemid {|itemid|
-      next if itemid.nil?
-      yield get_item(itemid)
+  def each_record
+    each_recordid {|recordid|
+      next if recordid.nil?
+      yield get_record(recordid)
     }
     nil
   end
-  alias each each_item
+  alias each each_record
 
   # :call-seq:
-  #   table.each_item_values(field1, ...) {|value1, ...| ... }
-  def each_item_values(*fields)
-    each_itemid {|itemid|
-      vs = get_values(itemid, *fields)
+  #   table.each_record_values(field1, ...) {|value1, ...| ... }
+  def each_record_values(*fields)
+    each_recordid {|recordid|
+      vs = get_values(recordid, *fields)
       yield vs
     }
   end
@@ -712,7 +712,7 @@ class Table
     end
     all_fields = key_fields + value_field_list
     result = {}
-    each_item_values(*all_fields) {|all_values|
+    each_record_values(*all_fields) {|all_values|
       value = gen_value.call(all_values)
       vs = all_values[0, key_fields.length]
       lastv = vs.pop
@@ -751,50 +751,50 @@ class Table
   end
 
   # :call-seq:
-  #   table.reject {|item| ... }
+  #   table.reject {|record| ... }
   def reject
     t = Table.new
-    each_item {|item|
-      if !yield(item)
-        item.delete "_itemid"
-        t.insert item
+    each_record {|record|
+      if !yield(record)
+        record.delete "_recordid"
+        t.insert record
       end
     }
     t
   end
 
   # :call-seq:
-  #   table1.natjoin2(table2, rename_field1={}, rename_field2={}) {|item| ... }
+  #   table1.natjoin2(table2, rename_field1={}, rename_field2={}) {|record| ... }
   def natjoin2(table2, rename_field1={}, rename_field2={})
     table1 = self
     fields1 = table1.list_fields.map {|f| rename_field1.fetch(f, f) }
     fields2 = table2.list_fields.map {|f| rename_field2.fetch(f, f) }
-    fields1.delete("_itemid")
-    fields2.delete("_itemid")
+    fields1.delete("_recordid")
+    fields2.delete("_recordid")
     common_fields = fields1 & fields2
-    hash = table2.hashtree_array(*(common_fields + ["_itemid"]))
+    hash = table2.hashtree_array(*(common_fields + ["_recordid"]))
     result = Table.new(fields1 | fields2)
-    table1.each_item {|item1|
-      item = {}
-      item1.each {|k, v|
-        item[rename_field1.fetch(k, k)] = v
+    table1.each_record {|record1|
+      record = {}
+      record1.each {|k, v|
+        record[rename_field1.fetch(k, k)] = v
       }
-      common_values = item.values_at(*common_fields)
+      common_values = record.values_at(*common_fields)
       val = hash
       common_values.each {|cv|
         val = val[cv]
       }
-      val.each {|itemid|
-        item0 = item.dup
-        item1 = table2.get_item(itemid)
-        item1.each {|k, v|
-          item0[rename_field1.fetch(k, k)] = v
+      val.each {|recordid|
+        record0 = record.dup
+        record1 = table2.get_record(recordid)
+        record1.each {|k, v|
+          record0[rename_field1.fetch(k, k)] = v
         }
-        item0.delete("_itemid")
+        record0.delete("_recordid")
         if block_given?
-          result.insert item0 if yield(item0)
+          result.insert record0 if yield(record0)
         else
-          result.insert item0
+          result.insert record0
         end
       }
     }
@@ -802,11 +802,11 @@ class Table
   end
 
   # :call-seq:
-  #   table.fmap!(field) {|itemid, value| new_value }
+  #   table.fmap!(field) {|recordid, value| new_value }
   def fmap!(field)
-    each_itemid {|itemid|
-      value = yield itemid, get_cell(itemid, field)
-      set_cell(itemid, field, value)
+    each_recordid {|recordid|
+      value = yield recordid, get_cell(recordid, field)
+      set_cell(recordid, field, value)
     }
   end
 
@@ -836,14 +836,14 @@ class Table
   #                 %w[orange orange]
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   pp t.rename_field("fruit"=>"food")
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "food"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "food"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "food"=>"orange", "color"=>"orange"}>
+  #   #    {"_recordid"=>0, "food"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "food"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "food"=>"orange", "color"=>"orange"}>
   #
   def rename_field(rename_hash)
     rh = {}
@@ -853,12 +853,12 @@ class Table
       rh[of] = nf
     }
     result = Table.new
-    next_itemid = @next_itemid
-    itemid2index = @itemid2index
+    next_recordid = @next_recordid
+    recordid2index = @recordid2index
     free_index = @free_index
     tbl = @tbl
     result.instance_eval {
-      @tbl.clear # delete _itemid.
+      @tbl.clear # delete _recordid.
       tbl.each {|old_field, ary|
         new_field = rh.fetch(old_field) {|f| f }
         if @tbl.include? new_field
@@ -866,8 +866,8 @@ class Table
         end
         @tbl[new_field] = ary.dup
       }
-      @next_itemid = next_itemid
-      @itemid2index.replace itemid2index
+      @next_recordid = next_recordid
+      @recordid2index.replace recordid2index
       @free_index.replace free_index
     }
     result
