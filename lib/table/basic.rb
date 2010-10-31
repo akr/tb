@@ -525,6 +525,23 @@ class Table
 
   # :call-seq:
   #   table.get_values(itemid, field1, field2, ...) -> [value1, value2, ...]
+  #
+  # extracts specified fields of the specified item.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.get_values(1, "fruit", "color")
+  #   #=> ["banana", "yellow"]
+  #   p t.get_values(0, "fruit")
+  #   #=> ["apple"]
+  #
   def get_values(itemid, *fields)
     itemid = check_itemid(itemid)
     fields.map {|f|
@@ -535,6 +552,21 @@ class Table
 
   # :call-seq:
   #   table.get_item(itemid) -> {field1=>value1, ...}
+  #
+  # get the item specified by _itemid_ as a hash.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.get_item(1)                    
+  #   #=> {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #
   def get_item(itemid)
     result = {}
     @tbl.each {|f, ary|
@@ -547,15 +579,52 @@ class Table
 
   # :call-seq:
   #   table.each_itemid {|itemid| ... }
+  #
+  # iterates over all items and yield the itemids of them.
+  #
+  # This method returns nil.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   t.each_itemid {|itemid| p itemid }
+  #   #=> 0
+  #   #   1
+  #   #   2
+  #
   def each_itemid
     @tbl["_itemid"].each {|itemid|
       next if itemid.nil?
       yield itemid
     }
+    nil
   end
 
   # :call-seq:
   #   table.to_a -> [{field1=>value1, ...}, ...]
+  #
+  # returns an array containing all items as hashes.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   pp t.to_a                         
+  #   #=> [{"_itemid"=>0, "fruit"=>"apple", "color"=>"red"},
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"},
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}]
+  #
   def to_a
     ary = []
     each_itemid {|itemid|
