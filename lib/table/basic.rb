@@ -494,6 +494,26 @@ class Table
 
   # :call-seq:
   #   table.update_item(itemid, {field1=>value1, ...}) -> nil
+  #
+  # updates the item specified by _itemid_.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.update_item(1, {"color"=>"green"}) 
+  #   #=> nil
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"green"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #
   def update_item(itemid, item)
     itemid = check_itemid(itemid)
     item.each {|f, v|
