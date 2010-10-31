@@ -100,11 +100,17 @@ class Table
   end
   alias inspect pretty_print_inspect # :nodoc:
 
-  def check_recordid(recordid)
+  def check_recordid_type(recordid)
     raise TypeError, "invalid recordid: #{recordid.inspect}" if recordid.kind_of?(Symbol) # Ruby 1.8 has Symbol#to_int.
     raise TypeError, "invalid recordid: #{recordid.inspect}" unless recordid.respond_to? :to_int
     recordid = recordid.to_int
     raise TypeError, "invalid recordid: #{recordid.inspect}" if !recordid.kind_of?(Integer)
+    recordid
+  end
+  private :check_recordid_type
+
+  def check_recordid(recordid)
+    recordid = check_recordid_type(recordid)
     if !@recordid2index.include?(recordid)
       raise IndexError, "unexpected recordid: #{recordid.inspect}"
     end
@@ -112,8 +118,13 @@ class Table
   end
   private :check_recordid
 
+  def check_field_type(field)
+    field.to_s
+  end
+  private :check_field_type
+
   def check_field(field)
-    field = field.to_s
+    field = check_field_type(field)
     unless @tbl.include? field
       raise ArgumentError, "field not defined: #{field.inspect}"
     end
@@ -230,6 +241,7 @@ class Table
 
   # :call-seq:
   #   table.allocate_record -> fresh_recordid
+  #   table.allocate_record(recordid) -> recordid
   #
   # inserts a record.
   # All fields of the record are initialized to nil.
@@ -251,9 +263,38 @@ class Table
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
   #   #    {"_recordid"=>3}>
   #
-  def allocate_record
-    recordid = @next_recordid
-    @next_recordid += 1
+  # If the optional recordid is specified and the recordid is not used in the
+  # table, a record is allocated with the recordid.
+  # If the specified recordid is already used, ArgumentError is raised.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   t.allocate_record(100)
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
+  #   #    {"_recordid"=>100}>
+  #
+  def allocate_record(recordid=nil)
+    if recordid.nil?
+      recordid = @next_recordid
+      @next_recordid += 1
+    else
+      recordid = check_recordid_type(recordid)
+      if @recordid2index.include? recordid
+        raise ArgumentError, "recordid already used: #{recordid.inspect}"
+      end
+      @next_recordid = recordid + 1 if @next_recordid <= recordid
+    end
     if @free_index.empty?
       index = @tbl["_recordid"].length
     else

@@ -121,4 +121,15 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal([{"_recordid"=>0, "c"=>1, "d"=>2}], t2.to_a)
   end
 
+  def test_allocate_record
+    t = Table.new
+    recordid1 = t.allocate_record(100)
+    assert_equal(100, recordid1)
+    recordid2 = t.allocate_record(200)
+    assert_equal(200, recordid2)
+    recordid3 = t.allocate_record
+    assert(recordid3 != recordid1)
+    assert(recordid3 != recordid2)
+  end
+
 end
