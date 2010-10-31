@@ -347,6 +347,27 @@ class Table
 
   # :call-seq:
   #   table.delete_item(itemid) -> {field1=>value1, ...}
+  #
+  # deletes an item identified by _itemid_.
+  #
+  # This method returns the deleted item.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.delete_item(1)
+  #   #=> {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #
   def delete_item(itemid)
     itemid = check_itemid(itemid)
     item = {}
