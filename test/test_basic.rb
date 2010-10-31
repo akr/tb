@@ -58,21 +58,21 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal([{"_itemid"=>0, "a"=>1}, {"_itemid"=>1, "a"=>2}], items)
   end
 
-  def test_make_hash
+  def test_hashtree
     t = Table.new %w[a b c], [1,2,3], [2,4,4]
-    assert_equal({1=>3, 2=>4}, t.make_hash("a", "c"))
-    assert_equal({1=>[3], 2=>[4]}, t.make_hash("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
-    assert_equal({1=>1, 2=>1}, t.make_hash("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
-    assert_equal({1=>{2=>3}, 2=>{4=>4}}, t.make_hash("a", "b", "c"))
+    assert_equal({1=>3, 2=>4}, t.hashtree("a", "c"))
+    assert_equal({1=>[3], 2=>[4]}, t.hashtree("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
+    assert_equal({1=>1, 2=>1}, t.hashtree("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
+    assert_equal({1=>{2=>3}, 2=>{4=>4}}, t.hashtree("a", "b", "c"))
     t.insert({"a"=>2, "b"=>7, "c"=>8})
-    assert_equal({1=>{2=>3}, 2=>{4=>4, 7=>8}}, t.make_hash("a", "b", "c"))
+    assert_equal({1=>{2=>3}, 2=>{4=>4, 7=>8}}, t.hashtree("a", "b", "c"))
   end
 
-  def test_make_hash_ambiguous
+  def test_hashtree_ambiguous
     t = Table.new %w[a b c], [1,2,3], [1,4,4]
-    assert_raise(ArgumentError) { t.make_hash("a", "c") }
-    assert_equal({1=>[3,4]}, t.make_hash("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
-    assert_equal({1=>2}, t.make_hash("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
+    assert_raise(ArgumentError) { t.hashtree("a", "c") }
+    assert_equal({1=>[3,4]}, t.hashtree("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
+    assert_equal({1=>2}, t.hashtree("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
   end
 
   def test_natjoin2

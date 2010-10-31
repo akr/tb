@@ -681,9 +681,9 @@ class Table
   end
 
   # :call-seq:
-  #   table.make_hash(key_field1, key_field2, ..., value_field, :seed=>initial_seed) {|seed, value| ... } -> hash
+  #   table.hashtree(key_field1, key_field2, ..., value_field, :seed=>initial_seed) {|seed, value| ... } -> hash
   #
-  # make_hash takes following arguments:
+  # hashtree takes following arguments:
   # - one or more key fields
   # - value field which can be a single field name or an array of field names
   # -- a single field
@@ -692,9 +692,9 @@ class Table
   # - optional option hash which may contains:
   # -- :seed option
   #
-  # make_hash takes optional block.
+  # hashtree takes optional block.
   #
-  def make_hash(*args)
+  def hashtree(*args)
     opts = args.last.kind_of?(Hash) ? args.pop : {}
     seed_value = opts[:seed]
     value_field = args.pop
@@ -739,15 +739,15 @@ class Table
   end
 
   # :call-seq:
-  #   table.make_hash_array(key_field1, key_field2, ..., value_field)
-  def make_hash_array(*args)
-    make_hash(*args) {|seed, value| !seed ? [value] : (seed << value) }
+  #   table.hashtree_array(key_field1, key_field2, ..., value_field)
+  def hashtree_array(*args)
+    hashtree(*args) {|seed, value| !seed ? [value] : (seed << value) }
   end
 
   # :call-seq:
-  #   table.make_hash_count(key_field1, key_field2, ...)
-  def make_hash_count(*args)
-    make_hash(*(args + [true])) {|seed, value| !seed ? 1 : seed+1 }
+  #   table.hashtree_count(key_field1, key_field2, ...)
+  def hashtree_count(*args)
+    hashtree(*(args + [true])) {|seed, value| !seed ? 1 : seed+1 }
   end
 
   # :call-seq:
@@ -772,7 +772,7 @@ class Table
     fields1.delete("_itemid")
     fields2.delete("_itemid")
     common_fields = fields1 & fields2
-    hash = table2.make_hash_array(*(common_fields + ["_itemid"]))
+    hash = table2.hashtree_array(*(common_fields + ["_itemid"]))
     result = Table.new(fields1 | fields2)
     table1.each_item {|item1|
       item = {}
