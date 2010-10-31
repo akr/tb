@@ -816,4 +816,48 @@ class Table
     }
     nil
   end
+
+  # :call-seq:
+  #   table.rename_field({old_field1=>new_field1, ...})
+  #
+  # creates a new table which field names are renamed.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   pp t.rename_field("fruit"=>"food")
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "food"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "food"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "food"=>"orange", "color"=>"orange"}>
+  #
+  def rename_field(rename_hash)
+    rh = {}
+    rename_hash.each {|of, nf|
+      of = check_field(of)
+      nf = nf.to_s
+      rh[of] = nf
+    }
+    result = Table.new
+    tbl = @tbl
+    free_itemids = @free_itemids
+    result.instance_eval {
+      @tbl.clear # delete _itemid.
+      tbl.each {|old_field, ary|
+        new_field = rh.fetch(old_field) {|f| f }
+        if @tbl.include? new_field
+          raise ArgumentError, "field name crash: #{new_field.inspect}"
+        end
+        @tbl[new_field] = ary.dup
+      }
+      @free_itemids.replace free_itemids
+    }
+    result
+  end
 end

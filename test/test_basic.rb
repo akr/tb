@@ -113,4 +113,12 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal([{"a"=>"bar"}, {"a"=>"foo"}], items)
   end
 
+  def test_rename_field
+    t1 = Table.new %w[a b], [1, 2]
+    assert_equal([{"_itemid"=>0, "a"=>1, "b"=>2}], t1.to_a)
+    t2 = t1.rename_field("a" => "c", "b" => "d")
+    assert_equal([{"_itemid"=>0, "a"=>1, "b"=>2}], t1.to_a)
+    assert_equal([{"_itemid"=>0, "c"=>1, "d"=>2}], t2.to_a)
+  end
+
 end
