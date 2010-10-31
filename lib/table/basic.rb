@@ -381,6 +381,7 @@ class Table
   #   table.insert({field1=>value1, ...})
   #
   # inserts an item.
+  # The item is represented as a hash which keys are field names.
   #
   # This method returned the itemid of the inserted item.
   #
@@ -410,14 +411,38 @@ class Table
   end
 
   # call-seq
-  #   table.insert_values(fields, values1, values2, ...)
+  #   table.insert_values(fields, values1, values2, ...) -> [itemid1, itemid2, ...]
   #
-  # Example:
-  #   # same as:
-  #   #   table.insert({"a"=>1, "b"=>2})
-  #   #   table.insert({"a"=>3, "b"=>4})
-  #   table.insert_values(%w[a b], [1, 2], [3, 4])
+  # inserts items.
+  # The items are represented by fields and values separately.
+  # The first argument specifies the field names as an array.
+  # The second argument specifies the first item values as an array.
+  # The third argument specifies the second item values and so on.
+  # The third and subsequent arguments are optional.
+  #
+  # This method return an array of itemids.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.insert_values(["fruit", "color"], ["grape", "purple"], ["cherry", "red"])
+  #   #=> [3, 4]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}
+  #   #    {"_itemid"=>3, "fruit"=>"grape", "color"=>"purple"}
+  #   #    {"_itemid"=>4, "fruit"=>"cherry", "color"=>"red"}>
+  #
   def insert_values(fields, *values_list)
+    itemids = []
     values_list.each {|values|
       if values.length != fields.length
         raise ArgumentError, "#{fields.length} fields expected but #{values.length} values given"
@@ -427,12 +452,36 @@ class Table
         v = values[i]
         h[f] = v
       }
-      insert h
+      itemids << insert(h)
     }
+    itemids
   end
 
   # :call-seq:
   #   table1.concat(table2, table3, ...) -> table1
+  #
+  # concatenates argument tables destructively into _table1_.
+  #
+  # This method returns _table1_.
+  #
+  #   t1 = Table.new %w[fruit color],
+  #                  %w[apple red]
+  #   t2 = Table.new %w[fruit color],
+  #                  %w[banana yellow],
+  #                  %w[orange orange]
+  #   pp t1
+  #   #=> #<Table {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}>
+  #   pp t2
+  #   #=> #<Table
+  #        {"_itemid"=>0, "fruit"=>"banana", "color"=>"yellow"}
+  #        {"_itemid"=>1, "fruit"=>"orange", "color"=>"orange"}>
+  #   t1.concat(t2)
+  #   pp t1
+  #   #=> #<Table
+  #        {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #        {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #        {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #
   def concat(*tables)
     tables.each {|t|
       t.each_item {|item|
