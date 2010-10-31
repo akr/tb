@@ -380,6 +380,29 @@ class Table
   # :call-seq:
   #   table.insert({field1=>value1, ...})
   #
+  # inserts an item.
+  #
+  # This method returned the itemid of the inserted item.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   itemid = t.insert({"fruit"=>"grape", "color"=>"purple"})
+  #   p itemid
+  #   #=> 3
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}
+  #   #    {"_itemid"=>3, "fruit"=>"grape", "color"=>"purple"}>
+  #
   def insert(item)
     itemid = allocate_item
     update_item(itemid, item)
