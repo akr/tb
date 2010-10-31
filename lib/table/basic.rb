@@ -210,16 +210,18 @@ class Table
   #
   # returns the number of items.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Table.new %w[fruit],      
+  #                 %w[apple],    
+  #                 %w[banana],       
+  #                 %w[orange]       
   #   pp t
   #   #=> #<Table
-  #   #    {"_itemid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #    {"_itemid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #    {"_itemid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   p t.size #=> 3
+  #   #    {"_itemid"=>0, "fruit"=>"apple"}
+  #   #    {"_itemid"=>1, "fruit"=>"banana"}
+  #   #    {"_itemid"=>2, "fruit"=>"orange"}>
+  #   p t.size
+  #   #=> 3
+  #
   def size
     @tbl["_itemid"].length - @free_itemids.length
   end
