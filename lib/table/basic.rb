@@ -216,6 +216,35 @@ class Table
   end
 
   # :call-seq:
+  #   table.reorder_fields(fields)
+  #
+  # reorder the fields.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   p t.list_fields
+  #   #=> ["_recordid", "fruit", "color"]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   t.reorder_fields %w[_recordid color fruit]
+  #   p t.list_fields
+  #   #=> ["_recordid", "color", "fruit"]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_recordid"=>0, "color"=>"red", "fruit"=>"apple"}
+  #   #    {"_recordid"=>1, "color"=>"yellow", "fruit"=>"banana"}
+  #   #    {"_recordid"=>2, "color"=>"orange", "fruit"=>"orange"}>
+  #
+  def reorder_fields(fields)
+    @field_list = @field_list.sort_by {|f| fields.index(f) || (fields.length + @field_list.index(f)) }
+  end
+
+  # :call-seq:
   #   table.list_recordids -> [recordid1, recordid2, ...]
   #
   # returns the list of recordids as an array of integers.
