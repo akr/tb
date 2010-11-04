@@ -768,9 +768,9 @@ class Table
   end
 
   # :call-seq:
-  #   table.hashtree(key_field1, key_field2, ..., value_field, :seed=>initial_seed) {|seed, value| ... } -> hash
+  #   table.categorize(key_field1, key_field2, ..., value_field, :seed=>initial_seed) {|seed, value| ... } -> hash
   #
-  # hashtree takes following arguments:
+  # categorize takes following arguments:
   # - one or more key fields
   # - value field which can be a single field name or an array of field names
   # -- a single field
@@ -779,9 +779,9 @@ class Table
   # - optional option hash which may contains:
   # -- :seed option
   #
-  # hashtree takes optional block.
+  # categorize takes optional block.
   #
-  def hashtree(*args)
+  def categorize(*args)
     opts = args.last.kind_of?(Hash) ? args.pop : {}
     seed_value = opts[:seed]
     value_field = args.pop
@@ -826,15 +826,15 @@ class Table
   end
 
   # :call-seq:
-  #   table.hashtree_array(key_field1, key_field2, ..., value_field)
-  def hashtree_array(*args)
-    hashtree(*args) {|seed, value| !seed ? [value] : (seed << value) }
+  #   table.categorize_array(key_field1, key_field2, ..., value_field)
+  def categorize_array(*args)
+    categorize(*args) {|seed, value| !seed ? [value] : (seed << value) }
   end
 
   # :call-seq:
-  #   table.hashtree_count(key_field1, key_field2, ...)
-  def hashtree_count(*args)
-    hashtree(*(args + [true])) {|seed, value| !seed ? 1 : seed+1 }
+  #   table.categorize_count(key_field1, key_field2, ...)
+  def categorize_count(*args)
+    categorize(*(args + [true])) {|seed, value| !seed ? 1 : seed+1 }
   end
 
   # :call-seq:
@@ -859,7 +859,7 @@ class Table
     fields1.delete("_recordid")
     fields2.delete("_recordid")
     common_fields = fields1 & fields2
-    hash = table2.hashtree_array(*(common_fields + ["_recordid"]))
+    hash = table2.categorize_array(*(common_fields + ["_recordid"]))
     result = Table.new(fields1 | fields2)
     table1.each_record {|record1|
       record = {}
