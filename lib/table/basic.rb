@@ -438,7 +438,7 @@ class Table
   end
 
   # :call-seq:
-  #   table.delete_record(recordid) -> {field1=>value1, ...}
+  #   table.delete_record(recordid) -> nil
   #
   # deletes a record identified by _recordid_.
   #
@@ -840,7 +840,7 @@ class Table
   # :call-seq:
   #   table.reject {|record| ... }
   def reject
-    t = Table.new
+    t = Table.new list_fields-["_recordid"]
     each_record {|record|
       if !yield(record)
         record.delete "_recordid"
@@ -898,7 +898,7 @@ class Table
   end
 
   # :call-seq:
-  #   table.delete_field(field1, ...)
+  #   table.delete_field(field1, ...) -> nil
   #
   # deletes zero or more fields destructively.
   #
