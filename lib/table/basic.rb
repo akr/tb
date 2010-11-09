@@ -82,7 +82,7 @@ class Table
     @recordid2index = {}
     @free_index = []
     @tbl = {"_recordid"=>[]}
-    @field_list = ["_recordid"]
+    @field_list = ["_recordid".freeze]
     if !args.empty?
       args.first.each {|f|
         define_field(f)
@@ -133,6 +133,7 @@ class Table
   private :check_recordid
 
   def check_field_type(field)
+    raise TypeError, "invalid field name: #{field.inspect}" if field.nil?
     field = field.to_s
     raise TypeError, "invalid field name: #{field.inspect}" if !field.kind_of?(String)
     field
@@ -943,14 +944,14 @@ class Table
     result = Table.new
     field_list = @field_list.reject {|f| f.start_with?("_") }
     field_list.each {|of|
-      nf = rh[of]
+      nf = rh.fetch(of, of)
       result.define_field(nf)
     }
     each_recordid {|recordid|
       values = get_values(recordid, *field_list)
       result.allocate_record(recordid)
       field_list.each_with_index {|of, i|
-        nf = rh[of]
+        nf = rh.fetch(of, of)
         result.set_cell(recordid, nf, values[i])
       }
     }
