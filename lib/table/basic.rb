@@ -673,6 +673,30 @@ class Table
   end
 
   # :call-seq:
+  #   table.each_field {|field| ... }
+  #
+  # iterates over the field names of the table.
+  #
+  #   t = Table.new %w[fruit color],    
+  #                 %w[apple red], 
+  #                 %w[banana yellow], 
+  #                 %w[orange orange] 
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   t.each_field {|f| p f }
+  #   #=> "_recordid"
+  #   #   "fruit"
+  #   #   "color"
+  #
+  def each_field
+    @field_list.each {|f| yield f }
+    nil
+  end
+
+  # :call-seq:
   #   table.each_recordid {|recordid| ... }
   #
   # iterates over all records and yield the recordids of them.

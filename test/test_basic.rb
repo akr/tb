@@ -51,6 +51,13 @@ class TestTableBasic < Test::Unit::TestCase
     assert_raise(TypeError) { t.get_cell(:invalid_recordid, :g) }
   end
 
+  def test_each_field
+    t = Table.new %w[a b z]
+    a = []
+    t.each_field {|f| a << f }
+    assert_equal(%w[_recordid a b z], a)
+  end
+
   def test_each_record
     t = Table.new %w[a], [1], [2]
     records = []
