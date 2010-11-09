@@ -287,10 +287,10 @@ class Table
   end
 
   # :call-seq:
-  #   table.allocate_record -> fresh_recordid
-  #   table.allocate_record(recordid) -> recordid
+  #   table.allocate_recordid -> fresh_recordid
+  #   table.allocate_recordid(recordid) -> recordid
   #
-  # inserts a record.
+  # inserts a record and returns its identifier.
   # All fields of the record are initialized to nil.
   #
   #   t = Table.new %w[fruit color],
@@ -302,7 +302,7 @@ class Table
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   p t.allocate_record #=> 3
+  #   p t.allocate_recoridd #=> 3
   #   pp t
   #   #=> #<Table
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
@@ -323,7 +323,7 @@ class Table
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   t.allocate_record(100)
+  #   t.allocate_recordid(100)
   #   pp t
   #   #=> #<Table
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
@@ -331,7 +331,7 @@ class Table
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
   #   #    {"_recordid"=>100}>
   #
-  def allocate_record(recordid=nil)
+  def allocate_recordid(recordid=nil)
     if recordid.nil?
       recordid = @next_recordid
       @next_recordid += 1
@@ -350,6 +350,10 @@ class Table
     @recordid2index[recordid] = index
     @tbl["_recordid"][index] = recordid
     recordid
+  end
+
+  def allocate_record(recordid=nil)
+    Table::Record.new(self, allocate_recordid(recordid))
   end
 
   # :call-seq:
@@ -499,7 +503,7 @@ class Table
   #   #    {"_recordid"=>3, "fruit"=>"grape", "color"=>"purple"}>
   #
   def insert(record)
-    recordid = allocate_record
+    recordid = allocate_recordid
     update_record(recordid, record)
     recordid
   end
@@ -662,14 +666,8 @@ class Table
   #   #=> {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #
   def get_record(recordid)
-    result = {}
-    index = @recordid2index[recordid]
-    @tbl.each {|f, ary|
-      v = ary[index]
-      next if v.nil?
-      result[f] = v
-    }
-    result
+    recordid = check_recordid(recordid)
+    Table::Record.new(self, recordid)
   end
 
   # :call-seq:
@@ -973,7 +971,7 @@ class Table
     }
     each_recordid {|recordid|
       values = get_values(recordid, *field_list)
-      result.allocate_record(recordid)
+      result.allocate_recordid(recordid)
       field_list.each_with_index {|of, i|
         nf = rh.fetch(of, of)
         result.set_cell(recordid, nf, values[i])
