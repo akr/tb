@@ -559,6 +559,7 @@ class Table
   #   table1.concat(table2, table3, ...) -> table1
   #
   # concatenates argument tables destructively into _table1_.
+  # The reserved field (_recordid) in the argument tables is ignored.
   #
   # This method returns _table1_.
   #
@@ -583,6 +584,7 @@ class Table
   def concat(*tables)
     tables.each {|t|
       t.each_record {|record|
+        record = record.to_h
         record.delete "_recordid"
         self.insert record
       }
@@ -865,6 +867,7 @@ class Table
   def reject
     t = Table.new list_fields-["_recordid"]
     each_record {|record|
+      record = record.to_h
       if !yield(record)
         record.delete "_recordid"
         t.insert record
