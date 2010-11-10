@@ -57,6 +57,7 @@ class Table
         end
       }
     end
+    header_fields = header_fields.map {|f| f.nil? ? "" : f }
     t = Table.new(header_fields)
     aa.each {|ary|
       h = {}
