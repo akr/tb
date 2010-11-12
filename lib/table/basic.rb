@@ -816,9 +816,9 @@ class Table
   end
 
   # :call-seq:
-  #   table.categorize(key_field1, key_field2, ..., value_field, :seed=>initial_seed) {|seed, value| ... } -> hash
+  #   table.unique_categorize(key_field1, key_field2, ..., value_field, :seed=>initial_seed) {|seed, value| ... } -> hash
   #
-  # categorize takes following arguments:
+  # unique_categorize takes following arguments:
   # - one or more key fields
   # - value field which can be a single field name or an array of field names
   # -- a single field
@@ -827,9 +827,9 @@ class Table
   # - optional option hash which may contains:
   # -- :seed option
   #
-  # categorize takes optional block.
+  # unique_categorize takes optional block.
   #
-  def categorize(*args)
+  def unique_categorize(*args)
     opts = args.last.kind_of?(Hash) ? args.pop : {}
     seed_value = opts[:seed]
     value_field = args.pop
@@ -876,13 +876,13 @@ class Table
   # :call-seq:
   #   table.categorize_array(key_field1, key_field2, ..., value_field)
   def categorize_array(*args)
-    categorize(*args) {|seed, value| !seed ? [value] : (seed << value) }
+    unique_categorize(*args) {|seed, value| !seed ? [value] : (seed << value) }
   end
 
   # :call-seq:
   #   table.categorize_count(key_field1, key_field2, ...)
   def categorize_count(*args)
-    categorize(*(args + [true])) {|seed, value| !seed ? 1 : seed+1 }
+    unique_categorize(*(args + [true])) {|seed, value| !seed ? 1 : seed+1 }
   end
 
   # :call-seq:

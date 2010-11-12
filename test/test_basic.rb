@@ -67,19 +67,19 @@ class TestTableBasic < Test::Unit::TestCase
 
   def test_categorize
     t = Table.new %w[a b c], [1,2,3], [2,4,4]
-    assert_equal({1=>3, 2=>4}, t.categorize("a", "c"))
-    assert_equal({1=>[3], 2=>[4]}, t.categorize("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
-    assert_equal({1=>1, 2=>1}, t.categorize("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
-    assert_equal({1=>{2=>3}, 2=>{4=>4}}, t.categorize("a", "b", "c"))
+    assert_equal({1=>3, 2=>4}, t.unique_categorize("a", "c"))
+    assert_equal({1=>[3], 2=>[4]}, t.unique_categorize("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
+    assert_equal({1=>1, 2=>1}, t.unique_categorize("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
+    assert_equal({1=>{2=>3}, 2=>{4=>4}}, t.unique_categorize("a", "b", "c"))
     t.insert({"a"=>2, "b"=>7, "c"=>8})
-    assert_equal({1=>{2=>3}, 2=>{4=>4, 7=>8}}, t.categorize("a", "b", "c"))
+    assert_equal({1=>{2=>3}, 2=>{4=>4, 7=>8}}, t.unique_categorize("a", "b", "c"))
   end
 
   def test_categorize_ambiguous
     t = Table.new %w[a b c], [1,2,3], [1,4,4]
-    assert_raise(ArgumentError) { t.categorize("a", "c") }
-    assert_equal({1=>[3,4]}, t.categorize("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
-    assert_equal({1=>2}, t.categorize("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
+    assert_raise(ArgumentError) { t.unique_categorize("a", "c") }
+    assert_equal({1=>[3,4]}, t.unique_categorize("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
+    assert_equal({1=>2}, t.unique_categorize("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
   end
 
   def test_natjoin2
