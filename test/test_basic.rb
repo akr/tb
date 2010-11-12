@@ -150,4 +150,12 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal(%w[_recordid color fruit], t.list_fields)
   end
 
+  def test_has_field?
+    t = Table.new %w[fruit color], 
+                  %w[apple red], 
+                  %w[banana yellow], 
+                  %w[orange orange] 
+    assert_equal(true, t.has_field?("fruit"))
+    assert_equal(false, t.has_field?("foo"))
+  end
 end

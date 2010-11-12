@@ -197,6 +197,29 @@ class Table
   end
 
   # :call-seq:
+  #   table.has_field?(field) -> true or false
+  #
+  # returns true if the field specified by the argument is exist.
+  #
+  #
+  #   t = Table.new %w[fruit color], 
+  #                 %w[apple red], 
+  #                 %w[banana yellow], 
+  #                 %w[orange orange] 
+  #   pp t 
+  #   #=> #<Table
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.has_field?("fruit") #=> true
+  #   p t.has_field?("foo") #=> false
+  #
+  def has_field?(field)
+    field = check_field_type(field)
+    @tbl.has_key?(field)
+  end
+
+  # :call-seq:
   #   table.list_fields -> [field1, field2, ...]
   #
   # returns the list of field names as an array of strings.
