@@ -94,7 +94,9 @@ class Table
       # Ruby 1.9
       out << fields.to_csv
       recordids.each {|recordid|
-        out << get_values(recordid, *fields).to_csv
+        values = get_values(recordid, *fields)
+        str = values.to_csv
+        out << str
       }
     end
     out
