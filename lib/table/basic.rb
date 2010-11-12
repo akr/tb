@@ -874,8 +874,8 @@ class Table
   end
 
   # :call-seq:
-  #   table.categorize_array(key_field1, key_field2, ..., value_field)
-  def categorize_array(*args)
+  #   table.categorize(key_field1, key_field2, ..., value_field)
+  def categorize(*args)
     unique_categorize(*args) {|seed, value| !seed ? [value] : (seed << value) }
   end
 
@@ -908,7 +908,7 @@ class Table
     fields1.delete("_recordid")
     fields2.delete("_recordid")
     common_fields = fields1 & fields2
-    hash = table2.categorize_array(*(common_fields + ["_recordid"]))
+    hash = table2.categorize(*(common_fields + ["_recordid"]))
     result = Table.new(fields1 | fields2)
     table1.each_record {|record1|
       record = {}
