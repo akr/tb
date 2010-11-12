@@ -30,6 +30,32 @@ class Table::Record
     @recordid = recordid
   end
 
+  def pretty_print(q) # :nodoc:
+    q.object_group(self) {
+      fs = @table.list_fields.reject {|f| self[f].nil? }
+      unless fs.empty?
+        q.text ':'
+        q.breakable
+      end
+      q.seplist(fs, nil, :each) {|f|
+        v = self[f]
+        q.group {
+          q.pp f
+          q.text '=>'
+          q.group(1) {
+            q.breakable ''
+            q.pp v
+          }
+        }
+      }
+    }
+  end
+  alias inspect pretty_print_inspect # :nodoc:
+
+  def has_field?(field)
+    @table.has_field?(field)
+  end
+
   def [](field)
     @table.get_cell(@recordid, field)
   end
