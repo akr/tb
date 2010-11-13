@@ -816,7 +816,8 @@ class Table
   end
 
   # :call-seq:
-  #   table.unique_categorize(key_field1, key_field2, ..., value_field, :seed=>initial_seed) {|seed, value| ... } -> hash
+  #   table.unique_categorize(kf1, kf2, ..., vf, [opts]) -> hash
+  #   table.unique_categorize(kf1, kf2, ..., vf, [opts]) {|seed, value| ... } -> hash
   #
   # unique_categorize takes following arguments:
   # - one or more key fields
@@ -826,58 +827,111 @@ class Table
   # -- true
   # - optional option hash which may contains:
   # -- :seed option
+  # -- :update option
   #
   # unique_categorize takes optional block.
   #
-  def unique_categorize(*args)
-    opts = args.last.kind_of?(Hash) ? args.pop : {}
-    seed_value = opts[:seed]
-    value_field = args.pop
-    key_fields = args
-    case value_field
-    when Array
-      value_field_list = value_field.map {|f| check_field(f) }
-      gen_value = lambda {|all_values| all_values.last(value_field.length) }
-    when true
-      value_field_list = []
-      gen_value = lambda {|all_values| true }
+  def unique_categorize(*args, &update_proc)
+    opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
+    if update_proc
+      opts[:update] = lambda {|ks, s, v| update_proc.call(s, v) }
     else
-      value_field_list = [check_field(value_field)]
-      gen_value = lambda {|all_values| all_values.last }
-    end
-    all_fields = key_fields + value_field_list
-    result = {}
-    each_record_values(*all_fields) {|all_values|
-      value = gen_value.call(all_values)
-      vs = all_values[0, key_fields.length]
-      lastv = vs.pop
-      h = result
-      vs.each {|v|
-        h[v] = {} if !h.include?(v)
-        h = h[v]
+      seed = Object.new
+      opts[:seed] = seed
+      opts[:update] = lambda {|ks, s, v|
+        if s.equal? seed
+          v
+        else
+          raise ArgumentError, "ambiguous key: #{ks.map {|k| k.inspect }.join(',')}"
+        end
       }
-      if block_given?
-        if !h.include?(lastv)
-          h[lastv] = yield(seed_value, value)
-        else
-          h[lastv] = yield(h[lastv], value)
-        end
-      else
-        if !h.include?(lastv)
-          h[lastv] = value 
-        else
-          raise ArgumentError, "ambiguous key: #{(vs+[lastv]).map {|v| v.inspect }.join(',')}"
-        end
-      end
-    }
-    result
+    end
+    categorize(*(args + [opts]))
   end
 
   # :call-seq:
-  #   table.categorize(key_field1, key_field2, ..., value_field)
-  def categorize(*args)
-    unique_categorize(*args) {|seed, value| !seed ? [value] : (seed << value) }
+  #   table.categorize(ksel1, ksel2, ..., vsel, [opts])
+  #   table.categorize(ksel1, ksel2, ..., vsel, [opts]) {|ks, vs| ... }
+  #
+  # selector:
+  # - field name
+  # - true
+  # - array of selectors
+  #
+  # option:
+  # - :seed : nil by default
+  # - :update : lambda {|ks, s, v| !s ? [v] : (s << v) } by default
+  #
+  # block: lambda {|ks, vs| vs } by default
+  #
+  def categorize(*args, &reduce_proc)
+    opts = args.last.kind_of?(Hash) ? args.pop : {}
+    if args.length < 2
+      raise ArgumentError, "needs 2 or more arguments without option (but #{args.length})"
+    end
+    value_selector = cat_selector_proc(args.pop)
+    key_selectors = args.map {|a| cat_selector_proc(a) }
+    seed_value = opts[:seed]
+    update_proc = opts[:update] || lambda {|ks, s, v| !s ? [v] : (s << v) }
+    result = {}
+    each_record {|rec|
+      ks = key_selectors.map {|ksel| ksel.call(rec) }
+      v = value_selector.call(rec)
+      h = result
+      0.upto(ks.length-2) {|i|
+        k = ks[i]
+        h[k] = {} if !h.include?(k)
+        h = h[k]
+      }
+      lastk = ks.last
+      if !h.include?(lastk)
+        h[lastk] = update_proc.call(ks, seed_value, v)
+      else
+        h[lastk] = update_proc.call(ks, h[lastk], v)
+      end
+    }
+    if reduce_proc
+      cat_reduce(result, [], key_selectors.length-1, reduce_proc)
+    end
+    result
   end
+
+  def cat_selector_proc(selector)
+    case selector
+    when Array
+      selector_procs = selector.map {|sel| cat_selector_proc(sel) }
+      lambda {|rec| selector_procs.map {|selproc| selproc.call(rec) } }
+    when true
+      lambda {|rec| true }
+    else
+      f = check_field(selector)
+      lambda {|rec| rec[f] }
+    end
+  end
+  private :cat_selector_proc
+
+  def cat_reduce(hash, ks, nestlevel, reduce_proc)
+    if nestlevel.zero?
+      hash.each {|k, v|
+        ks << k
+        begin
+          hash[k] = reduce_proc.call(ks.dup, v)
+        ensure
+          ks.pop
+        end
+      }
+    else
+      hash.each {|k, h|
+        ks << k
+        begin
+          cat_reduce(h, ks, nestlevel-1, reduce_proc)
+        ensure
+          ks.pop
+        end
+      }
+    end
+  end
+  private :cat_reduce
 
   # :call-seq:
   #   table.categorize_count(key_field1, key_field2, ...)

@@ -66,6 +66,21 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_categorize
+    t = Table.new %w[a b c], [1,2,3], [2,4,3]
+    assert_raise(ArgumentError) { t.categorize('a') }
+    assert_equal({1=>[2], 2=>[4]}, t.categorize('a', 'b'))
+    assert_equal({1=>{2=>[3]}, 2=>{4=>[3]}}, t.categorize('a', 'b', 'c'))
+    assert_equal({1=>[[2,3]], 2=>[[4,3]]}, t.categorize('a', ['b', 'c']))
+    assert_equal({[1,2]=>[3], [2,4]=>[3]}, t.categorize(['a', 'b'], 'c'))
+    assert_equal({3=>[2,4]}, t.categorize('c', 'b'))
+    assert_equal({3=>[true,true]}, t.categorize('c', true))
+    assert_equal({3=>2}, t.categorize('c', 'b') {|ks, vs| vs.length } )
+    assert_equal({3=>2}, t.categorize('c', 'b',
+                                      :seed=>0,
+                                      :update=> lambda {|ks, s, v| s + 1 }))
+  end
+
+  def test_unique_categorize
     t = Table.new %w[a b c], [1,2,3], [2,4,4]
     assert_equal({1=>3, 2=>4}, t.unique_categorize("a", "c"))
     assert_equal({1=>[3], 2=>[4]}, t.unique_categorize("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
