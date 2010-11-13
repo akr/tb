@@ -90,11 +90,19 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal({1=>{2=>3}, 2=>{4=>4, 7=>8}}, t.unique_categorize("a", "b", "c"))
   end
 
-  def test_categorize_ambiguous
+  def test_unique_categorize_ambiguous
     t = Table.new %w[a b c], [1,2,3], [1,4,4]
     assert_raise(ArgumentError) { t.unique_categorize("a", "c") }
     assert_equal({1=>[3,4]}, t.unique_categorize("a", "c") {|seed, v| !seed ? [v] : (seed << v) })
     assert_equal({1=>2}, t.unique_categorize("a", "c") {|seed, v| !seed ? 1 : seed + 1 })
+  end
+
+  def test_category_count
+    t = Table.new %w[a b c], [1,2,3], [2,4,3]
+    assert_equal({1=>1, 2=>1}, t.category_count("a"))
+    assert_equal({2=>1, 4=>1}, t.category_count("b"))
+    assert_equal({3=>2}, t.category_count("c"))
+    assert_equal({3=>{1=>1, 2=>1}}, t.category_count("c", "a"))
   end
 
   def test_natjoin2

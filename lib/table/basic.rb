@@ -816,20 +816,8 @@ class Table
   end
 
   # :call-seq:
-  #   table.unique_categorize(kf1, kf2, ..., vf, [opts]) -> hash
-  #   table.unique_categorize(kf1, kf2, ..., vf, [opts]) {|seed, value| ... } -> hash
-  #
-  # unique_categorize takes following arguments:
-  # - one or more key fields
-  # - value field which can be a single field name or an array of field names
-  # -- a single field
-  # -- an array of field names
-  # -- true
-  # - optional option hash which may contains:
-  # -- :seed option
-  # -- :update option
-  #
-  # unique_categorize takes optional block.
+  #   table.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) -> hash
+  #   table.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) {|ks, s, v| ... } -> hash
   #
   def unique_categorize(*args, &update_proc)
     opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
@@ -934,8 +922,8 @@ class Table
   private :cat_reduce
 
   # :call-seq:
-  #   table.categorize_count(key_field1, key_field2, ...)
-  def categorize_count(*args)
+  #   table.category_count(ksel1, ksel2, ...)
+  def category_count(*args)
     unique_categorize(*(args + [true])) {|seed, value| !seed ? 1 : seed+1 }
   end
 
