@@ -902,21 +902,21 @@ class Table
 
   def cat_selector_proc(selector, index_cell)
     if selector == true
-      lambda {|rec| true }
+      lambda {|elt| true }
     elsif selector == :_element
-      lambda {|rec| rec }
+      lambda {|elt| elt }
     elsif selector == :_index
-      lambda {|rec| index_cell[0] }
+      lambda {|elt| index_cell[0] }
     elsif Symbol === selector && /\A_/ =~ selector.to_s
       raise ArgumentError, "unexpected reserved selector: #{selector.inspect}"
     elsif selector.respond_to? :to_proc
       selector.to_proc
     elsif selector.respond_to? :to_ary
       selector_procs = selector.to_ary.map {|sel| cat_selector_proc(sel, index_cell) }
-      lambda {|rec| selector_procs.map {|selproc| selproc.call(rec) } }
+      lambda {|elt| selector_procs.map {|selproc| selproc.call(elt) } }
     else
       f = check_field(selector)
-      lambda {|rec| rec[f] }
+      lambda {|elt| elt[f] }
     end
   end
   private :cat_selector_proc
