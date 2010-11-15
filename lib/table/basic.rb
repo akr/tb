@@ -816,28 +816,6 @@ class Table
   end
 
   # :call-seq:
-  #   table.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) -> hash
-  #   table.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) {|ks, s, v| ... } -> hash
-  #
-  def unique_categorize(*args, &update_proc)
-    opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
-    if update_proc
-      opts[:update] = lambda {|ks, s, v| update_proc.call(s, v) }
-    else
-      seed = Object.new
-      opts[:seed] = seed
-      opts[:update] = lambda {|ks, s, v|
-        if s.equal? seed
-          v
-        else
-          raise ArgumentError, "ambiguous key: #{ks.map {|k| k.inspect }.join(',')}"
-        end
-      }
-    end
-    categorize(*(args + [opts]))
-  end
-
-  # :call-seq:
   #   table.categorize(ksel1, ksel2, ..., vsel, [opts])
   #   table.categorize(ksel1, ksel2, ..., vsel, [opts]) {|ks, vs| ... }
   #
@@ -943,6 +921,28 @@ class Table
     end
   end
   private :cat_reduce
+
+  # :call-seq:
+  #   table.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) -> hash
+  #   table.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) {|ks, s, v| ... } -> hash
+  #
+  def unique_categorize(*args, &update_proc)
+    opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
+    if update_proc
+      opts[:update] = lambda {|ks, s, v| update_proc.call(s, v) }
+    else
+      seed = Object.new
+      opts[:seed] = seed
+      opts[:update] = lambda {|ks, s, v|
+        if s.equal? seed
+          v
+        else
+          raise ArgumentError, "ambiguous key: #{ks.map {|k| k.inspect }.join(',')}"
+        end
+      }
+    end
+    categorize(*(args + [opts]))
+  end
 
   # :call-seq:
   #   table.category_count(ksel1, ksel2, ...)
