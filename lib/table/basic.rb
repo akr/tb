@@ -1004,7 +1004,7 @@ class Table
 
   # :call-seq:
   #   table.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) -> hash
-  #   table.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) {|ks, s, v| ... } -> hash
+  #   table.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) {|s, v| ... } -> hash
   #
   def unique_categorize(*args, &update_proc)
     opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
