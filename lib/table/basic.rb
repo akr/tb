@@ -885,12 +885,15 @@ class Table
   end
 
   def cat_selector_proc(selector)
-    case selector
-    when Array
+    if Array === selector
       selector_procs = selector.map {|sel| cat_selector_proc(sel) }
       lambda {|rec| selector_procs.map {|selproc| selproc.call(rec) } }
-    when true
+    elsif selector == true
       lambda {|rec| true }
+    elsif selector == :_element
+      lambda {|rec| rec }
+    elsif Symbol === selector && /\A_/ =~ selector.to_s
+      raise ArgumentError, "unexpected reserved selector: #{selector.inspect}"
     else
       f = check_field(selector)
       lambda {|rec| rec[f] }
