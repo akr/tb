@@ -822,11 +822,11 @@ class Table
   def unique_categorize(*args, &update_proc)
     opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
     if update_proc
-      opts[:update] = lambda {|ks, s, v| update_proc.call(s, v) }
+      opts[:op] = lambda {|ks, s, v| update_proc.call(s, v) }
     else
       seed = Object.new
       opts[:seed] = seed
-      opts[:update] = lambda {|ks, s, v|
+      opts[:op] = lambda {|ks, s, v|
         if s.equal? seed
           v
         else
@@ -848,7 +848,7 @@ class Table
   #
   # option:
   # - :seed : nil by default
-  # - :update : lambda {|ks, s, v| !s ? [v] : (s << v) } by default
+  # - :op : lambda {|ks, s, v| !s ? [v] : (s << v) } by default
   #
   # block: lambda {|ks, vs| vs } by default
   #
@@ -860,7 +860,7 @@ class Table
     value_selector = cat_selector_proc(args.pop)
     key_selectors = args.map {|a| cat_selector_proc(a) }
     seed_value = opts[:seed]
-    update_proc = opts[:update] || lambda {|ks, s, v| !s ? [v] : (s << v) }
+    update_proc = opts[:op] || lambda {|ks, s, v| !s ? [v] : (s << v) }
     result = {}
     each_record {|rec|
       ks = key_selectors.map {|ksel| ksel.call(rec) }

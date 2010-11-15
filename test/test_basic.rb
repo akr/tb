@@ -77,7 +77,7 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal({3=>2}, t.categorize('c', 'b') {|ks, vs| vs.length } )
     assert_equal({3=>2}, t.categorize('c', 'b',
                                       :seed=>0,
-                                      :update=> lambda {|ks, s, v| s + 1 }))
+                                      :op=> lambda {|ks, s, v| s + 1 }))
   end
 
   def test_unique_categorize
