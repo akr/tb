@@ -29,6 +29,11 @@ class Table::Record
     @table = table
     @recordid = recordid
   end
+  attr_reader :table
+
+  def record_id
+    @recordid
+  end
 
   def pretty_print(q) # :nodoc:
     q.object_group(self) {

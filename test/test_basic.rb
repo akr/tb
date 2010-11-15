@@ -77,7 +77,29 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal({3=>2}, t.categorize('c', 'b') {|ks, vs| vs.length } )
     assert_equal({3=>2}, t.categorize('c', 'b',
                                       :seed=>0,
-                                      :op=> lambda {|ks, s, v| s + 1 }))
+                                      :update=> lambda {|ks, s, v| s + 1 }))
+    assert_equal({true => [1,2]}, t.categorize(true, 'a'))
+    h = t.categorize('a', :_element)
+    assert_equal(2, h.size)
+    assert_equal([1, 2], h.keys.sort)
+    assert_instance_of(Array, h[1])
+    assert_instance_of(Array, h[2])
+    assert_equal(1, h[1].length)
+    assert_equal(1, h[2].length)
+    assert_instance_of(Table::Record, h[1][0])
+    assert_instance_of(Table::Record, h[2][0])
+    assert_same(t, h[1][0].table)
+    assert_same(t, h[2][0].table)
+    assert_equal(0, h[1][0].record_id)
+    assert_equal(1, h[2][0].record_id)
+    assert_same(t, h[2][0].table)
+
+    assert_raise(ArgumentError) { t.categorize(:_foo, true) }
+    assert_equal({3=>[2], 6=>[4]}, t.categorize(lambda {|rec| rec['a'] * 3 }, 'b'))
+    assert_equal({[1,2]=>[[2,3]], [2,4]=>[[4,3]]}, t.categorize(['a', 'b'], ['b', 'c']))
+    assert_equal({1=>2, 2=>4}, t.categorize('a', 'b', :seed=>0, :op=>:+))
+    assert_raise(ArgumentError) { t.categorize('a', 'b', :op=>:+, :update=>lambda {|ks, s, v| v }) }
+    assert_equal({3=>[0, 1]}, t.categorize('c', :_index))
   end
 
   def test_unique_categorize

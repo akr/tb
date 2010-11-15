@@ -822,11 +822,11 @@ class Table
   def unique_categorize(*args, &update_proc)
     opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
     if update_proc
-      opts[:op] = lambda {|ks, s, v| update_proc.call(s, v) }
+      opts[:update] = lambda {|ks, s, v| update_proc.call(s, v) }
     else
       seed = Object.new
       opts[:seed] = seed
-      opts[:op] = lambda {|ks, s, v|
+      opts[:update] = lambda {|ks, s, v|
         if s.equal? seed
           v
         else
@@ -843,12 +843,17 @@ class Table
   #
   # selector:
   # - field name
+  # - procedure
   # - true
   # - array of selectors
   #
   # option:
   # - :seed : nil by default
-  # - :op : lambda {|ks, s, v| !s ? [v] : (s << v) } by default
+  # - :op : lambda {|s, v| !s ? [v] : (s << v) } by default
+  # - :update : lambda {|ks, s, v| !s ? [v] : (s << v) } by default
+  #
+  # :op and :update option is disjoint.
+  # ArgumentError is raised if both are specified.
   #
   # block: lambda {|ks, vs| vs } by default
   #
@@ -857,14 +862,24 @@ class Table
     if args.length < 2
       raise ArgumentError, "needs 2 or more arguments without option (but #{args.length})"
     end
-    value_selector = cat_selector_proc(args.pop)
-    key_selectors = args.map {|a| cat_selector_proc(a) }
+    index_cell = [0]
+    value_selector = cat_selector_proc(args.pop, index_cell)
+    key_selectors = args.map {|a| cat_selector_proc(a, index_cell) }
     seed_value = opts[:seed]
-    update_proc = opts[:op] || lambda {|ks, s, v| !s ? [v] : (s << v) }
+    if opts.include?(:update) && opts.include?(:op)
+      raise ArgumentError, "both :op and :update option specified"
+    elsif opts.include? :update
+      update_proc = opts[:update].to_proc
+    elsif opts.include? :op
+      op_proc = opts[:op].to_proc
+      update_proc = lambda {|ks, s, v| op_proc.call(s, v) }
+    else
+      update_proc = lambda {|ks, s, v| !s ? [v] : (s << v) }
+    end
     result = {}
-    each_record {|rec|
-      ks = key_selectors.map {|ksel| ksel.call(rec) }
-      v = value_selector.call(rec)
+    each {|elt|
+      ks = key_selectors.map {|ksel| ksel.call(elt) }
+      v = value_selector.call(elt)
       h = result
       0.upto(ks.length-2) {|i|
         k = ks[i]
@@ -877,6 +892,7 @@ class Table
       else
         h[lastk] = update_proc.call(ks, h[lastk], v)
       end
+      index_cell[0] += 1
     }
     if reduce_proc
       cat_reduce(result, [], key_selectors.length-1, reduce_proc)
@@ -884,16 +900,20 @@ class Table
     result
   end
 
-  def cat_selector_proc(selector)
-    if Array === selector
-      selector_procs = selector.map {|sel| cat_selector_proc(sel) }
-      lambda {|rec| selector_procs.map {|selproc| selproc.call(rec) } }
-    elsif selector == true
+  def cat_selector_proc(selector, index_cell)
+    if selector == true
       lambda {|rec| true }
     elsif selector == :_element
       lambda {|rec| rec }
+    elsif selector == :_index
+      lambda {|rec| index_cell[0] }
     elsif Symbol === selector && /\A_/ =~ selector.to_s
       raise ArgumentError, "unexpected reserved selector: #{selector.inspect}"
+    elsif selector.respond_to? :to_proc
+      selector.to_proc
+    elsif selector.respond_to? :to_ary
+      selector_procs = selector.to_ary.map {|sel| cat_selector_proc(sel, index_cell) }
+      lambda {|rec| selector_procs.map {|selproc| selproc.call(rec) } }
     else
       f = check_field(selector)
       lambda {|rec| rec[f] }
