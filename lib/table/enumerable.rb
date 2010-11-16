@@ -29,7 +29,8 @@ module Enumerable
   #   enum.categorize(ksel1, ksel2, ..., vsel, [opts])
   #   enum.categorize(ksel1, ksel2, ..., vsel, [opts]) {|ks, vs| ... }
   #
-  # creates a hash from the _enum_.
+  # categorizes the elements in _enum_ and returns a hash.
+  # This method assumes multiple elements for a category.
   #
   # +categorize+ takes one or more key selectors,
   # one value selector and
@@ -222,7 +223,8 @@ module Enumerable
   #   enum.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) -> hash
   #   enum.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) {|s, v| ... } -> hash
   #
-  # creates a hash from _enum_.
+  # categorizes the elements in _enum_ and returns a hash.
+  # This method assumes one element for a category by default.
   #
   # +unique_categorize+ takes one or more key selectors,
   # one value selector and
@@ -279,6 +281,9 @@ module Enumerable
 
   # :call-seq:
   #   enum.category_count(ksel1, ksel2, ...)
+  #
+  # categorizes the elements in _enum_ and counts them for each category.
+  #
   def category_count(*args)
     unique_categorize(*(args + [true])) {|seed, value| !seed ? 1 : seed+1 }
   end
