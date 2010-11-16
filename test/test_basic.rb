@@ -17,6 +17,11 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal(3, a.length)
   end
 
+  def test_enumerable
+    t = Table.new
+    assert_kind_of(Enumerable, t)
+  end
+
   def test_list_recordids
     t = Table.new
     assert_equal([], t.list_recordids)

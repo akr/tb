@@ -53,6 +53,8 @@ require 'pp'
 # It is an error to access a record by recordid which is not allocated.
 #
 class Table
+  include Enumerable
+
   # :call-seq:
   #   Table.new
   #   Table.new(fields, values1, values2, ...)
