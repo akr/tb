@@ -26,103 +26,106 @@
 
 module Enumerable
   # :call-seq:
-  #   table.categorize(ksel1, ksel2, ..., vsel, [opts])
-  #   table.categorize(ksel1, ksel2, ..., vsel, [opts]) {|ks, vs| ... }
+  #   enum.categorize(ksel1, ksel2, ..., vsel, [opts])
+  #   enum.categorize(ksel1, ksel2, ..., vsel, [opts]) {|ks, vs| ... }
   #
-  # creates a hash from the table.
+  # creates a hash from the _enum_.
   #
   # +categorize+ takes one or more key selectors,
   # one value selector,
   # optional option hash.
   # It also takes an optional block.
   #
-  # The selectors specify how to extract a value from a record in the table.
-  # The key selectors are used to extract hash keys from a record.
+  # The selectors specify how to extract a value from an element in _enum_.
+  # The key selectors are used to extract hash keys from an element.
   # If two or more key selectors are specified, the result hash will be nested.
-  # The value selector is used to extract a hash value from a record.
+  # The value selector is used to extract a hash value from an element.
   #
-  #   t = Table.new(%w[fruit color taste],
-  #                 %w[banana yellow sweet],
-  #                 %w[melon green sweet],
-  #                 %w[grapefruit yellow tart])
-  #   p t.categorize("color", "fruit")
+  #   a = [{:fruit => "banana", :color => "yellow", :taste => "sweet", :price => 100},
+  #        {:fruit => "melon", :color => "green", :taste => "sweet", :price => 300},
+  #        {:fruit => "grapefruit", :color => "yellow", :taste => "tart", :price => 200}]
+  #   p a.categorize(:color, :fruit)
   #   #=> {"yellow"=>["banana", "grapefruit"], "green"=>["melon"]}
-  #   p t.categorize("taste", "fruit")
+  #   p a.categorize(:taste, :fruit)
   #   #=> {"sweet"=>["banana", "melon"], "tart"=>["grapefruit"]}
-  #   p t.categorize("taste", "color", "fruit")
+  #   p a.categorize(:taste, :color, :fruit)
   #   #=> {"sweet"=>{"yellow"=>["banana"], "green"=>["melon"]}, "tart"=>{"yellow"=>["grapefruit"]}}
-  #   p t.categorize("taste", "color")         
+  #   p a.categorize(:taste, :color)
   #   #=> {"sweet"=>["yellow", "green"], "tart"=>["yellow"]}
   #
-  # In the above example, "fruit", "color" and "taste" is specified as selectors.
-  # A field name of the table is a valid selector.
-  # There are more types of selectors as follows:
+  # In the above example, :fruit, :color and :taste is specified as selectors.
+  # There are several types of selectors as follows:
   #
-  # - field name: extracts the field value of the record.
-  # - procedure: extracts a value from the record by calling the procedure with the record as an argument.
+  # - procedure: extracts a value from the element by calling the procedure with the element as an argument.
   # - true: always generates true.
-  # - :_index : the index of the record. (This can be differ from record id.)
-  # - :_element : the record itself.
+  # - :_index : the index of the element.
+  # - :_element : the element itself.
   # - array of selectors: make an array which contains the values extracted by the selectors.
+  # - other object: extracts a value from the element using +[]+ method as +element[selector]+.
+  # 
+  # So the selector :fruit extracts the value from the element  
+  # {:fruit => "banana", :color => "yellow", :taste => "sweet", :price => 100}
+  # as {...}[:fruit].
   #
-  #   p t.categorize(lambda {|rec| rec["fruit"][4] }, "fruit")
+  #   p a.categorize(lambda {|elt| elt[:fruit][4] }, :fruit)
   #   #=> {"n"=>["banana", "melon"], "e"=>["grapefruit"]}
   #
-  #   p t.categorize("color", true)                           
+  #   p a.categorize(:color, true)                      
   #   #=> {"yellow"=>[true, true], "green"=>[true]}
   #
-  #   p t.categorize("color", :_index)
+  #   p a.categorize(:color, :_index)
   #   #=> {"yellow"=>[0, 2], "green"=>[1]}
   #
-  #   p t.categorize("color", :_element) 
-  #   #=> {"yellow"=>[#<Table::Record: "_recordid"=>0, "fruit"=>"banana", "color"=>"yellow", "taste"=>"sweet">,
-  #   #               #<Table::Record: "_recordid"=>2, "fruit"=>"grapefruit", "color"=>"yellow", "taste"=>"tart">],
-  #   #    "green"=>[#<Table::Record: "_recordid"=>1, "fruit"=>"melon", "color"=>"green", "taste"=>"sweet">]}
+  #   p a.categorize(:color, :_element)
+  #   #=> {"yellow"=>[{:fruit=>"banana", :color=>"yellow", :taste=>"sweet", :price=>100},
+  #   #               {:fruit=>"grapefruit", :color=>"yellow", :taste=>"tart", :price=>200}],
+  #   #    "green"=>[{:fruit=>"melon", :color=>"green", :taste=>"sweet", :price=>300}]}
   #
-  #   p t.categorize("color", ["fruit", "taste", :_index])
+  #   p a.categorize(:color, :_element)
+  #   #=> {"yellow"=>[{:fruit=>"banana", :color=>"yellow", :taste=>"sweet", :price=>100},
+  #   #               {:fruit=>"grapefruit", :color=>"yellow", :taste=>"tart", :price=>200}],
+  #   #    "green"=>[{:fruit=>"melon", :color=>"green", :taste=>"sweet", :price=>300}]}
+  #
+  #   p a.categorize(:color, [:fruit, :taste, :_index])
   #   #=> {"yellow"=>[["banana", "sweet", 0], ["grapefruit", "tart", 2]],
-  #        "green"=>[["melon", "sweet", 1]]}
+  #   #    "green"=>[["melon", "sweet", 1]]}
   #
-  #   p t.categorize(true, "fruit")                       
+  #   p a.categorize(true, :fruit)
   #   #=> {true=>["banana", "melon", "grapefruit"]}
   #
-  # When the key selectors returns same key for two or or more records,
-  # corresponding values extracted by the value selector is combined.
+  # When the key selectors returns same key for two or or more elements,
+  # corresponding values extracted by the value selector are combined.
   # By default, all values are collected as an array.
   # :seed, :op and :update option in the option hash customizes this behavior.
   # :seed option and :op option is similar to Enumerable#inject.
   # :seed option specifies an initial value.
-  # :op option specifies a procedure which takes two arguments, accumlated value and next record, and it returns the next accumlated value.
-  # :update option is same as :op option except it takes three arguments:
-  # keys, accumlated value and next record.
+  # :op option specifies a procedure to combine a seed and an element into a next seed.
+  # :update option is same as :op option except it takes three arguments instead of two:
+  # keys, seed and element.
   # +to_proc+ method is used to convert :op and :update option to a procedure.
   # So a symbol can be used for them.
   #
-  #   # count categorized records.
-  #   p t.categorize("color", true, :seed=>0, :op=>lambda {|s,v| s+1 })
+  #   # count categorized elements.
+  #   p a.categorize(:color, true, :seed=>0, :op=>lambda {|s,v| s+1 })' 
   #   #=> {"yellow"=>2, "green"=>1}
   #
-  #   p t.categorize("color", "fruit", :seed=>"", :op=>:+)
-  #   {"yellow"=>"bananagrapefruit", "green"=>"melon"}
+  #   p a.categorize(:color, :fruit, :seed=>"", :op=>:+) 
+  #   #=> {"yellow"=>"bananagrapefruit", "green"=>"melon"}
   #
   # The default behavior, collecting all values as an array, is implemented as follows.
   #   :seed => nil
   #   :update => {|ks, s, v| !s ? [v] : (s << v) }
   #
-  # :op and :update option is disjoint.
+  # :op and :update option are disjoint.
   # ArgumentError is raised if both are specified.
   #
   # The block for +categorize+ method converts combined values to final hash values.
   #
-  #   p t.categorize("color", "fruit") {|ks, vs| vs.join(",") }
+  #   p a.categorize(:color, :fruit) {|ks, vs| vs.join(",") } 
   #   #=> {"yellow"=>"banana,grapefruit", "green"=>"melon"}
   #
   #   # calculates the average price for fruits of each color.
-  #   t = Table.new(%w[fruit color taste price],
-  #                 ["banana", "yellow", "sweet", 100],
-  #                 ["melon", "green", "sweet", 300],
-  #                 ["grapefruit", "yellow", "tart", 200])
-  #   p t.categorize("color", "price") {|ks, vs| vs.inject(0.0, &:+) / vs.length } 
+  #   p a.categorize(:color, :price) {|ks, vs| vs.inject(0.0, &:+) / vs.length }  
   #   #=> {"yellow"=>150.0, "green"=>300.0}
   #
   def categorize(*args, &reduce_proc)
@@ -175,16 +178,13 @@ module Enumerable
       lambda {|elt| elt }
     elsif selector == :_index
       lambda {|elt| index_cell[0] }
-    elsif Symbol === selector && /\A_/ =~ selector.to_s
-      raise ArgumentError, "unexpected reserved selector: #{selector.inspect}"
-    elsif selector.respond_to? :to_proc
+    elsif !selector.kind_of?(Symbol) && selector.respond_to?(:to_proc)
       selector.to_proc
     elsif selector.respond_to? :to_ary
       selector_procs = selector.to_ary.map {|sel| cat_selector_proc(sel, index_cell) }
       lambda {|elt| selector_procs.map {|selproc| selproc.call(elt) } }
     else
-      f = check_field(selector)
-      lambda {|elt| elt[f] }
+      lambda {|elt| elt[selector] }
     end
   end
   private :cat_selector_proc
@@ -213,8 +213,8 @@ module Enumerable
   private :cat_reduce
 
   # :call-seq:
-  #   table.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) -> hash
-  #   table.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) {|s, v| ... } -> hash
+  #   enum.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) -> hash
+  #   enum.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) {|s, v| ... } -> hash
   #
   def unique_categorize(*args, &update_proc)
     opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
@@ -235,7 +235,7 @@ module Enumerable
   end
 
   # :call-seq:
-  #   table.category_count(ksel1, ksel2, ...)
+  #   enum.category_count(ksel1, ksel2, ...)
   def category_count(*args)
     unique_categorize(*(args + [true])) {|seed, value| !seed ? 1 : seed+1 }
   end
