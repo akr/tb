@@ -32,14 +32,20 @@ module Enumerable
   # creates a hash from the _enum_.
   #
   # +categorize+ takes one or more key selectors,
-  # one value selector,
-  # optional option hash.
+  # one value selector and
+  # an optional option hash.
   # It also takes an optional block.
   #
   # The selectors specify how to extract a value from an element in _enum_.
-  # The key selectors are used to extract hash keys from an element.
+  #
+  # The key selectors, _kselN_, are used to extract hash keys from an element.
   # If two or more key selectors are specified, the result hash will be nested.
-  # The value selector is used to extract a hash value from an element.
+  #
+  # The value selector, _vsel_, is used for the values of innermost hashes.
+  # By default, all values extracted by _vsel_ from the elements which
+  # key selectors extracts same value are composed as an array.
+  # The array is set to the values of the innermost hashes.
+  # This behavior can be customized by the options: :seed, :op and :update.
   #
   #   a = [{:fruit => "banana", :color => "yellow", :taste => "sweet", :price => 100},
   #        {:fruit => "melon", :color => "green", :taste => "sweet", :price => 300},
@@ -106,7 +112,7 @@ module Enumerable
   # So a symbol can be used for them.
   #
   #   # count categorized elements.
-  #   p a.categorize(:color, true, :seed=>0, :op=>lambda {|s,v| s+1 })' 
+  #   p a.categorize(:color, true, :seed=>0, :op=>lambda {|s, v| s+1 })' 
   #   #=> {"yellow"=>2, "green"=>1}
   #
   #   p a.categorize(:color, :fruit, :seed=>"", :op=>:+) 
@@ -215,6 +221,43 @@ module Enumerable
   # :call-seq:
   #   enum.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) -> hash
   #   enum.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) {|s, v| ... } -> hash
+  #
+  # creates a hash from _enum_.
+  #
+  # +unique_categorize+ takes one or more key selectors,
+  # one value selector and
+  # an optional option hash.
+  # It also takes an optional block.
+  #
+  # The selectors specify how to extract a value from an element in _enum_.
+  #
+  # The key selectors, _kselN_, are used to extract hash keys from an element.
+  # If two or more key selectors are specified, the result hash will be nested.
+  #
+  # The value selector, _vsel_, is used for the values of innermost hashes.
+  # By default, this method assumes the key selectors categorizes elements in enum uniquely.
+  # If the key selectors generates same keys for two or more elements, ArgumentError is raised.
+  # This behavior can be customized by :seed option and the block.
+  #
+  #   a = [{:fruit => "banana", :color => "yellow", :taste => "sweet", :price => 100},
+  #        {:fruit => "melon", :color => "green", :taste => "sweet", :price => 300},
+  #        {:fruit => "grapefruit", :color => "yellow", :taste => "tart", :price => 200}]
+  #   p a.unique_categorize(:fruit, :price)
+  #   #=> {"banana"=>100, "melon"=>300, "grapefruit"=>200}
+  #
+  #   p a.unique_categorize(:color, :price)
+  #   # ArgumentError
+  #
+  # If the block is given, it is called for each value in _enum_.
+  # The arguments for the block is a seed and the value extracted by _vsel_.
+  # The initial seed is nil unless :seed option is specified.
+  # The return value of the block is used as the next seed.
+  #
+  #   p a.unique_categorize(:taste, :price) {|s, v| !s ? v : s + v }
+  #   #=> {"sweet"=>400, "tart"=>200}
+  #
+  #   p a.unique_categorize(:color, :price, :seed=>0) {|s, v| s + v }
+  #   #=> {"yellow"=>300, "green"=>300}
   #
   def unique_categorize(*args, &update_proc)
     opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
