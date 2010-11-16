@@ -232,6 +232,7 @@ module Enumerable
   # It also takes an optional block.
   #
   # The selectors specify how to extract a value from an element in _enum_.
+  # See Enumerable#categorize for details of selectors.
   #
   # The key selectors, _kselN_, are used to extract hash keys from an element.
   # If two or more key selectors are specified, the result hash will be nested.
@@ -282,10 +283,26 @@ module Enumerable
   # :call-seq:
   #   enum.category_count(ksel1, ksel2, ...)
   #
-  # categorizes the elements in _enum_ and counts them for each category.
+  # counts elements in _enum_ for each category defined by the key selectors.
+  #
+  #   a = [{:fruit => "banana", :color => "yellow", :taste => "sweet", :price => 100},
+  #        {:fruit => "melon", :color => "green", :taste => "sweet", :price => 300},
+  #        {:fruit => "grapefruit", :color => "yellow", :taste => "tart", :price => 200}]
+  #
+  #   p a.category_count(:color)                                  
+  #   #=> {"yellow"=>2, "green"=>1}
+  #
+  #   p a.category_count(:taste)
+  #   #=> {"sweet"=>2, "tart"=>1}
+  #
+  #   p a.category_count(:taste, :color)
+  #   #=> {"sweet"=>{"yellow"=>1, "green"=>1}, "tart"=>{"yellow"=>1}}
+  #
+  # The selectors specify how to extract a value from an element in _enum_.
+  # See Enumerable#categorize for details of selectors.
   #
   def category_count(*args)
-    unique_categorize(*(args + [true])) {|seed, value| !seed ? 1 : seed+1 }
+    unique_categorize(*(args + [true])) {|s, v| !s ? 1 : s+1 }
   end
 
 end
