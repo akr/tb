@@ -49,6 +49,7 @@ class Table
     if header_fields.empty?
       aa.shift while aa.first.all? {|elt| elt.nil? || elt == '' }
       header_fields = aa.shift
+      header_fields.pop while !header_fields.empty? && header_fields.last.nil?
       h = Hash.new(0)
       header_fields.each {|f| h[f] += 1 }
       h.each {|f, n|
