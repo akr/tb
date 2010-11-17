@@ -1,4 +1,4 @@
-require 'table'
+require 'table/enumerable'
 require 'test/unit'
 
 class TestTableEnumerable < Test::Unit::TestCase
@@ -42,6 +42,10 @@ class TestTableEnumerable < Test::Unit::TestCase
     
     assert_equal({"yellow"=>2, "green"=>1},
                  a.categorize(:color, true, :seed=>0, :op=>lambda {|s, v| s+1 }))
+
+    assert_raise(ArgumentError) { a.categorize(:color, true, :seed=>0,
+                                               :op=>lambda {|s, v| s+1 },
+                                               :update=>lambda {|ks, s, v| s+1 }) }
     
     assert_equal({"yellow"=>"bananagrapefruit", "green"=>"melon"},
                  a.categorize(:color, :fruit, :seed=>"", :op=>:+))
@@ -51,6 +55,9 @@ class TestTableEnumerable < Test::Unit::TestCase
     
     assert_equal({"yellow"=>150.0, "green"=>300.0},
                  a.categorize(:color, :price) {|ks, vs| vs.inject(0.0, &:+) / vs.length })
+
+    assert_equal({"yellow"=>{"banana"=>100.0, "grapefruit"=>200.0}, "green"=>{"melon"=>300.0}},
+                 a.categorize(:color, :fruit, :price) {|ks, vs| vs.inject(0.0, &:+) / vs.length })
     
     assert_raise(ArgumentError) { a.categorize('a') }
   end
