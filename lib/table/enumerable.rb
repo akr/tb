@@ -1,10 +1,10 @@
 # lib/table/enumerable.rb - extensions for Enumerable
 #
 # Copyright (C) 2010 Tanaka Akira  <akr@fsij.org>
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 #  1. Redistributions of source code must retain the above copyright notice, this
 #     list of conditions and the following disclaimer.
 #  2. Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 #     and/or other materials provided with the distribution.
 #  3. The name of the author may not be used to endorse or promote products
 #     derived from this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
 # WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 # MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
@@ -69,15 +69,15 @@ module Enumerable
   # - :_element : the element itself.
   # - array of selectors: make an array which contains the values extracted by the selectors.
   # - other object: extracts a value from the element using +[]+ method as +element[selector]+.
-  # 
-  # So the selector :fruit extracts the value from the element  
+  #
+  # So the selector :fruit extracts the value from the element
   # {:fruit => "banana", :color => "yellow", :taste => "sweet", :price => 100}
   # as {...}[:fruit].
   #
   #   p a.categorize(lambda {|elt| elt[:fruit][4] }, :fruit)
   #   #=> {"n"=>["banana", "melon"], "e"=>["grapefruit"]}
   #
-  #   p a.categorize(:color, true)                      
+  #   p a.categorize(:color, true)
   #   #=> {"yellow"=>[true, true], "green"=>[true]}
   #
   #   p a.categorize(:color, :_index)
@@ -113,10 +113,10 @@ module Enumerable
   # So a symbol can be used for them.
   #
   #   # count categorized elements.
-  #   p a.categorize(:color, true, :seed=>0, :op=>lambda {|s, v| s+1 })' 
+  #   p a.categorize(:color, true, :seed=>0, :op=>lambda {|s, v| s+1 })
   #   #=> {"yellow"=>2, "green"=>1}
   #
-  #   p a.categorize(:color, :fruit, :seed=>"", :op=>:+) 
+  #   p a.categorize(:color, :fruit, :seed=>"", :op=>:+)
   #   #=> {"yellow"=>"bananagrapefruit", "green"=>"melon"}
   #
   # The default behavior, collecting all values as an array, is implemented as follows.
@@ -128,11 +128,11 @@ module Enumerable
   #
   # The block for +categorize+ method converts combined values to final hash values.
   #
-  #   p a.categorize(:color, :fruit) {|ks, vs| vs.join(",") } 
+  #   p a.categorize(:color, :fruit) {|ks, vs| vs.join(",") }
   #   #=> {"yellow"=>"banana,grapefruit", "green"=>"melon"}
   #
   #   # calculates the average price for fruits of each color.
-  #   p a.categorize(:color, :price) {|ks, vs| vs.inject(0.0, &:+) / vs.length }  
+  #   p a.categorize(:color, :price) {|ks, vs| vs.inject(0.0, &:+) / vs.length }
   #   #=> {"yellow"=>150.0, "green"=>300.0}
   #
   def categorize(*args, &reduce_proc)
@@ -289,7 +289,7 @@ module Enumerable
   #        {:fruit => "melon", :color => "green", :taste => "sweet", :price => 300},
   #        {:fruit => "grapefruit", :color => "yellow", :taste => "tart", :price => 200}]
   #
-  #   p a.category_count(:color)                                  
+  #   p a.category_count(:color)
   #   #=> {"yellow"=>2, "green"=>1}
   #
   #   p a.category_count(:taste)
