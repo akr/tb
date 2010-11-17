@@ -14,7 +14,7 @@ class TestTableEnumerable < Test::Unit::TestCase
                  a.categorize(:taste, :color, :fruit))
     assert_equal({"sweet"=>["yellow", "green"], "tart"=>["yellow"]},
                  a.categorize(:taste, :color))
-    assert_equal({"n"=>["banana", "melon"], "e"=>["grapefruit"]},
+    assert_equal({?n=>["banana", "melon"], ?e=>["grapefruit"]},
                  a.categorize(lambda {|elt| elt[:fruit][4] }, :fruit))
     
     assert_equal({"yellow"=>[true, true], "green"=>[true]},
