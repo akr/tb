@@ -62,6 +62,27 @@ class TestTableEnumerable < Test::Unit::TestCase
     assert_raise(ArgumentError) { a.categorize('a') }
   end
 
+  def test_categorize_proc
+    c = Object.new
+    def c.call(v) 10 end
+    assert_equal({10=>[10]}, [[1]].categorize(c, c))
+    assert_raise(NoMethodError) { [[1]].categorize(0, 0, :update=>c) }
+    assert_raise(NoMethodError) { [[1]].categorize(0, 0, :op=>c) }
+
+    t = Object.new
+    def t.to_proc() lambda {|*| 11 } end
+    assert_raise(TypeError) { [[1]].categorize(t, t) }
+    assert_equal({1=>11}, [[1]].categorize(0, 0, :update=>t))
+    assert_equal({1=>11}, [[1]].categorize(0, 0, :op=>t))
+
+    ct = Object.new
+    def ct.call(v) 12 end
+    def ct.to_proc() lambda {|*| 13 } end
+    assert_equal({12=>[12]}, [[1]].categorize(ct, ct))
+    assert_equal({1=>13}, [[1]].categorize(0, 0, :update=>ct))
+    assert_equal({1=>13}, [[1]].categorize(0, 0, :op=>ct))
+  end
+
   def test_unique_categorize
     a = [{:fruit => "banana", :color => "yellow", :taste => "sweet", :price => 100},
          {:fruit => "melon", :color => "green", :taste => "sweet", :price => 300},

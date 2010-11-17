@@ -63,7 +63,7 @@ module Enumerable
   # In the above example, :fruit, :color and :taste is specified as selectors.
   # There are several types of selectors as follows:
   #
-  # - procedure: extracts a value from the element by calling the procedure with the element as an argument.
+  # - object with +call+ method (procedure, etc.): extracts a value from the element by calling the procedure with the element as an argument.
   # - true: always generates true.
   # - :_index : the index of the element.
   # - :_element : the element itself.
@@ -185,8 +185,8 @@ module Enumerable
       lambda {|elt| elt }
     elsif selector == :_index
       lambda {|elt| index_cell[0] }
-    elsif !selector.kind_of?(Symbol) && selector.respond_to?(:to_proc)
-      selector.to_proc
+    elsif selector.respond_to?(:call)
+      selector
     elsif selector.respond_to? :to_ary
       selector_procs = selector.to_ary.map {|sel| cat_selector_proc(sel, index_cell) }
       lambda {|elt| selector_procs.map {|selproc| selproc.call(elt) } }
