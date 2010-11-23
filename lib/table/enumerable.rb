@@ -155,7 +155,8 @@ module Enumerable
       update_proc = lambda {|ks, s, v| !s ? [v] : (s << v) }
     end
     result = {}
-    each {|elt|
+    each {|*elts|
+      elt = elts.length <= 1 ? elts[0] : elts
       ks = key_selectors.map {|ksel| ksel.call(elt) }
       v = value_selector.call(elt)
       h = result
