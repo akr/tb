@@ -80,13 +80,12 @@ module Enumerable
   # :seed, :op and :update option in the option hash customizes this behavior.
   # :seed option and :op option is similar to Enumerable#inject.
   # :seed option specifies an initial value.
+  # (If :seed option is not given, the first value for each category is treated as an initial value.)
   # :op option specifies a procedure to combine a seed and an element into a next seed.
   # :update option is same as :op option except it takes three arguments instead of two:
   # keys, seed and element.
   # +to_proc+ method is used to convert :op and :update option to a procedure.
   # So a symbol can be used for them.
-  # The procedure given for :op or :update is called for all element for each category if :seed option is given.
-  # If it is not given, the first element for each category is treated as a seed and the procedure is not called for them.
   #
   #   # count categorized elements.
   #   p a.categorize(:color, lambda {|e| 1 }, :op=>:+)
