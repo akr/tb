@@ -115,9 +115,8 @@ module Enumerable
     if args.length < 2
       raise ArgumentError, "needs 2 or more arguments without option (but #{args.length})"
     end
-    index_cell = [0]
-    value_selector = cat_selector_proc(args.pop, index_cell)
-    key_selectors = args.map {|a| cat_selector_proc(a, index_cell) }
+    value_selector = cat_selector_proc(args.pop)
+    key_selectors = args.map {|a| cat_selector_proc(a) }
     has_seed = opts.include? :seed
     seed_value = opts[:seed]
     if opts.include?(:update) && opts.include?(:op)
@@ -153,7 +152,6 @@ module Enumerable
       else
         h[lastk] = update_proc.call(ks, h[lastk], v)
       end
-      index_cell[0] += 1
     }
     if reduce_proc
       cat_reduce(result, [], key_selectors.length-1, reduce_proc)
@@ -161,11 +159,11 @@ module Enumerable
     result
   end
 
-  def cat_selector_proc(selector, index_cell)
+  def cat_selector_proc(selector)
     if selector.respond_to?(:call)
       selector
     elsif selector.respond_to? :to_ary
-      selector_procs = selector.to_ary.map {|sel| cat_selector_proc(sel, index_cell) }
+      selector_procs = selector.to_ary.map {|sel| cat_selector_proc(sel) }
       lambda {|elt| selector_procs.map {|selproc| selproc.call(elt) } }
     else
       lambda {|elt| elt[selector] }
