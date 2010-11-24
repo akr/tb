@@ -46,11 +46,15 @@ class TestTableEnumerable < Test::Unit::TestCase
                  a.categorize(:color, lambda {|e| true }, :seed=>0, :op=>lambda {|s, v| s+1 }))
 
     assert_raise(ArgumentError) { a.categorize(:color, lambda {|e| true }, :seed=>0,
+                                               :seed=>nil,
                                                :op=>lambda {|s, v| s+1 },
                                                :update=>lambda {|ks, s, v| s+1 }) }
     
     assert_equal({"yellow"=>"bananagrapefruit", "green"=>"melon"},
                  a.categorize(:color, :fruit, :seed=>"", :op=>:+))
+
+    assert_equal({"yellow"=>2, "green"=>1},
+                 a.categorize(:color, lambda {|e| 1 }, :op=>:+))
     
     assert_equal({"yellow"=>"banana,grapefruit", "green"=>"melon"},
                  a.categorize(:color, :fruit) {|ks, vs| vs.join(",") } )
@@ -68,21 +72,21 @@ class TestTableEnumerable < Test::Unit::TestCase
     c = Object.new
     def c.call(v) 10 end
     assert_equal({10=>[10]}, [[1]].categorize(c, c))
-    assert_raise(NoMethodError) { [[1]].categorize(0, 0, :update=>c) }
-    assert_raise(NoMethodError) { [[1]].categorize(0, 0, :op=>c) }
+    assert_raise(NoMethodError) { [[1]].categorize(0, 0, :seed=>nil, :update=>c) }
+    assert_raise(NoMethodError) { [[1]].categorize(0, 0, :seed=>nil, :op=>c) }
 
     t = Object.new
     def t.to_proc() lambda {|*| 11 } end
     assert_raise(TypeError) { [[1]].categorize(t, t) }
-    assert_equal({1=>11}, [[1]].categorize(0, 0, :update=>t))
-    assert_equal({1=>11}, [[1]].categorize(0, 0, :op=>t))
+    assert_equal({1=>11}, [[1]].categorize(0, 0, :seed=>nil, :update=>t))
+    assert_equal({1=>11}, [[1]].categorize(0, 0, :seed=>nil, :op=>t))
 
     ct = Object.new
     def ct.call(v) 12 end
     def ct.to_proc() lambda {|*| 13 } end
     assert_equal({12=>[12]}, [[1]].categorize(ct, ct))
-    assert_equal({1=>13}, [[1]].categorize(0, 0, :update=>ct))
-    assert_equal({1=>13}, [[1]].categorize(0, 0, :op=>ct))
+    assert_equal({1=>13}, [[1]].categorize(0, 0, :seed=>nil, :update=>ct))
+    assert_equal({1=>13}, [[1]].categorize(0, 0, :seed=>nil, :op=>ct))
   end
 
   def test_unique_categorize

@@ -85,9 +85,11 @@ module Enumerable
   # keys, seed and element.
   # +to_proc+ method is used to convert :op and :update option to a procedure.
   # So a symbol can be used for them.
+  # The procedure given for :op or :update is called for all element for each category if :seed option is given.
+  # If it is not given, the first element for each category is treated as a seed and the procedure is not called for them.
   #
   #   # count categorized elements.
-  #   p a.categorize(:color, lambda {|e| 1 }, :seed=>0, :op=>:+)
+  #   p a.categorize(:color, lambda {|e| 1 }, :op=>:+)
   #   #=> {"yellow"=>2, "green"=>1}
   #
   #   p a.categorize(:color, :fruit, :seed=>"", :op=>:+)
@@ -117,6 +119,7 @@ module Enumerable
     index_cell = [0]
     value_selector = cat_selector_proc(args.pop, index_cell)
     key_selectors = args.map {|a| cat_selector_proc(a, index_cell) }
+    has_seed = opts.include? :seed
     seed_value = opts[:seed]
     if opts.include?(:update) && opts.include?(:op)
       raise ArgumentError, "both :op and :update option specified"
@@ -126,6 +129,8 @@ module Enumerable
       op_proc = opts[:op].to_proc
       update_proc = lambda {|ks, s, v| op_proc.call(s, v) }
     else
+      has_seed = true
+      seed_value = nil
       update_proc = lambda {|ks, s, v| !s ? [v] : (s << v) }
     end
     result = {}
@@ -141,7 +146,11 @@ module Enumerable
       }
       lastk = ks.last
       if !h.include?(lastk)
-        h[lastk] = update_proc.call(ks, seed_value, v)
+        if has_seed
+          h[lastk] = update_proc.call(ks, seed_value, v)
+        else
+          h[lastk] = v
+        end
       else
         h[lastk] = update_proc.call(ks, h[lastk], v)
       end
@@ -234,6 +243,7 @@ module Enumerable
   def unique_categorize(*args, &update_proc)
     opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
     if update_proc
+      opts[:seed] = nil unless opts.include? :seed
       opts[:update] = lambda {|ks, s, v| update_proc.call(s, v) }
     else
       seed = Object.new
