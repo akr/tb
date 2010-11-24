@@ -243,7 +243,6 @@ module Enumerable
   def unique_categorize(*args, &update_proc)
     opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
     if update_proc
-      #opts[:seed] = nil unless opts.include? :seed
       opts[:update] = lambda {|ks, s, v| update_proc.call(s, v) }
     else
       seed = Object.new
