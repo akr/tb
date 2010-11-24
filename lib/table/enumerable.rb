@@ -101,7 +101,7 @@ module Enumerable
   # :op and :update option are disjoint.
   # ArgumentError is raised if both are specified.
   #
-  # The block for +categorize+ method converts combined values to final hash values.
+  # The block for +categorize+ method converts combined values to final innermost hash values.
   #
   #   p a.categorize(:color, :fruit) {|ks, vs| vs.join(",") }
   #   #=> {"yellow"=>"banana,grapefruit", "green"=>"melon"}
@@ -228,21 +228,22 @@ module Enumerable
   #   p a.unique_categorize(:color, :price)
   #   # ArgumentError
   #
-  # If the block is given, it is called for each value in _enum_.
+  # If the block is given, it is used for combining values in a category.
   # The arguments for the block is a seed and the value extracted by _vsel_.
-  # The initial seed is nil unless :seed option is specified.
   # The return value of the block is used as the next seed.
+  # :seed option specifies the initial seed.
+  # If :seed is not given, the first value for each category is used for the seed.
   #
-  #   p a.unique_categorize(:taste, :price) {|s, v| !s ? v : s + v }
+  #   p a.unique_categorize(:taste, :price) {|s, v| s + v }
   #   #=> {"sweet"=>400, "tart"=>200}
   #
-  #   p a.unique_categorize(:color, :price, :seed=>0) {|s, v| s + v }
+  #   p a.unique_categorize(:color, :price) {|s, v| s + v }
   #   #=> {"yellow"=>300, "green"=>300}
   #
   def unique_categorize(*args, &update_proc)
     opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
     if update_proc
-      opts[:seed] = nil unless opts.include? :seed
+      #opts[:seed] = nil unless opts.include? :seed
       opts[:update] = lambda {|ks, s, v| update_proc.call(s, v) }
     else
       seed = Object.new
@@ -280,7 +281,7 @@ module Enumerable
   # See Enumerable#categorize for details of selectors.
   #
   def category_count(*args)
-    unique_categorize(*(args + [lambda {|e| true }])) {|s, v| !s ? 1 : s+1 }
+    unique_categorize(*(args + [lambda {|e| 1 }])) {|s, v| s + v }
   end
 
 end
