@@ -281,7 +281,7 @@ module Enumerable
   # See Enumerable#categorize for details of selectors.
   #
   def category_count(*args)
-    unique_categorize(*(args + [lambda {|e| 1 }])) {|s, v| s + v }
+    categorize(*(args + [lambda {|e| 1 }, {:update => lambda {|ks, s, v| s + v }}]))
   end
 
 end
