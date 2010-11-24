@@ -113,7 +113,7 @@ module Enumerable
   def categorize(*args, &reduce_proc)
     opts = args.last.kind_of?(Hash) ? args.pop : {}
     if args.length < 2
-      raise ArgumentError, "needs 2 or more arguments without option (but #{args.length})"
+      raise ArgumentError, "needs 2 or more arguments without option hash (but #{args.length})"
     end
     value_selector = cat_selector_proc(args.pop)
     key_selectors = args.map {|a| cat_selector_proc(a) }
