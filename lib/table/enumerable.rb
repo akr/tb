@@ -64,9 +64,6 @@ module Enumerable
   # There are several types of selectors as follows:
   #
   # - object with +call+ method (procedure, etc.): extracts a value from the element by calling the procedure with the element as an argument.
-  # - true: always generates true.
-  # - :_index : the index of the element.
-  # - :_element : the element itself.
   # - array of selectors: make an array which contains the values extracted by the selectors.
   # - other object: extracts a value from the element using +[]+ method as +element[selector]+.
   #
@@ -76,29 +73,6 @@ module Enumerable
   #
   #   p a.categorize(lambda {|elt| elt[:fruit][4] }, :fruit)
   #   #=> {"n"=>["banana", "melon"], "e"=>["grapefruit"]}
-  #
-  #   p a.categorize(:color, true)
-  #   #=> {"yellow"=>[true, true], "green"=>[true]}
-  #
-  #   p a.categorize(:color, :_index)
-  #   #=> {"yellow"=>[0, 2], "green"=>[1]}
-  #
-  #   p a.categorize(:color, :_element)
-  #   #=> {"yellow"=>[{:fruit=>"banana", :color=>"yellow", :taste=>"sweet", :price=>100},
-  #   #               {:fruit=>"grapefruit", :color=>"yellow", :taste=>"tart", :price=>200}],
-  #   #    "green"=>[{:fruit=>"melon", :color=>"green", :taste=>"sweet", :price=>300}]}
-  #
-  #   p a.categorize(:color, :_element)
-  #   #=> {"yellow"=>[{:fruit=>"banana", :color=>"yellow", :taste=>"sweet", :price=>100},
-  #   #               {:fruit=>"grapefruit", :color=>"yellow", :taste=>"tart", :price=>200}],
-  #   #    "green"=>[{:fruit=>"melon", :color=>"green", :taste=>"sweet", :price=>300}]}
-  #
-  #   p a.categorize(:color, [:fruit, :taste, :_index])
-  #   #=> {"yellow"=>[["banana", "sweet", 0], ["grapefruit", "tart", 2]],
-  #   #    "green"=>[["melon", "sweet", 1]]}
-  #
-  #   p a.categorize(true, :fruit)
-  #   #=> {true=>["banana", "melon", "grapefruit"]}
   #
   # When the key selectors returns same key for two or or more elements,
   # corresponding values extracted by the value selector are combined.
@@ -113,7 +87,7 @@ module Enumerable
   # So a symbol can be used for them.
   #
   #   # count categorized elements.
-  #   p a.categorize(:color, true, :seed=>0, :op=>lambda {|s, v| s+1 })
+  #   p a.categorize(:color, lambda {|e| 1 }, :seed=>0, :op=>:+)
   #   #=> {"yellow"=>2, "green"=>1}
   #
   #   p a.categorize(:color, :fruit, :seed=>"", :op=>:+)
@@ -180,13 +154,7 @@ module Enumerable
   end
 
   def cat_selector_proc(selector, index_cell)
-    if selector == true
-      lambda {|elt| true }
-    elsif selector == :_element
-      lambda {|elt| elt }
-    elsif selector == :_index
-      lambda {|elt| index_cell[0] }
-    elsif selector.respond_to?(:call)
+    if selector.respond_to?(:call)
       selector
     elsif selector.respond_to? :to_ary
       selector_procs = selector.to_ary.map {|sel| cat_selector_proc(sel, index_cell) }
@@ -303,7 +271,7 @@ module Enumerable
   # See Enumerable#categorize for details of selectors.
   #
   def category_count(*args)
-    unique_categorize(*(args + [true])) {|s, v| !s ? 1 : s+1 }
+    unique_categorize(*(args + [lambda {|e| true }])) {|s, v| !s ? 1 : s+1 }
   end
 
 end

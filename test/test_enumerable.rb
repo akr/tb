@@ -18,32 +18,34 @@ class TestTableEnumerable < Test::Unit::TestCase
                  a.categorize(lambda {|elt| elt[:fruit][4] }, :fruit))
     
     assert_equal({"yellow"=>[true, true], "green"=>[true]},
-                 a.categorize(:color, true))
+                 a.categorize(:color, lambda {|e| true }))
     
+    i = -1
     assert_equal({"yellow"=>[0, 2], "green"=>[1]},
-                 a.categorize(:color, :_index))
+                 a.categorize(:color, lambda {|e| i += 1 }))
     
     assert_equal({"yellow"=>[{:fruit=>"banana", :color=>"yellow", :taste=>"sweet", :price=>100},
                              {:fruit=>"grapefruit", :color=>"yellow", :taste=>"tart", :price=>200}],
                   "green"=>[{:fruit=>"melon", :color=>"green", :taste=>"sweet", :price=>300}]},
-                 a.categorize(:color, :_element))
+                 a.categorize(:color, lambda {|e| e }))
     
     assert_equal({"yellow"=>[{:fruit=>"banana", :color=>"yellow", :taste=>"sweet", :price=>100},
                              {:fruit=>"grapefruit", :color=>"yellow", :taste=>"tart", :price=>200}],
                   "green"=>[{:fruit=>"melon", :color=>"green", :taste=>"sweet", :price=>300}]},
-                 a.categorize(:color, :_element))
+                 a.categorize(:color, lambda {|e| e }))
     
+    i = -1
     assert_equal({"yellow"=>[["banana", "sweet", 0], ["grapefruit", "tart", 2]],
                   "green"=>[["melon", "sweet", 1]]},
-                 a.categorize(:color, [:fruit, :taste, :_index]))
+                 a.categorize(:color, [:fruit, :taste, lambda {|e| i += 1 }]))
     
     assert_equal({true=>["banana", "melon", "grapefruit"]},
-                 a.categorize(true, :fruit))
+                 a.categorize(lambda {|e| true }, :fruit))
     
     assert_equal({"yellow"=>2, "green"=>1},
-                 a.categorize(:color, true, :seed=>0, :op=>lambda {|s, v| s+1 }))
+                 a.categorize(:color, lambda {|e| true }, :seed=>0, :op=>lambda {|s, v| s+1 }))
 
-    assert_raise(ArgumentError) { a.categorize(:color, true, :seed=>0,
+    assert_raise(ArgumentError) { a.categorize(:color, lambda {|e| true }, :seed=>0,
                                                :op=>lambda {|s, v| s+1 },
                                                :update=>lambda {|ks, s, v| s+1 }) }
     
