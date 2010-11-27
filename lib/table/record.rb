@@ -94,4 +94,8 @@ class Table::Record
     }
     nil
   end
+
+  def values_at(*fields)
+    fields.map {|f| self[f] }
+  end
 end
