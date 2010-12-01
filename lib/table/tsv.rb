@@ -33,6 +33,8 @@ class Table
   def Table.parse_tsv(tsv, *header_fields)
     aa = []
     tsv.each_line {|line|
+      line = line.chomp("\n")
+      line = line.chomp("\r")
       aa << line.split(/\t/, -1)
     }
     if header_fields.empty?
