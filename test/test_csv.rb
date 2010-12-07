@@ -36,6 +36,25 @@ class TestTableCSV < Test::Unit::TestCase
       records)
   end
 
+  def test_parse_conv
+    csv = "foo\na,b\n1,2\n"
+    t = Table.parse_csv(csv) {|aa|
+      assert_equal([%w[foo],
+                   %w[a b],
+                   %w[1 2]],
+                   aa)
+      aa.shift
+      aa
+    }
+    records = []
+    t.each_record {|record|
+      records << record.to_h
+    }
+    assert_equal(
+      [{"_recordid"=>0, "a"=>"1", "b"=>"2"}],
+      records)
+  end
+
   def test_generate
     t = Table.new %w[a b], [1, 2], [3, 4]
     out = t.generate_csv('', ['a', 'b'])

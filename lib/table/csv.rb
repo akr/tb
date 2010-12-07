@@ -26,8 +26,8 @@
 
 class Table
 
-  def Table.load_csv(filename, *header_fields)
-    Table.parse_csv(File.read(filename), *header_fields)
+  def Table.load_csv(filename, *header_fields, &block)
+    Table.parse_csv(File.read(filename), *header_fields, &block)
   end
 
   def Table.parse_csv(csv, *header_fields)
@@ -46,6 +46,7 @@ class Table
         aa << ary
       }
     end
+    aa = yield aa if block_given?
     if header_fields.empty?
       aa.shift while aa.first.all? {|elt| elt.nil? || elt == '' }
       header_fields = aa.shift
