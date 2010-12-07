@@ -26,8 +26,8 @@
 
 class Table
 
-  def Table.load_tsv(filename, *header_fields)
-    Table.parse_tsv(File.read(filename), *header_fields)
+  def Table.load_tsv(filename, *header_fields, &block)
+    Table.parse_tsv(File.read(filename), *header_fields, &block)
   end
 
   def Table.parse_tsv(tsv, *header_fields)
@@ -37,15 +37,16 @@ class Table
       line = line.chomp("\r")
       aa << line.split(/\t/, -1)
     }
+    aa = yield aa if block_given?
     if header_fields.empty?
       aa.shift while aa.first.all? {|elt| elt.nil? || elt == '' }
       header_fields = aa.shift
       h = Hash.new(0)
-      header_fields.each {|f| h[f] += 1 }
-      h.each {|f, n|
-        if 1 < n
-          raise ArgumentError, "ambiguous header: #{f.inspect}"
+      header_fields.each_with_index {|f, i|
+        if h.include? f
+          raise ArgumentError, "ambiguous header field: #{f.inspect} (#{h[f]}th and #{i}th)"
         end
+        h[f] = i
       }
     end
     t = Table.new(header_fields)
