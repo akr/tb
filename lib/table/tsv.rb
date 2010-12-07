@@ -66,15 +66,15 @@ class Table
   #
   def generate_tsv(out='', fields=nil, &block)
     if fields.nil?
-      fields = @tbl.keys
+      fields = list_fields.reject {|f| /\A_/ =~ f }
     end
     recordids = list_recordids
     if block_given?
       recordids = yield(recordids)
     end
-    out << tsv_join(fields)
+    out << tsv_join(fields) << "\n"
     recordids.each {|recordid|
-      out << tsv_join(get_values(recordid, *fields))
+      out << tsv_join(get_values(recordid, *fields)) << "\n"
     }
     out
   end
