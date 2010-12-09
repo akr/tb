@@ -45,6 +45,7 @@ class Table
         yield ary
       }
     end
+    nil
   end
 
   def Table.parse_csv(csv, *header_fields)
