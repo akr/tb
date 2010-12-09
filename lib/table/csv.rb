@@ -78,6 +78,24 @@ class Table
     t
   end
 
+  def Table.csv_stream_output(out)
+    require 'csv'
+    if defined? CSV::Writer
+      # Ruby 1.8
+      CSV::Writer.generate(out) {|csvgen|
+        yield csvgen
+      }
+    else
+      # Ruby 1.9
+      gen = Object.new
+      gen.instance_variable_set(:@out, out)
+      def gen.<<(ary)
+        @out << ary.to_csv
+      end
+      yield gen
+    end
+  end
+
   # :call-seq:
   #   generate_csv(out='', fields=nil) {|recordids| modified_recordids }
   #   generate_csv(out='', fields=nil)
@@ -91,23 +109,12 @@ class Table
     if block_given?
       recordids = yield(recordids)
     end
-    if defined? CSV::Writer
-      # Ruby 1.8
-      CSV::Writer.generate(out) {|csvgen|
-        csvgen << fields
-        recordids.each {|recordid|
-          csvgen << get_values(recordid, *fields)
-        }
-      }
-    else
-      # Ruby 1.9
-      out << fields.to_csv
+    Table.csv_stream_output(out) {|gen|
+      gen << fields
       recordids.each {|recordid|
-        values = get_values(recordid, *fields)
-        str = values.to_csv
-        out << str
+        gen << get_values(recordid, *fields)
       }
-    end
+    }
     out
   end
 end
