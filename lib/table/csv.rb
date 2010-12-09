@@ -30,22 +30,28 @@ class Table
     Table.parse_csv(File.read(filename), *header_fields, &block)
   end
 
-  def Table.parse_csv(csv, *header_fields)
+  def Table.csv_foreach(csv)
     require 'csv'
-    aa = []
     if defined? CSV::Reader
       # Ruby 1.8
       CSV::Reader.parse(csv) {|ary|
         ary = ary.map {|cell| cell.nil? ? nil : cell.to_s }
-        aa << ary
+        yield ary
       }
     else
       # Ruby 1.9
       CSV.parse(csv) {|ary|
         ary = ary.map {|val| val.nil? ? nil : val.to_s }
-        aa << ary
+        yield ary
       }
     end
+  end
+
+  def Table.parse_csv(csv, *header_fields)
+    aa = []
+    csv_foreach(csv) {|ary|
+      aa << ary
+    }
     aa = yield aa if block_given?
     if header_fields.empty?
       aa.shift while aa.first.all? {|elt| elt.nil? || elt == '' }
