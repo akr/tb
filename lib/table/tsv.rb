@@ -30,12 +30,19 @@ class Table
     Table.parse_tsv(File.read(filename), *header_fields, &block)
   end
 
-  def Table.parse_tsv(tsv, *header_fields)
-    aa = []
+  def Table.tsv_foreach(tsv)
     tsv.each_line {|line|
       line = line.chomp("\n")
       line = line.chomp("\r")
-      aa << line.split(/\t/, -1)
+      yield line.split(/\t/, -1)
+    }
+    nil
+  end
+
+  def Table.parse_tsv(tsv, *header_fields)
+    aa = []
+    tsv_foreach(tsv) {|ary|
+      aa << ary
     }
     aa = yield aa if block_given?
     if header_fields.empty?
