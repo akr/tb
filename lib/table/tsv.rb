@@ -30,7 +30,7 @@ class Table
     Table.parse_tsv(File.read(filename), *header_fields, &block)
   end
 
-  def Table.tsv_foreach(tsv)
+  def Table.tsv_stream_input(tsv)
     tsv.each_line {|line|
       line = line.chomp("\n")
       line = line.chomp("\r")
@@ -41,7 +41,7 @@ class Table
 
   def Table.parse_tsv(tsv, *header_fields)
     aa = []
-    tsv_foreach(tsv) {|ary|
+    tsv_stream_input(tsv) {|ary|
       aa << ary
     }
     aa = yield aa if block_given?
