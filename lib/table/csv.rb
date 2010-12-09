@@ -30,7 +30,7 @@ class Table
     Table.parse_csv(File.read(filename), *header_fields, &block)
   end
 
-  def Table.csv_foreach(csv)
+  def Table.csv_stream_input(csv)
     require 'csv'
     if defined? CSV::Reader
       # Ruby 1.8
@@ -50,7 +50,7 @@ class Table
 
   def Table.parse_csv(csv, *header_fields)
     aa = []
-    csv_foreach(csv) {|ary|
+    csv_stream_input(csv) {|ary|
       aa << ary
     }
     aa = yield aa if block_given?
