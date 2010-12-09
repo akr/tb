@@ -67,6 +67,15 @@ class Table
     t
   end
 
+  def Table.tsv_stream_output(out)
+    gen = Object.new
+    gen.instance_variable_set(:@out, out)
+    def gen.<<(ary)
+      @out << tsv_fields_join(ary) << "\n"
+    end
+    yield gen
+  end
+
   # :call-seq:
   #   generate_tsv(out='', fields=nil) {|recordids| modified_recordids }
   #   generate_tsv(out='', fields=nil)
@@ -79,14 +88,16 @@ class Table
     if block_given?
       recordids = yield(recordids)
     end
-    out << tsv_join(fields) << "\n"
-    recordids.each {|recordid|
-      out << tsv_join(get_values(recordid, *fields)) << "\n"
+    Table.tsv_stream_output(out) {|gen|
+      gen << fields
+      recordids.each {|recordid|
+        gen << get_values(recordid, *fields)
+      }
     }
     out
   end
 
-  def tsv_join(values)
+  def Table.tsv_fields_join(values)
     values.map {|v| v.to_s.gsub(/[\t\r\n]/, ' ') }.join("\t")
   end
 end
