@@ -32,4 +32,10 @@ class TestTableTSV < Test::Unit::TestCase
       [{"_recordid"=>0, "a"=>"1", "b"=>"2"}],
       records)
   end
+
+  def test_generate_tsv
+    tbl = Table.new %w[a b], %w[foo bar]
+    tbl.generate_tsv(out="")
+    assert_equal("a\tb\nfoo\tbar\n", out)
+  end
 end

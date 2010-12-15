@@ -71,7 +71,7 @@ class Table
     gen = Object.new
     gen.instance_variable_set(:@out, out)
     def gen.<<(ary)
-      @out << tsv_fields_join(ary) << "\n"
+      @out << Table.tsv_fields_join(ary) << "\n"
     end
     yield gen
   end
