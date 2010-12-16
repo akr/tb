@@ -43,6 +43,7 @@ class Table
       verify << $&
       cell = $2
       sep = $3
+      break if cell.nil? && sep.empty?
       cells << cell
       if sep != "\t"
         yield cells
