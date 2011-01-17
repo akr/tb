@@ -676,7 +676,7 @@ class Table
   end
 
   # :call-seq:
-  #   table.get_record(recordid) -> {field1=>value1, ...}
+  #   table.get_record(recordid) -> record
   #
   # get the record specified by _recordid_ as a hash.
   #
@@ -690,7 +690,7 @@ class Table
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.get_record(1)                    
-  #   #=> {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #=> #<Table::Record: "_recordid"=>1, "fruit"=>"banana", "color"=>"yellow">
   #
   def get_record(recordid)
     recordid = check_recordid(recordid)
