@@ -1,16 +1,15 @@
 #!/usr/bin/env ruby
 
 require 'table'
+require 'optparse'
 
 def main(argv)
   subcommand = argv.shift
   case subcommand
-  when 'help'
-    usage(true)
-  when 'json'
-    main_json(argv)
-  when 'yaml'
-    main_yaml(argv)
+  when 'help' then usage(true)
+  when 'json' then main_json(argv)
+  when 'yaml' then main_yaml(argv)
+  when 'grep' then main_grep(argv)
   when nil
     err "usage: table subcommand args..."
   else
@@ -20,10 +19,10 @@ end
 
 def usage(status)
   print <<'End'
-usage: table subcommand args...
-
-* table json file
-* table yaml file
+usage:
+  table json file
+  table yaml file
+  table grep [opts] pattern file
 End
   exit status
 end
@@ -50,11 +49,40 @@ def main_yaml(argv)
   }
 end
 
-def each_table_file(argv)
-  argv.each {|filename|
-    tbl = load_table(filename)
-    yield tbl
+$opt_grep_e = nil
+$opt_grep_f = nil
+def main_grep(argv)
+  require 'yaml'
+  op = OptionParser.new
+  op.def_option('-f FIELD') {|field| $opt_grep_f = field }
+  op.def_option('-e PATTERN') {|pattern| $opt_grep_e = pattern }
+  op.parse!(argv)
+  if $opt_grep_e
+    pattern = $opt_grep_e
+  else
+    pattern = argv.shift
+  end
+  re = Regexp.new(pattern)
+  each_table_file(argv) {|tbl|
+    if $opt_grep_f
+      f = $opt_grep_f
+      tbl = tbl.filter {|rec| re =~ rec[f] }
+    else
+      tbl = tbl.filter {|rec| rec.any? {|f, v| re =~ v.to_s } }
+    end
+    tbl.generate_csv(STDOUT)
   }
+end
+
+def each_table_file(argv)
+  if argv.empty?
+    yield load_table('-')
+  else
+    argv.each {|filename|
+      tbl = load_table(filename)
+      yield tbl
+    }
+  end
 end
 
 def load_table(filename)
