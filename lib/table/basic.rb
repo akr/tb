@@ -921,10 +921,10 @@ class Table
   end
 
   # :call-seq:
-  #   table.fmap!(field) {|recordid, value| new_value }
+  #   table.fmap!(field) {|record, value| new_value }
   def fmap!(field)
     each_recordid {|recordid|
-      value = yield recordid, get_cell(recordid, field)
+      value = yield get_record(recordid), get_cell(recordid, field)
       set_cell(recordid, field, value)
     }
   end

@@ -177,7 +177,7 @@ class TestTableBasic < Test::Unit::TestCase
 
   def test_fmap!
     t = Table.new %w[a b], %w[1 2], %w[3 4]
-    t.fmap!("a") {|recordid, v| "foo" + v }
+    t.fmap!("a") {|record, v| "foo" + v }
     assert_equal([{"_recordid"=>0, "a"=>"foo1", "b"=>"2"},
                   {"_recordid"=>1, "a"=>"foo3", "b"=>"4"}], t.to_a.map {|r| r.to_h_with_reserved })
   end
