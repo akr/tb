@@ -239,7 +239,8 @@ class Table
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   p t.list_fields #=> ["_recordid", "fruit", "color"]
+  #   p t.list_fields #=> ["fruit", "color"]
+  #   p t.list_fields(true) #=> ["_recordid", "fruit", "color"]
   #
   def list_fields(with_reserved=false)
     if with_reserved
