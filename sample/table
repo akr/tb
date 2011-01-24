@@ -11,6 +11,7 @@ def main(argv)
   when 'yaml' then main_yaml(argv)
   when 'grep' then main_grep(argv)
   when 'sort' then main_sort(argv)
+  when 'cat' then main_cat(argv)
   when nil
     err "Usage: table subcommand args..."
   else
@@ -25,6 +26,7 @@ Usage:
   table yaml file
   table grep [opts] REGEXP TABLE
   table sort [opts] TABLE
+  table cat [opts] TABLE ...
 End
   exit status
 end
@@ -33,6 +35,7 @@ def main_help(argv)
   subcommand = argv.shift
   case subcommand
   when 'grep' then puts op_grep
+  when 'sort' then puts op_sort
   when nil
     usage(true)
   else
@@ -111,6 +114,18 @@ def main_sort(argv)
     recs.each {|rec| tbl2.insert rec }
     tbl2.generate_csv(STDOUT)
   }
+end
+
+def main_cat(argv)
+  result = Table.new
+  each_table_file(argv) {|tbl|
+    fs = tbl.list_fields - result.list_fields
+    fs.each {|f|
+      result.define_field(f)
+    }
+    tbl.each {|rec| result.insert rec }
+  }
+  result.generate_csv(STDOUT)
 end
 
 def each_table_file(argv)
