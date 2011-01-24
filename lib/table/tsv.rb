@@ -82,7 +82,7 @@ class Table
   #
   def generate_tsv(out='', fields=nil, &block)
     if fields.nil?
-      fields = list_fields.reject {|f| /\A_/ =~ f }
+      fields = list_fields
     end
     recordids = list_recordids
     if block_given?

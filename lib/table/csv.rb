@@ -102,7 +102,7 @@ class Table
   #
   def generate_csv(out='', fields=nil, &block)
     if fields.nil?
-      fields = list_fields.reject {|f| /\A_/ =~ f }
+      fields = list_fields
     end
     require 'csv'
     recordids = list_recordids
