@@ -80,6 +80,15 @@ class Table::Record
     h
   end
 
+  def to_h_with_reserved
+    h = {}
+    @table.each_field_with_reserved {|f|
+      v = @table.get_cell(@recordid, f)
+      h[f] = v if !v.nil?
+    }
+    h
+  end
+
   def to_a
     a = {}
     @table.each_field {|f|
@@ -89,8 +98,25 @@ class Table::Record
     a
   end
 
+  def to_a_with_reserved
+    a = {}
+    @table.each_field_with_reserved {|f|
+      v = @table.get_cell(@recordid, f)
+      a << [f, v] if !v.nil?
+    }
+    a
+  end
+
   def each
     @table.each_field {|f|
+      v = @table.get_cell(@recordid, f)
+      yield [f, v] if !v.nil?
+    }
+    nil
+  end
+
+  def each_with_reserved
+    @table.each_field_reserved {|f|
       v = @table.get_cell(@recordid, f)
       yield [f, v] if !v.nil?
     }

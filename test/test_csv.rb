@@ -11,7 +11,7 @@ class TestTableCSV < Test::Unit::TestCase
     t = Table.parse_csv(csv)
     records = []
     t.each_record {|record|
-      records << record.to_h
+      records << record.to_h_with_reserved
     }
     assert_equal(
       [{"_recordid"=>0, "a"=>"1", "b"=>"2"},
@@ -28,7 +28,7 @@ class TestTableCSV < Test::Unit::TestCase
     t = Table.parse_csv(csv)
     records = []
     t.each_record {|record|
-      records << record.to_h
+      records << record.to_h_with_reserved
     }
     assert_equal(
       [{"_recordid"=>0, "a"=>"1", "c"=>"2"},
@@ -48,7 +48,7 @@ class TestTableCSV < Test::Unit::TestCase
     }
     records = []
     t.each_record {|record|
-      records << record.to_h
+      records << record.to_h_with_reserved
     }
     assert_equal(
       [{"_recordid"=>0, "a"=>"1", "b"=>"2"}],
