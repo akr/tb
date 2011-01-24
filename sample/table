@@ -16,6 +16,7 @@ def main(argv)
   when 'rename' then main_rename(argv)
   when 'cat' then main_cat(argv)
   when 'join' then main_join(argv)
+  when 'count' then main_count(argv)
   when nil
     err "Usage: table subcommand args..."
   else
@@ -35,6 +36,7 @@ Usage:
   table rename [opts] SRCFIELD DSTFIELD ... TABLE
   table cat [opts] TABLE...
   table join [opts] TABLE...
+  table count [opts] FIELD... COUNT-FIELD TABLE
 End
   exit status
 end
@@ -161,6 +163,28 @@ def main_join(argv)
   each_table_file(argv) {|tbl|
     result = result.natjoin2(tbl)
   }
+  result.generate_csv(STDOUT)
+end
+
+def main_count(argv)
+  input = argv.pop
+  result_fields = argv.dup
+  count_field = argv.pop
+  fs = argv
+  result = Table.new(result_fields)
+  tbl = load_table(input)
+  if fs.empty?
+    result.insert_values [count_field], tbl.size
+  else
+    h = Hash.new(0)
+    tbl.each {|rec|
+      k = rec.values_at(*fs)
+      h[k] += 1
+    }
+    h.each {|k, v|
+      result.insert_values result_fields, k+[v]
+    }
+  end
   result.generate_csv(STDOUT)
 end
 
