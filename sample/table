@@ -73,13 +73,8 @@ def main_yaml(argv)
 end
 
 def main_grep(argv)
-  require 'yaml'
   op_grep.parse!(argv)
-  if $opt_grep_e
-    pattern = $opt_grep_e
-  else
-    pattern = argv.shift
-  end
+  pattern = $opt_grep_e || argv.shift
   re = Regexp.new(pattern)
   opt_v = $opt_grep_v ? true : false
   each_table_file(argv) {|tbl|
