@@ -238,7 +238,7 @@ class Table
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.list_fields #=> ["fruit", "color"]
   #
-  def list_fields(with_reserved=false)
+  def list_fields
     @field_list.reject {|f| /\A_/ =~ f }
   end
 
@@ -258,7 +258,7 @@ class Table
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.list_fields_all #=> ["_recordid", "fruit", "color"]
   #
-  def list_fields_all(with_reserved=false)
+  def list_fields_all
     @field_list.dup
   end
 
