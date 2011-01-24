@@ -64,6 +64,20 @@ def load_table(filename)
   when /\.tsv\z/
     Table.load_tsv(filename)
   else
+    if filename == '-'
+      content = STDIN.read
+    else
+      content = File.read(filename)
+    end
+    if /\n/ =~ content
+      firstline = $`
+      if /,/ =~ firstline
+        return Table.parse_csv(content)
+      elsif /\t/ =~ firstline
+        return Table.parse_tsv(content)
+      end
+    else
+    end
     raise "unknown file extension: #{filename.inspect}"
   end
 end
