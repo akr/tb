@@ -223,12 +223,9 @@ class Table
   end
 
   # :call-seq:
-  #   table.list_fields(with_reserved=false) -> [field1, field2, ...]
+  #   table.list_fields -> [field1, field2, ...]
   #
-  # returns the list of field names as an array of strings.
-  #
-  # If the optional argument _with_reserved_ is true,
-  # reserved fields are included.
+  # returns the list of non-reserved field names as an array of strings.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -240,18 +237,33 @@ class Table
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.list_fields #=> ["fruit", "color"]
-  #   p t.list_fields(true) #=> ["_recordid", "fruit", "color"]
   #
   def list_fields(with_reserved=false)
-    if with_reserved
-      @field_list.dup
-    else
-      @field_list.reject {|f| /\A_/ =~ f }
-    end
+    @field_list.reject {|f| /\A_/ =~ f }
   end
 
   # :call-seq:
-  #   table.reorder_fields!(fields, with_reserved=false)
+  #   table.list_fields_all -> [field1, field2, ...]
+  #
+  # returns the list of reserved and non-reserved field names as an array of strings.
+  #
+  #   t = Table.new %w[fruit color],
+  #                 %w[apple red],
+  #                 %w[banana yellow],
+  #                 %w[orange orange]
+  #   pp t
+  #   #=> #<Table
+  #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #   p t.list_fields_all #=> ["_recordid", "fruit", "color"]
+  #
+  def list_fields_all(with_reserved=false)
+    @field_list.dup
+  end
+
+  # :call-seq:
+  #   table.reorder_fields!(fields)
   #
   # reorder the fields.
   #
@@ -275,11 +287,10 @@ class Table
   #   #    {"_recordid"=>1, "color"=>"yellow", "fruit"=>"banana"}
   #   #    {"_recordid"=>2, "color"=>"orange", "fruit"=>"orange"}>
   #
-  def reorder_fields!(fields, with_reserved=false)
-    if !with_reserved
-      fields = @field_list.reject {|f| /\A_/ !~ f } + fields
-    end
-    @field_list = @field_list.sort_by {|f| fields.index(f) || (fields.length + @field_list.index(f)) }
+  def reorder_fields!(fields)
+    reserved, non_resreved = @field_list.reject {|f| fields.include? f }.partition {|f| /\A_/ =~ f }
+    fs = reserved + fields + non_resreved
+    @field_list = @field_list.sort_by {|f| fs.index(f) }
   end
 
   # :call-seq:

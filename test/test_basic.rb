@@ -41,15 +41,15 @@ class TestTableBasic < Test::Unit::TestCase
   def test_list_fields
     t = Table.new
     assert_equal([], t.list_fields)
-    assert_equal([], t.list_fields(false))
-    assert_equal(["_recordid"], t.list_fields(true))
+    assert_equal([], t.list_fields)
+    assert_equal(["_recordid"], t.list_fields_all)
     t = Table.new %w[fruit color],
                   %w[apple red],
                   %w[banana yellow],
                   %w[orange orange]
     assert_equal(%w[fruit color], t.list_fields)
-    assert_equal(%w[fruit color], t.list_fields(false))
-    assert_equal(%w[_recordid fruit color], t.list_fields(true))
+    assert_equal(%w[fruit color], t.list_fields)
+    assert_equal(%w[_recordid fruit color], t.list_fields_all)
   end
 
   def test_list_recordids
@@ -228,9 +228,9 @@ class TestTableBasic < Test::Unit::TestCase
                   %w[orange orange]
     assert_equal(%w[fruit color], t.list_fields)
     t.reorder_fields! %w[color fruit]
-    assert_equal(%w[_recordid color fruit], t.list_fields(true))
-    t.reorder_fields! %w[fruit _recordid color], true
-    assert_equal(%w[fruit _recordid color], t.list_fields(true))
+    assert_equal(%w[_recordid color fruit], t.list_fields_all)
+    t.reorder_fields! %w[fruit _recordid color]
+    assert_equal(%w[fruit _recordid color], t.list_fields_all)
   end
 
   def test_has_field?
