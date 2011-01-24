@@ -1001,4 +1001,37 @@ class Table
     }
     result
   end
+
+  # :call-seq:
+  #   table.reorder_records_by {|rec| ... }
+  #
+  # creates a new table object which has same records as _table_ but
+  # the order of the records are sorted.
+  #
+  # The sort order is defined as similar manner to Enumerable#sort_by.
+  #
+  #  t = Table.new %w[fruit color],
+  #                %w[apple red],
+  #                %w[banana yellow],
+  #                %w[orange orange]
+  #  pp t
+  #  #=> #<Table
+  #  #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #  #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
+  #  #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
+  #
+  #  pp t.reorder_records_by {|rec| rec["color"] }
+  #  #=> #<Table
+  #  #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
+  #  #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
+  #  #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}>
+  #
+  def reorder_records_by(&b)
+    result = Table.new self.list_fields
+    self.sort_by(&b).each {|rec|
+      recordid = result.allocate_recordid(rec["_recordid"])
+      result.update_record(recordid, rec)
+    }
+    result
+  end
 end

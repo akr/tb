@@ -267,4 +267,13 @@ class TestTableBasic < Test::Unit::TestCase
     t2 = t.filter {|rec| rec["fruit"] == "banana" }
     assert_equal(1, t2.size)
   end
+
+  def test_reorder_records_by
+    t = Table.new %w[fruit color],
+                  %w[apple red],
+                  %w[banana yellow],
+                  %w[orange orange]
+    t2 = t.reorder_records_by {|rec| rec["color"] }
+    assert_equal(t.map {|rec| rec["color"] }.sort, t2.map {|rec| rec["color"] })
+  end
 end
