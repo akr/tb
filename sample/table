@@ -40,11 +40,13 @@ end
 
 $opt_grep_e = nil
 $opt_grep_f = nil
+$opt_grep_v = nil
 def op_grep
   op = OptionParser.new
   op.banner = 'Usage: table grep [options] PATTERN TABLE'
   op.def_option('-f FIELD') {|field| $opt_grep_f = field }
   op.def_option('-e PATTERN') {|pattern| $opt_grep_e = pattern }
+  op.def_option('-v') { $opt_grep_v = true }
   op
 end
 
@@ -79,12 +81,13 @@ def main_grep(argv)
     pattern = argv.shift
   end
   re = Regexp.new(pattern)
+  opt_v = $opt_grep_v ? true : false
   each_table_file(argv) {|tbl|
     if $opt_grep_f
       f = $opt_grep_f
-      tbl = tbl.filter {|rec| re =~ rec[f] }
+      tbl = tbl.filter {|rec| opt_v ^ !!(re =~ rec[f]) }
     else
-      tbl = tbl.filter {|rec| rec.any? {|f, v| re =~ v.to_s } }
+      tbl = tbl.filter {|rec| opt_v ^ !!(rec.any? {|f, v| re =~ v.to_s }) }
     end
     tbl.generate_csv(STDOUT)
   }
