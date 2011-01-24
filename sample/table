@@ -28,7 +28,7 @@ Usage:
   table yaml file
   table pp file
   table grep [opts] REGEXP TABLE
-  table sort [opts] TABLE
+  table sort [opts] FIELD... TABLE
   table select [opts] FIELD... TABLE
   table cat [opts] TABLE...
 End
@@ -39,7 +39,6 @@ def main_help(argv)
   subcommand = argv.shift
   case subcommand
   when 'grep' then puts op_grep
-  when 'sort' then puts op_sort
   when nil
     usage(true)
   else
@@ -56,14 +55,6 @@ def op_grep
   op.def_option('-f FIELD') {|field| $opt_grep_f = field }
   op.def_option('-e REGEXP') {|pattern| $opt_grep_e = pattern }
   op.def_option('-v') { $opt_grep_v = true }
-  op
-end
-
-$opt_sort_f = []
-def op_sort
-  op = OptionParser.new
-  op.banner = 'Usage: table sort [options] TABLE'
-  op.def_option('-f FIELD') {|field| $opt_sort_f << field }
   op
 end
 
@@ -113,18 +104,18 @@ def main_grep(argv)
 end
 
 def main_sort(argv)
-  op_sort.parse!(argv)
-  each_table_file(argv) {|tbl|
-    if !$opt_sort_f.empty?
-      blk = lambda {|rec| rec.values_at(*$opt_sort_f) }
-    else
-      blk = lambda {|rec| rec.map {|k, v| v } }
-    end
-    tbl2 = Table.new(tbl.list_fields)
-    recs = tbl.sort_by(&blk)
-    recs.each {|rec| tbl2.insert rec }
-    tbl2.generate_csv(STDOUT)
-  }
+  filename = argv.pop || '-'
+  fs = argv.empty? ? nil : argv
+  tbl = load_table(filename)
+  if fs
+    blk = lambda {|rec| rec.values_at(*fs) }
+  else
+    blk = lambda {|rec| rec.map {|k, v| v } }
+  end
+  tbl2 = Table.new(tbl.list_fields)
+  recs = tbl.sort_by(&blk)
+  recs.each {|rec| tbl2.insert rec }
+  tbl2.generate_csv(STDOUT)
 end
 
 def main_select(argv)
