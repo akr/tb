@@ -4,12 +4,12 @@ require 'test/unit'
 class TestTableBasic < Test::Unit::TestCase
   def test_initialize
     t = Table.new
-    assert_equal(["_recordid"], t.list_fields)
+    assert_equal([], t.list_fields)
     t = Table.new %w[fruit color],
                   %w[apple red],
                   %w[banana yellow],
                   %w[orange orange]
-    assert_equal(%w[_recordid fruit color].sort, t.list_fields.sort)
+    assert_equal(%w[fruit color].sort, t.list_fields.sort)
     a = t.to_a.map {|r| r.to_h }
     assert_operator(a, :include?, {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"})
     assert_operator(a, :include?, {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"})
@@ -36,6 +36,20 @@ class TestTableBasic < Test::Unit::TestCase
       else raise
       end
     }
+  end
+
+  def test_list_fields
+    t = Table.new
+    assert_equal([], t.list_fields)
+    assert_equal([], t.list_fields(false))
+    assert_equal(["_recordid"], t.list_fields(true))
+    t = Table.new %w[fruit color],
+                  %w[apple red],
+                  %w[banana yellow],
+                  %w[orange orange]
+    assert_equal(%w[fruit color], t.list_fields)
+    assert_equal(%w[fruit color], t.list_fields(false))
+    assert_equal(%w[_recordid fruit color], t.list_fields(true))
   end
 
   def test_list_recordids
@@ -212,9 +226,9 @@ class TestTableBasic < Test::Unit::TestCase
                   %w[apple red],
                   %w[banana yellow],
                   %w[orange orange]
-    assert_equal(%w[_recordid fruit color], t.list_fields)
+    assert_equal(%w[fruit color], t.list_fields)
     t.reorder_fields! %w[_recordid color fruit]
-    assert_equal(%w[_recordid color fruit], t.list_fields)
+    assert_equal(%w[color fruit], t.list_fields)
   end
 
   def test_has_field?

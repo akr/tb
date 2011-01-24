@@ -205,7 +205,6 @@ class Table
   #
   # returns true if the field specified by the argument is exist.
   #
-  #
   #   t = Table.new %w[fruit color], 
   #                 %w[apple red], 
   #                 %w[banana yellow], 
@@ -224,9 +223,12 @@ class Table
   end
 
   # :call-seq:
-  #   table.list_fields -> [field1, field2, ...]
+  #   table.list_fields(with_reserved=false) -> [field1, field2, ...]
   #
   # returns the list of field names as an array of strings.
+  #
+  # If the optional argument _with_reserved_ is true,
+  # reserved fields are included.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -239,8 +241,12 @@ class Table
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.list_fields #=> ["_recordid", "fruit", "color"]
   #
-  def list_fields
-    @field_list.dup
+  def list_fields(with_reserved=false)
+    if with_reserved
+      @field_list.dup
+    else
+      @field_list.reject {|f| /\A_/ =~ f }
+    end
   end
 
   # :call-seq:
