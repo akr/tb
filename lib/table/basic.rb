@@ -251,7 +251,7 @@ class Table
   end
 
   # :call-seq:
-  #   table.reorder_fields!(fields)
+  #   table.reorder_fields!(fields, with_reserved=false)
   #
   # reorder the fields.
   #
@@ -260,22 +260,25 @@ class Table
   #                 %w[banana yellow],
   #                 %w[orange orange]
   #   p t.list_fields
-  #   #=> ["_recordid", "fruit", "color"]
+  #   #=> ["fruit", "color"]
   #   pp t
   #   #=> #<Table
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   t.reorder_fields! %w[_recordid color fruit]
+  #   t.reorder_fields! %w[color fruit]
   #   p t.list_fields
-  #   #=> ["_recordid", "color", "fruit"]
+  #   #=> ["color", "fruit"]
   #   pp t
   #   #=> #<Table
   #   #    {"_recordid"=>0, "color"=>"red", "fruit"=>"apple"}
   #   #    {"_recordid"=>1, "color"=>"yellow", "fruit"=>"banana"}
   #   #    {"_recordid"=>2, "color"=>"orange", "fruit"=>"orange"}>
   #
-  def reorder_fields!(fields)
+  def reorder_fields!(fields, with_reserved=false)
+    if !with_reserved
+      fields = @field_list.reject {|f| /\A_/ !~ f } + fields
+    end
     @field_list = @field_list.sort_by {|f| fields.index(f) || (fields.length + @field_list.index(f)) }
   end
 

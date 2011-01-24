@@ -227,8 +227,10 @@ class TestTableBasic < Test::Unit::TestCase
                   %w[banana yellow],
                   %w[orange orange]
     assert_equal(%w[fruit color], t.list_fields)
-    t.reorder_fields! %w[_recordid color fruit]
-    assert_equal(%w[color fruit], t.list_fields)
+    t.reorder_fields! %w[color fruit]
+    assert_equal(%w[_recordid color fruit], t.list_fields(true))
+    t.reorder_fields! %w[fruit _recordid color], true
+    assert_equal(%w[fruit _recordid color], t.list_fields(true))
   end
 
   def test_has_field?
