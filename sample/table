@@ -9,6 +9,7 @@ def main(argv)
   when 'help' then main_help(argv)
   when 'json' then main_json(argv)
   when 'yaml' then main_yaml(argv)
+  when 'pp' then main_pp(argv)
   when 'grep' then main_grep(argv)
   when 'sort' then main_sort(argv)
   when 'cat' then main_cat(argv)
@@ -24,6 +25,7 @@ def usage(status)
 Usage:
   table json file
   table yaml file
+  table pp file
   table grep [opts] REGEXP TABLE
   table sort [opts] TABLE
   table cat [opts] TABLE ...
@@ -82,6 +84,13 @@ def main_yaml(argv)
     ary = tbl.map {|rec| rec.to_h }
     YAML.dump(ary, STDOUT)
     puts
+  }
+end
+
+def main_pp(argv)
+  each_table_file(argv) {|tbl|
+    ary = tbl.map {|rec| rec.to_h }
+    pp ary
   }
 end
 
