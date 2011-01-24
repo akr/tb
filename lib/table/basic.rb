@@ -743,8 +743,7 @@ class Table
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   t.each_field {|f| p f }
-  #   #=> "_recordid"
-  #   #   "fruit"
+  #   #=> "fruit"
   #   #   "color"
   #
   def each_field
@@ -809,9 +808,9 @@ class Table
   end
 
   # :call-seq:
-  #   table.to_a -> [{field1=>value1, ...}, ...]
+  #   table.to_a -> [record1, ...]
   #
-  # returns an array containing all records as hashes.
+  # returns an array containing all records as Table::Record objects.
   #
   #   t = Table.new %w[fruit color],
   #                 %w[apple red],
@@ -823,9 +822,9 @@ class Table
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   pp t.to_a                         
-  #   #=> [{"_recordid"=>0, "fruit"=>"apple", "color"=>"red"},
-  #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"},
-  #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}]
+  #   #=> [#<Table::Record: "fruit"=>"apple", "color"=>"red">,
+  #   #    #<Table::Record: "fruit"=>"banana", "color"=>"yellow">,
+  #   #    #<Table::Record: "fruit"=>"orange", "color"=>"orange">]
   #
   def to_a
     ary = []
@@ -839,7 +838,7 @@ class Table
   #   table.each {|record| ... }
   #   table.each_record {|record| ... }
   #
-  # iterates over all records and yields them as hashes.
+  # iterates over all records and yields them as Table::Record object.
   #
   # This method returns nil.
   #
@@ -853,9 +852,9 @@ class Table
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   t.each_record {|record| p record }   
-  #   #=> {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
-  #   #   {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
-  #   #   {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
+  #   #=> #<Table::Record: "fruit"=>"apple", "color"=>"red">
+  #   #   #<Table::Record: "fruit"=>"banana", "color"=>"yellow">
+  #   #   #<Table::Record: "fruit"=>"orange", "color"=>"orange">
   #
   def each_record
     each_recordid {|recordid|
