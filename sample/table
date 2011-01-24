@@ -202,9 +202,9 @@ end
 def load_table(filename)
   case filename
   when /\.csv\z/
-    Table.load_csv(filename)
+    Table.load_csv(filename) {|aa| fix_table aa }
   when /\.tsv\z/
-    Table.load_tsv(filename)
+    Table.load_tsv(filename) {|aa| fix_table aa }
   else
     if filename == '-'
       content = STDIN.read
@@ -222,6 +222,30 @@ def load_table(filename)
     end
     raise "unknown file extension: #{filename.inspect}"
   end
+end
+
+def fix_table(aa)
+  aa.shift while aa.first.all? {|elt| elt.nil? || elt == '' }
+  aa.pop while aa.last.all? {|elt| elt.nil? || elt == '' }
+  return aa if aa.empty?
+  maxlen = aa.map {|a| a.length }.max
+  header = aa[0]
+  header.map! {|s| s || '' }
+  header << "" while header.length < maxlen
+  h = {}
+  header.map! {|s|
+    if h[s]
+      s += "(2)" if /\(\d+\)\z/ !~ s
+      while h[s]
+        s = s.sub(/\((\d+)\)\z/) { n = $1.to_i; "(#{n+1})" }
+      end
+      s
+    end
+    h[s] = true
+    s
+  }
+  aa[0] = header
+  aa
 end
 
 main ARGV
