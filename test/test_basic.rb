@@ -22,6 +22,22 @@ class TestTableBasic < Test::Unit::TestCase
     assert_kind_of(Enumerable, t)
   end
 
+  def test_define_field
+    t = Table.new %w[fruit color],
+                  %w[apple red],
+                  %w[banana yellow],
+                  %w[orange orange]
+    t.define_field("namelen") {|record| record["fruit"].length }
+    t.each {|rec|
+      case rec['fruit']
+      when 'apple' then assert_equal(5, rec['namelen'])
+      when 'banana' then assert_equal(6, rec['namelen'])
+      when 'orange' then assert_equal(6, rec['namelen'])
+      else raise
+      end
+    }
+  end
+
   def test_list_recordids
     t = Table.new
     assert_equal([], t.list_recordids)

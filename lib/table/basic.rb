@@ -63,7 +63,9 @@ class Table
   #
   # If the first argument, _fields_, is given, it should be an array of strings.
   # The strings are used as field names to define fields.
-  # If the first argument is not given, only "_recordid" field is defined.
+  #
+  # The field names begins with underscore, "_", are reserved.
+  # Currently, "_recordid" field is defined automatically.
   #
   # If the second argument and subsequent arguments, valuesN, are given, they should be an array.
   # The arrays are used as records to define records.
@@ -153,13 +155,13 @@ class Table
 
   # :call-seq:
   #   table.define_field(field)
-  #   table.define_field(field) {|recordid| value_for_the_field }
+  #   table.define_field(field) {|record| value_for_the_field }
   #
   # defines a new field.
   #
   # If no block is given, the initial value for the field is nil.
   #
-  # If a block is given, the block is called for each recordid.
+  # If a block is given, the block is called for each record.
   # The return value of the block is used for the initial value of the field.
   #
   #   t = Table.new %w[fruit color],
@@ -171,7 +173,7 @@ class Table
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   t.define_field("namelen") {|recordid| t.get_cell(recordid, "fruit").length }
+  #   t.define_field("namelen") {|record| record["fruit"].length }
   #   pp t
   #   #=>  #<Table
   #   #     {"_recordid"=>0, "fruit"=>"apple", "color"=>"red", "namelen"=>5}
@@ -189,10 +191,10 @@ class Table
     @tbl[field] = []
     @field_list << field
     if block_given?
-      each_recordid {|recordid|
-        v = yield(recordid)
+      each_record {|record|
+        v = yield(record)
         if !v.nil?
-          set_cell(recordid, field, v)
+          record[field] = v
         end
       }
     end
