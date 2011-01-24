@@ -25,6 +25,8 @@
 # OF SUCH DAMAGE.
 
 class Table::Record
+  include Enumerable
+
   def initialize(table, recordid)
     @table = table
     @recordid = recordid
