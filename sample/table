@@ -10,6 +10,7 @@ def main(argv)
   when 'json' then main_json(argv)
   when 'yaml' then main_yaml(argv)
   when 'grep' then main_grep(argv)
+  when 'sort' then main_sort(argv)
   when nil
     err "Usage: table subcommand args..."
   else
@@ -22,7 +23,8 @@ def usage(status)
 Usage:
   table json file
   table yaml file
-  table grep [opts] pattern file
+  table grep [opts] PATTERN TABLE
+  table sort [opts] TABLE
 End
   exit status
 end
@@ -47,6 +49,14 @@ def op_grep
   op.def_option('-f FIELD') {|field| $opt_grep_f = field }
   op.def_option('-e PATTERN') {|pattern| $opt_grep_e = pattern }
   op.def_option('-v') { $opt_grep_v = true }
+  op
+end
+
+$opt_sort_f = nil
+def op_sort
+  op = OptionParser.new
+  op.banner = 'Usage: table sort [options] TABLE'
+  op.def_option('-f FIELD') {|field| $opt_sort_f = field }
   op
 end
 
@@ -85,6 +95,21 @@ def main_grep(argv)
       tbl = tbl.filter {|rec| opt_v ^ !!(rec.any? {|f, v| re =~ v.to_s }) }
     end
     tbl.generate_csv(STDOUT)
+  }
+end
+
+def main_sort(argv)
+  op_sort.parse!(argv)
+  each_table_file(argv) {|tbl|
+    if $opt_sort_f
+      blk = lambda {|rec| rec[$opt_sort_f] }
+    else
+      blk = lambda {|rec| rec.map {|k, v| v } }
+    end
+    tbl2 = Table.new(tbl.list_fields)
+    recs = tbl.sort_by(&blk)
+    recs.each {|rec| tbl2.insert rec }
+    tbl2.generate_csv(STDOUT)
   }
 end
 
