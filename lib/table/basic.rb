@@ -252,7 +252,7 @@ class Table
   #   p t.list_fields #=> ["fruit", "color"]
   #
   def list_fields
-    @field_list.reject {|f| /\A_/ =~ f }
+    @field_list.reject {|f| f.start_with?("_") }
   end
 
   # :call-seq:
@@ -301,7 +301,7 @@ class Table
   #   #    {"_recordid"=>2, "color"=>"orange", "fruit"=>"orange"}>
   #
   def reorder_fields!(fields)
-    reserved, non_resreved = @field_list.reject {|f| fields.include? f }.partition {|f| /\A_/ =~ f }
+    reserved, non_resreved = @field_list.reject {|f| fields.include? f }.partition {|f| f.start_with?("_") }
     fs = reserved + fields + non_resreved
     @field_list = @field_list.sort_by {|f| fs.index(f) }
   end
@@ -761,7 +761,7 @@ class Table
   #
   def each_field
     @field_list.each {|f|
-      next if /\A_/ =~ f
+      next if f.start_with?("_")
       yield f
     }
     nil
@@ -986,7 +986,7 @@ class Table
       rh[of] = nf
     }
     result = Table.new
-    field_list = @field_list.reject {|f| f.start_with?("_") }
+    field_list = self.list_fields
     field_list.each {|of|
       nf = rh.fetch(of, of)
       result.define_field(nf)
