@@ -57,11 +57,11 @@ def op_grep
   op
 end
 
-$opt_sort_f = nil
+$opt_sort_f = []
 def op_sort
   op = OptionParser.new
   op.banner = 'Usage: table sort [options] TABLE'
-  op.def_option('-f FIELD') {|field| $opt_sort_f = field }
+  op.def_option('-f FIELD') {|field| $opt_sort_f << field }
   op
 end
 
@@ -113,8 +113,8 @@ end
 def main_sort(argv)
   op_sort.parse!(argv)
   each_table_file(argv) {|tbl|
-    if $opt_sort_f
-      blk = lambda {|rec| rec[$opt_sort_f] }
+    if !$opt_sort_f.empty?
+      blk = lambda {|rec| rec.values_at(*$opt_sort_f) }
     else
       blk = lambda {|rec| rec.map {|k, v| v } }
     end
