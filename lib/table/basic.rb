@@ -400,6 +400,14 @@ class Table
     recordid
   end
 
+  # :call-seq:
+  #   table.allocate_record(recordid=nil)
+  #
+  # allocates a record.
+  #
+  # If the optional argument, _recordid_, is specified,
+  # the allocated record will have the recordid.
+  # If _recordid_ is already used, ArgumentError is raised.
   def allocate_record(recordid=nil)
     Table::Record.new(self, allocate_recordid(recordid))
   end
@@ -491,7 +499,7 @@ class Table
   end
 
   # :call-seq:
-  #   table.delete_record(recordid) -> nil
+  #   table.delete_recordid(recordid) -> nil
   #
   # deletes a record identified by _recordid_.
   #
@@ -506,14 +514,14 @@ class Table
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   p t.delete_record(1)
+  #   p t.delete_recordid(1)
   #   #=> nil
   #   pp t
   #   #=> #<Table
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #
-  def delete_record(recordid)
+  def delete_recordid(recordid)
     recordid = check_recordid(recordid)
     index = @recordid2index.delete(recordid)
     @tbl.each {|f, ary|

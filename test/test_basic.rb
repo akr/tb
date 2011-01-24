@@ -59,7 +59,7 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal([recordid1], t.list_recordids)
     recordid2 = t.allocate_recordid
     assert_equal([recordid1, recordid2], t.list_recordids)
-    assert_equal(nil, t.delete_record(recordid1))
+    assert_equal(nil, t.delete_recordid(recordid1))
     assert_equal([recordid2], t.list_recordids)
   end
 
@@ -79,7 +79,7 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal(nil, t.get_cell(recordid, :g))
     t.delete_cell(recordid, :g)
     assert_equal(nil, t.get_cell(recordid, :g))
-    t.delete_record(recordid)
+    t.delete_recordid(recordid)
     assert_raise(IndexError) { t.get_cell(recordid, :g) }
     assert_raise(IndexError) { t.get_cell(100, :g) }
     assert_raise(IndexError) { t.get_cell(-1, :g) }
@@ -186,11 +186,11 @@ class TestTableBasic < Test::Unit::TestCase
                   {"_recordid"=>1, "b"=>"4"}], t.to_a.map {|r| r.to_h })
   end
 
-  def test_delete_record
+  def test_delete_recordid
     t = Table.new %w[a]
     recordid = t.insert({"a"=>"foo"})
     t.insert({"a"=>"bar"})
-    t.delete_record(recordid)
+    t.delete_recordid(recordid)
     t.insert({"a"=>"foo"})
     records = []
     t.each {|record|
