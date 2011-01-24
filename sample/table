@@ -1,0 +1,65 @@
+#!/usr/bin/env ruby
+
+require 'table'
+
+def usage(status)
+  print <<'End'
+usage: table subcommand args...
+
+* table json file
+End
+  exit status
+end
+
+def err(msg)
+  STDERR.puts msg
+  exit 1
+end
+
+def load_table(filename)
+  case filename
+  when /\.csv\z/
+    Table.load_csv(filename)
+  when /\.tsv\z/
+    Table.load_tsv(filename)
+  else
+    raise "unknown file extension: #{filename.inspect}"
+  end
+end
+
+def main(argv)
+  subcommand = argv.shift
+  case subcommand
+  when 'help'
+    usage(true)
+  when 'json'
+    main_json(argv)
+  when 'yaml'
+    main_yaml(argv)
+  when nil
+    err "usage: table subcommand args..."
+  else
+    err "unexpected subcommand: #{subcommand.inspect}"
+  end
+end
+
+def main_json(argv)
+  require 'json'
+  argv.each {|filename|
+    tbl = load_table(filename)
+    ary = tbl.map {|rec| rec.to_h }
+    puts JSON.pretty_generate(ary)
+  }
+end
+
+def main_yaml(argv)
+  require 'yaml'
+  argv.each {|filename|
+    tbl = load_table(filename)
+    ary = tbl.map {|rec| rec.to_h }
+    YAML.dump(ary, STDOUT)
+    puts
+  }
+end
+
+main ARGV
