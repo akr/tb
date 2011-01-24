@@ -23,7 +23,7 @@ def usage(status)
 Usage:
   table json file
   table yaml file
-  table grep [opts] PATTERN TABLE
+  table grep [opts] REGEXP TABLE
   table sort [opts] TABLE
 End
   exit status
@@ -45,9 +45,9 @@ $opt_grep_f = nil
 $opt_grep_v = nil
 def op_grep
   op = OptionParser.new
-  op.banner = 'Usage: table grep [options] PATTERN TABLE'
+  op.banner = 'Usage: table grep [options] REGEXP TABLE'
   op.def_option('-f FIELD') {|field| $opt_grep_f = field }
-  op.def_option('-e PATTERN') {|pattern| $opt_grep_e = pattern }
+  op.def_option('-e REGEXP') {|pattern| $opt_grep_e = pattern }
   op.def_option('-v') { $opt_grep_v = true }
   op
 end
