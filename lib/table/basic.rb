@@ -858,7 +858,6 @@ class Table
   #
   def each_record
     each_recordid {|recordid|
-      next if recordid.nil?
       yield get_record(recordid)
     }
     nil
