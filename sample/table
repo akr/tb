@@ -12,6 +12,7 @@ def main(argv)
   when 'pp' then main_pp(argv)
   when 'grep' then main_grep(argv)
   when 'sort' then main_sort(argv)
+  when 'select' then main_select(argv)
   when 'cat' then main_cat(argv)
   when nil
     err "Usage: table subcommand args..."
@@ -28,7 +29,8 @@ Usage:
   table pp file
   table grep [opts] REGEXP TABLE
   table sort [opts] TABLE
-  table cat [opts] TABLE ...
+  table select [opts] FIELD... TABLE
+  table cat [opts] TABLE...
 End
   exit status
 end
@@ -123,6 +125,17 @@ def main_sort(argv)
     recs.each {|rec| tbl2.insert rec }
     tbl2.generate_csv(STDOUT)
   }
+end
+
+def main_select(argv)
+  filename = argv.pop
+  fs = argv
+  tbl = load_table(filename)
+  tbl2 = Table.new(fs)
+  tbl.each {|rec|
+    tbl2.insert rec.to_h.reject {|k, v| !fs.include?(k) }
+  }
+  tbl2.generate_csv(STDOUT)
 end
 
 def main_cat(argv)
