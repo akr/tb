@@ -112,9 +112,7 @@ def main_sort(argv)
   else
     blk = lambda {|rec| rec.map {|k, v| v } }
   end
-  tbl2 = Table.new(tbl.list_fields)
-  recs = tbl.sort_by(&blk)
-  recs.each {|rec| tbl2.insert rec }
+  tbl2 = tbl.reorder_records_by(&blk)
   tbl2.generate_csv(STDOUT)
 end
 
