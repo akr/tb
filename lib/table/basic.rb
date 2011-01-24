@@ -891,8 +891,6 @@ class Table
     table1 = self
     fields1 = table1.list_fields.map {|f| rename_field1.fetch(f, f) }
     fields2 = table2.list_fields.map {|f| rename_field2.fetch(f, f) }
-    fields1.delete("_recordid")
-    fields2.delete("_recordid")
     common_fields = fields1 & fields2
     hash = table2.categorize(*(common_fields + ["_recordid"]))
     result = Table.new(fields1 | fields2)
@@ -912,7 +910,6 @@ class Table
         record1.each {|k, v|
           record0[rename_field1.fetch(k, k)] = v
         }
-        record0.delete("_recordid")
         if block_given?
           result.insert record0 if yield(record0)
         else
