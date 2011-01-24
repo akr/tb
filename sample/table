@@ -15,6 +15,7 @@ def main(argv)
   when 'select' then main_select(argv)
   when 'rename' then main_rename(argv)
   when 'cat' then main_cat(argv)
+  when 'join' then main_join(argv)
   when nil
     err "Usage: table subcommand args..."
   else
@@ -33,6 +34,7 @@ Usage:
   table select [opts] FIELD... TABLE
   table rename [opts] SRCFIELD DSTFIELD ... TABLE
   table cat [opts] TABLE...
+  table join [opts] TABLE...
 End
   exit status
 end
@@ -150,6 +152,14 @@ def main_cat(argv)
       result.define_field(f)
     }
     tbl.each {|rec| result.insert rec }
+  }
+  result.generate_csv(STDOUT)
+end
+
+def main_join(argv)
+  result = Table.new([], [])
+  each_table_file(argv) {|tbl|
+    result = result.natjoin2(tbl)
   }
   result.generate_csv(STDOUT)
 end

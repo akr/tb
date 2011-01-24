@@ -905,7 +905,11 @@ class Table
     fields1 = table1.list_fields.map {|f| rename_field1.fetch(f, f) }
     fields2 = table2.list_fields.map {|f| rename_field2.fetch(f, f) }
     common_fields = fields1 & fields2
-    hash = table2.categorize(*(common_fields + ["_recordid"]))
+    if common_fields.empty?
+      hash = table2.map {|rec| rec["_recordid"] }
+    else
+      hash = table2.categorize(*(common_fields + ["_recordid"]))
+    end
     result = Table.new(fields1 | fields2)
     table1.each_record {|record1|
       record = {}

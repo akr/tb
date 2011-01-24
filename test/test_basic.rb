@@ -189,6 +189,17 @@ class TestTableBasic < Test::Unit::TestCase
                   {"_recordid"=>2, "a"=>"0", "b"=>"4", "c"=>"5"}], t3.to_a.map {|r| r.to_h_with_reserved })
   end
 
+  def test_natjoin2_nocommon
+    t1 = Table.new %w[a b], %w[1 2], %w[3 4]
+    t2 = Table.new %w[c d], %w[5 6], %w[7 8]
+    t3 = t1.natjoin2(t2)
+    assert_equal([{"a"=>"1", "b"=>"2", "c"=>"5", "d"=>"6"},
+                  {"a"=>"1", "b"=>"2", "c"=>"7", "d"=>"8"},
+                  {"a"=>"3", "b"=>"4", "c"=>"5", "d"=>"6"},
+                  {"a"=>"3", "b"=>"4", "c"=>"7", "d"=>"8"}],
+                  t3.to_a.map {|r| r.to_h })
+  end
+
   def test_fmap!
     t = Table.new %w[a b], %w[1 2], %w[3 4]
     t.fmap!("a") {|record, v| "foo" + v }
