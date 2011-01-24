@@ -95,6 +95,19 @@ class Table
     end
   end
 
+  # :call-seq:
+  #   table.replace(table2)
+  #
+  # replaces the contents of _table_ same as _table2_.
+  def replace(tbl2)
+    raise TypeError, "a Table expected but #{tbl2.inspect}" unless Table === tbl2
+    @next_recordid = tbl2.instance_variable_get(:@next_recordid)
+    @recordid2index = tbl2.instance_variable_get(:@recordid2index).dup
+    @free_index = tbl2.instance_variable_get(:@free_index).dup
+    @tbl = Hash[tbl2.instance_variable_get(:@tbl).map {|k, v| [k, v.dup] }]
+    @field_list = tbl2.instance_variable_get(:@field_list).dup
+  end
+
   def pretty_print(q) # :nodoc:
     q.object_group(self) {
       each_recordid {|recordid|

@@ -17,6 +17,20 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal(3, a.length)
   end
 
+  def test_replace
+    t1 = Table.new %w[fruit color],
+                   %w[apple red],
+                   %w[banana yellow],
+                   %w[orange orange]
+    t2 = Table.new %w[grain color],
+                   %w[rice white],
+                   %w[wheat light-brown]
+    t1.replace t2
+    assert_equal([{"grain"=>"rice", "color"=>"white"},
+                  {"grain"=>"wheat", "color"=>"light-brown"}],
+                 t2.to_a.map {|rec| rec.to_h })
+  end
+
   def test_enumerable
     t = Table.new
     assert_kind_of(Enumerable, t)
