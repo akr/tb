@@ -73,7 +73,9 @@ def main_json(argv)
   require 'json'
   each_table_file(argv) {|tbl|
     ary = tbl.map {|rec| rec.to_h }
-    puts JSON.pretty_generate(ary)
+    with_output {|out|
+      out.puts JSON.pretty_generate(ary)
+    }
   }
 end
 
@@ -81,15 +83,19 @@ def main_yaml(argv)
   require 'yaml'
   each_table_file(argv) {|tbl|
     ary = tbl.map {|rec| rec.to_h }
-    YAML.dump(ary, STDOUT)
-    puts
+    with_output {|out|
+      YAML.dump(ary, out)
+      out.puts
+    }
   }
 end
 
 def main_pp(argv)
   each_table_file(argv) {|tbl|
     ary = tbl.map {|rec| rec.to_h }
-    pp ary
+    with_output {|out|
+      PP.pp ary, out
+    }
   }
 end
 
@@ -105,7 +111,9 @@ def main_grep(argv)
     else
       tbl = tbl.filter {|rec| opt_v ^ !!(rec.any? {|f, v| re =~ v.to_s }) }
     end
-    tbl.generate_csv(STDOUT)
+    with_output {|out|
+      tbl.generate_csv(out)
+    }
   }
 end
 
@@ -119,7 +127,9 @@ def main_sort(argv)
     blk = lambda {|rec| rec.map {|k, v| v } }
   end
   tbl2 = tbl.reorder_records_by(&blk)
-  tbl2.generate_csv(STDOUT)
+  with_output {|out|
+    tbl2.generate_csv(out)
+  }
 end
 
 def main_select(argv)
@@ -130,7 +140,9 @@ def main_select(argv)
   tbl.each {|rec|
     tbl2.insert rec.to_h.reject {|k, v| !fs.include?(k) }
   }
-  tbl2.generate_csv(STDOUT)
+  with_output {|out|
+    tbl2.generate_csv(out)
+  }
 end
 
 def main_rename(argv)
@@ -143,7 +155,9 @@ def main_rename(argv)
   argv.each_slice(2) {|k, v| h[k] = v }
   tbl = load_table(filename)
   tbl2 = tbl.rename_field(h)
-  tbl2.generate_csv(STDOUT)
+  with_output {|out|
+    tbl2.generate_csv(out)
+  }
 end
 
 def main_cat(argv)
@@ -155,7 +169,9 @@ def main_cat(argv)
     }
     tbl.each {|rec| result.insert rec }
   }
-  result.generate_csv(STDOUT)
+  with_output {|out|
+    result.generate_csv(out)
+  }
 end
 
 def main_join(argv)
@@ -163,7 +179,9 @@ def main_join(argv)
   each_table_file(argv) {|tbl|
     result = result.natjoin2(tbl)
   }
-  result.generate_csv(STDOUT)
+  with_output {|out|
+    result.generate_csv(out)
+  }
 end
 
 def main_count(argv)
@@ -185,7 +203,9 @@ def main_count(argv)
       result.insert_values result_fields, k+[v]
     }
   end
-  result.generate_csv(STDOUT)
+  with_output {|out|
+    result.generate_csv(out)
+  }
 end
 
 def each_table_file(argv)
@@ -246,6 +266,16 @@ def fix_table(aa)
   }
   aa[0] = header
   aa
+end
+
+def with_output
+  if STDOUT.tty?
+    IO.popen(ENV['PAGER'] || 'more', 'w') {|pager|
+      yield pager
+    }
+  else
+    yield STDOUT
+  end
 end
 
 main ARGV
