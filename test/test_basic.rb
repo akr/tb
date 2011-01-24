@@ -244,4 +244,13 @@ class TestTableBasic < Test::Unit::TestCase
     assert_equal(true, t.has_field?("fruit"))
     assert_equal(false, t.has_field?("foo"))
   end
+
+  def test_filter
+    t = Table.new %w[fruit color],
+                  %w[apple red],
+                  %w[banana yellow],
+                  %w[orange orange]
+    t2 = t.filter {|rec| rec["fruit"] == "banana" }
+    assert_equal(1, t2.size)
+  end
 end

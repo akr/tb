@@ -876,11 +876,9 @@ class Table
   # :call-seq:
   #   table.filter {|record| ... }
   def filter
-    t = Table.new list_fields-["_recordid"]
+    t = Table.new list_fields
     each_record {|record|
-      record = record.to_h
       if yield(record)
-        record.delete "_recordid"
         t.insert record
       end
     }
