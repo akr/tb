@@ -75,11 +75,11 @@ class Table
   class CSVReader
     if defined? CSV::Reader
       # Ruby 1.8
-      def initialize(io)
-        if io.respond_to? :to_str
-          @csv = CSV::StringReader.new(io)
+      def initialize(input)
+        if input.respond_to? :to_str
+          @csv = CSV::StringReader.new(input)
         else
-          @csv = CSV::IOReader.new(io)
+          @csv = CSV::IOReader.new(input)
         end
         @eof = false
       end
@@ -97,8 +97,8 @@ class Table
       end
     else
       # Ruby 1.9
-      def initialize(io)
-        @csv = CSV.new(io)
+      def initialize(input)
+        @csv = CSV.new(input)
       end
 
       def shift
