@@ -354,27 +354,6 @@ class TableReader
   end
 end
 
-def table_stream_input(filename, &b)
-  case filename
-  when /\.csv\z/
-    File.open(filename) {|f|
-      Table.csv_stream_input(f, &b)
-    }
-  when /\.tsv\z/
-    File.open(filename) {|f|
-      Table.tsv_stream_input(f, &b)
-    }
-  else
-    if filename == '-'
-      Table.csv_stream_input(STDIN, &b)
-    else
-      File.open(filename) {|f|
-	Table.csv_stream_input(f, &b)
-      }
-    end
-  end
-end
-
 def fix_table(aa)
   aa.shift while aa.first.all? {|elt| elt.nil? || elt == '' }
   aa.pop while aa.last.all? {|elt| elt.nil? || elt == '' }
