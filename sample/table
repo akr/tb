@@ -96,6 +96,20 @@ def main_csv(argv)
   }
 end
 
+=begin
+# stream style cannot support -n option.
+def main_csv(argv)
+  op_csv.parse!(argv)
+  argv.each {|filename|
+    with_table_stream_output {|gen|
+      table_stream_input_with_header(filename,
+	lambda {|header| gen << fix_header(header) },
+	lambda {|ary| gen << ary })
+    }
+  }
+end
+=end
+
 def main_json(argv)
   require 'json'
   each_table_file(argv) {|tbl|
