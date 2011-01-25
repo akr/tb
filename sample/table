@@ -96,20 +96,6 @@ def main_csv(argv)
   }
 end
 
-=begin
-# stream style cannot support -n option.
-def main_csv(argv)
-  op_csv.parse!(argv)
-  argv.each {|filename|
-    with_table_stream_output {|gen|
-      table_stream_input_with_header(filename,
-	lambda {|header| gen << fix_header(header) },
-	lambda {|ary| gen << ary })
-    }
-  }
-end
-=end
-
 def main_json(argv)
   require 'json'
   each_table_file(argv) {|tbl|
@@ -150,25 +136,23 @@ def main_grep(argv)
     with_table_stream_output {|gen|
       opt_f_index = nil
       header = nil
-      table_stream_input_with_header(filename,
-        lambda {|ary| 
-	  header = ary
-	  gen << ary
-	  if $opt_grep_f
-	    opt_f_index = ary.index($opt_grep_f)
-	    if opt_f_index.nil?
-	      raise "field not found: #{$opt_grep_f.inspect}"
-	    end
-	  end
-	},
-	lambda {|ary|
-	  if $opt_grep_f
-	    found = opt_v ^ !!(re =~ ary[opt_f_index])
-	  else
-	    found = opt_v ^ !!(ary.any? {|v| re =~ v.to_s })
-	  end
-	  gen << ary if found
-	})
+      tblreader = TableReader.new(filename)
+      header = tblreader.header
+      gen << header
+      if $opt_grep_f
+        opt_f_index = header.index($opt_grep_f)
+        if opt_f_index.nil?
+          raise "field not found: #{$opt_grep_f.inspect}"
+        end
+      end
+      tblreader.each {|ary|
+        if $opt_grep_f
+          found = opt_v ^ !!(re =~ ary[opt_f_index])
+        else
+          found = opt_v ^ !!(ary.any? {|v| re =~ v.to_s })
+        end
+        gen << ary if found
+      }
     }
   }
 end
@@ -194,20 +178,19 @@ def main_select(argv)
   with_table_stream_output {|gen|
     header = nil
     is = nil
-    table_stream_input_with_header(filename,
-      lambda {|header| 
-	is = []
-	fs.each {|f|
-	  is << header.index(f)
-	  if is.last.nil?
-	    raise "field not found: #{f.inspect}"
-	  end
-	}
-	gen << header.values_at(*is)
-      },
-      lambda {|ary|
-	gen << ary.values_at(*is)
-      })
+    tblreader = TableReader.new(filename)
+    header = tblreader.header
+    is = []
+    fs.each {|f|
+      is << header.index(f)
+      if is.last.nil?
+        raise "field not found: #{f.inspect}"
+      end
+    }
+    gen << header.values_at(*is)
+    tblreader.each {|ary|
+      gen << ary.values_at(*is)
+    }
   }
 end
 
@@ -220,13 +203,12 @@ def main_rename(argv)
   h = {}
   argv.each_slice(2) {|k, v| h[k] = v }
   with_table_stream_output {|gen|
-    table_stream_input_with_header(filename,
-      lambda {|header| 
-        gen << header.map {|f| h.fetch(f, f) }
-      },
-      lambda {|ary|
-	gen << ary
-      })
+    tblreader = TableReader.new(filename)
+    header = tblreader.header
+    gen << header.map {|f| h.fetch(f, f) }
+    tblreader.each {|ary|
+      gen << ary
+    }
   }
 end
 
@@ -261,19 +243,17 @@ def main_count(argv)
   fs = argv
   if fs.empty?
     n = 0
-    table_stream_input_with_header(filename,
-      lambda {|header| },
-      lambda {|ary| n += 1 })
+    tblreader = TableReader.new(filename)
+    tblreader.each {|ary| n += 1 }
     result = Table.new([count_field], [n])
   else
     is = nil
     h = Hash.new(0)
-    table_stream_input_with_header(filename,
-      lambda {|header|
-	header = fix_header(header)
-        is = fs.map {|f| header.index(f) }
-      },
-      lambda {|ary| h[ary.values_at(*is)] += 1 })
+    tblreader = TableReader.new(filename)
+    header = tblreader.header
+    header = fix_header(header)
+    is = fs.map {|f| header.index(f) }
+    tblreader.each {|ary| h[ary.values_at(*is)] += 1 }
     result = Table.new(result_fields)
     h.each {|k, v|
       result.insert_values result_fields, k+[v]
@@ -320,14 +300,6 @@ def load_table(filename)
   end
 end
 
-def table_stream_input_with_header(filename, header_proc, record_proc)
-  tblreader = TableReader.new(filename)
-  header_proc.call tblreader.header
-  while ary = tblreader.shift
-    record_proc.call ary
-  end
-end
-
 class TableReader
   def initialize(filename)
     @io = nil
@@ -367,6 +339,13 @@ class TableReader
   def shift
     header
     @reader.shift
+  end
+
+  def each
+    while ary = self.shift
+      yield ary
+    end
+    nil
   end
 
   def close
