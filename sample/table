@@ -178,7 +178,6 @@ def main_select(argv)
   filename = argv.pop
   fs = argv
   with_table_stream_output {|gen|
-    opt_f_index = nil
     header = nil
     is = nil
     table_stream_input_with_header(filename,
