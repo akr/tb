@@ -1,6 +1,6 @@
 # lib/table/csv.rb - CSV related fetures for table library
 #
-# Copyright (C) 2010 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2010-2011 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -24,28 +24,12 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
+require 'csv'
+
 class Table
 
   def Table.load_csv(filename, *header_fields, &block)
     Table.parse_csv(File.read(filename), *header_fields, &block)
-  end
-
-  def Table.csv_stream_input(csv)
-    require 'csv'
-    if defined? CSV::Reader
-      # Ruby 1.8
-      CSV::Reader.parse(csv) {|ary|
-        ary = ary.map {|cell| cell.nil? ? nil : cell.to_s }
-        yield ary
-      }
-    else
-      # Ruby 1.9
-      CSV.parse(csv) {|ary|
-        ary = ary.map {|val| val.nil? ? nil : val.to_s }
-        yield ary
-      }
-    end
-    nil
   end
 
   def Table.parse_csv(csv, *header_fields)
@@ -76,6 +60,62 @@ class Table
       t.insert(h)
     }
     t
+  end
+
+  def Table.csv_stream_input(csv, &b)
+    csvreader = CSVReader.new(csv)
+    begin
+      csvreader.each(&b)
+    ensure
+      csvreader.close
+    end
+    nil
+  end
+
+  class CSVReader
+    if defined? CSV::Reader
+      # Ruby 1.8
+      def initialize(io)
+        if io.respond_to? :to_str
+          @csv = CSV::StringReader.new(io)
+        else
+          @csv = CSV::IOReader.new(io)
+        end
+        @eof = false
+      end
+
+      def shift
+        return nil if @eof
+        ary = @csv.shift
+        if ary.empty?
+          ary = nil
+          @eof = true
+        elsif ary == [nil]
+          ary = []
+        end
+        ary
+      end
+    else
+      # Ruby 1.9
+      def initialize(io)
+        @csv = CSV.new(io)
+      end
+
+      def shift
+        @csv.shift
+      end
+    end
+
+    def each
+      while ary = self.shift
+        yield ary
+      end
+      nil
+    end
+
+    def close
+      @csv.close
+    end
   end
 
   def Table.csv_stream_output(out)
