@@ -321,19 +321,58 @@ def load_table(filename)
 end
 
 def table_stream_input_with_header(filename, header_proc, record_proc)
-  header = nil
-  table_stream_input(filename) {|ary|
-    if !header
-      if ary.all? {|elt| elt.nil? || elt == '' }
-	next
-      else
-	header = fix_header(ary)
-        header_proc.call(header)
-      end
+  tblreader = TableReader.new(filename)
+  header_proc.call tblreader.header
+  while ary = tblreader.shift
+    record_proc.call ary
+  end
+end
+
+class TableReader
+  def initialize(filename)
+    @io = nil
+    case filename
+    when /\.csv\z/
+      @io = File.open(filename)
+      @reader = Table::CSVReader.new(@io)
+    when /\.tsv\z/
+      @io = File.open(filename)
+      @reader = Table::TSVReader.new(@io)
     else
-      record_proc.call(ary)
+      if filename == '-'
+        @reader = Table::CSVReader.new(STDIN)
+      else
+        # guess table format?
+        @io = File.open(filename)
+        @reader = Table::CSVReader.new(@io)
+      end
     end
-  }
+    @header = nil
+  end
+
+  def header
+    return @header if @header
+    while ary = @reader.shift
+      if ary.all? {|elt| elt.nil? || elt == '' }
+        next
+      else
+        @header = fix_header(ary)
+        return @header
+      end
+    end
+    @header = []
+    return @header
+  end
+
+  def shift
+    header
+    @reader.shift
+  end
+
+  def close
+    @reader.close
+    @io.close
+  end
 end
 
 def table_stream_input(filename, &b)
