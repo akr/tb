@@ -7,6 +7,7 @@ def main(argv)
   subcommand = argv.shift
   case subcommand
   when 'help' then main_help(argv)
+  when 'csv' then main_csv(argv)
   when 'json' then main_json(argv)
   when 'yaml' then main_yaml(argv)
   when 'pp' then main_pp(argv)
@@ -27,6 +28,7 @@ end
 def usage(status)
   print <<'End'
 Usage:
+  table csv [opts] TABLE
   table json TABLE
   table yaml TABLE
   table pp [opts] TABLE
@@ -54,6 +56,13 @@ end
 
 $opt_n = nil
 
+def op_csv
+  op = OptionParser.new
+  op.banner = 'Usage: table csv [options] TABLE'
+  op.def_option('-n') { $opt_n = true }
+  op
+end
+
 def op_pp
   op = OptionParser.new
   op.banner = 'Usage: table pp [options] TABLE'
@@ -76,6 +85,15 @@ end
 def err(msg)
   STDERR.puts msg
   exit 1
+end
+
+def main_csv(argv)
+  op_csv.parse!(argv)
+  each_table_file(argv) {|tbl|
+    with_output {|out|
+      tbl.generate_csv(out)
+    }
+  }
 end
 
 def main_json(argv)
