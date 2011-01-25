@@ -27,9 +27,9 @@ end
 def usage(status)
   print <<'End'
 Usage:
-  table json file
-  table yaml file
-  table pp file
+  table json TABLE
+  table yaml TABLE
+  table pp [opts] TABLE
   table grep [opts] REGEXP TABLE
   table sort [opts] FIELD... TABLE
   table select [opts] FIELD... TABLE
@@ -50,6 +50,15 @@ def main_help(argv)
   else
     err "unexpected subcommand: #{subcommand.inspect}"
   end
+end
+
+$opt_n = nil
+
+def op_pp
+  op = OptionParser.new
+  op.banner = 'Usage: table pp [options] TABLE'
+  op.def_option('-n') { $opt_n = true }
+  op
 end
 
 $opt_grep_e = nil
@@ -91,6 +100,7 @@ def main_yaml(argv)
 end
 
 def main_pp(argv)
+  op_pp.parse!(argv)
   each_table_file(argv) {|tbl|
     ary = tbl.map {|rec| rec.to_h }
     with_output {|out|
@@ -249,22 +259,26 @@ def fix_table(aa)
   aa.pop while aa.last.all? {|elt| elt.nil? || elt == '' }
   return aa if aa.empty?
   maxlen = aa.map {|a| a.length }.max
-  header = aa[0]
-  header.map! {|s| s || '' }
-  header << "" while header.length < maxlen
-  h = {}
-  header.map! {|s|
-    if h[s]
-      s += "(2)" if /\(\d+\)\z/ !~ s
-      while h[s]
-        s = s.sub(/\((\d+)\)\z/) { n = $1.to_i; "(#{n+1})" }
+  if $opt_n
+    aa.unshift((0...maxlen).to_a.map {|i| i.to_s })
+  else
+    header = aa[0]
+    header.map! {|s| s || '' }
+    header << "" while header.length < maxlen
+    h = {}
+    header.map! {|s|
+      if h[s]
+	s += "(2)" if /\(\d+\)\z/ !~ s
+	while h[s]
+	  s = s.sub(/\((\d+)\)\z/) { n = $1.to_i; "(#{n+1})" }
+	end
+	s
       end
+      h[s] = true
       s
-    end
-    h[s] = true
-    s
-  }
-  aa[0] = header
+    }
+    aa[0] = header
+  end
   aa
 end
 
