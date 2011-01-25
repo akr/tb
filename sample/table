@@ -132,15 +132,33 @@ def main_grep(argv)
   pattern = $opt_grep_e || argv.shift
   re = Regexp.new(pattern)
   opt_v = $opt_grep_v ? true : false
-  each_table_file(argv) {|tbl|
-    if $opt_grep_f
-      f = $opt_grep_f
-      tbl = tbl.filter {|rec| opt_v ^ !!(re =~ rec[f]) }
-    else
-      tbl = tbl.filter {|rec| opt_v ^ !!(rec.any? {|f, v| re =~ v.to_s }) }
-    end
-    with_output {|out|
-      tbl.generate_csv(out)
+  argv.each {|filename|
+    Table.csv_stream_output(STDOUT) {|gen|
+      header = false
+      opt_f_index = nil
+      table_stream_input(filename) {|ary|
+        if !header
+	  if ary.all? {|elt| elt.nil? || elt == '' }
+	    next
+	  else
+	    header = ary
+	    gen << ary
+	    if $opt_grep_f
+	      opt_f_index = ary.index($opt_grep_f)
+	      if opt_f_index.nil?
+	        raise "field not found: #{$opt_grep_f.inspect}"
+	      end
+	    end
+	  end
+	else
+	  if $opt_grep_f
+	    found = opt_v ^ !!(re =~ ary[opt_f_index])
+	  else
+	    found = opt_v ^ !!(ary.any? {|v| re =~ v.to_s })
+	  end
+	  gen << ary if found
+	end
+      }
     }
   }
 end
@@ -269,6 +287,27 @@ def load_table(filename)
     else
     end
     raise "unknown file extension: #{filename.inspect}"
+  end
+end
+
+def table_stream_input(filename, &b)
+  case filename
+  when /\.csv\z/
+    File.open(filename) {|f|
+      Table.csv_stream_input(f, &b)
+    }
+  when /\.tsv\z/
+    File.open(filename) {|f|
+      Table.tsv_stream_input(f, &b)
+    }
+  else
+    if filename == '-'
+      Table.csv_stream_input(STDIN, &b)
+    else
+      File.open(filename) {|f|
+	Table.csv_stream_input(f, &b)
+      }
+    end
   end
 end
 
