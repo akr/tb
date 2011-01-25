@@ -1,6 +1,6 @@
 # lib/table/tsv.rb - TSV related fetures for table library
 #
-# Copyright (C) 2010 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2010-2011 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -24,19 +24,12 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
+require 'stringio'
+
 class Table
 
   def Table.load_tsv(filename, *header_fields, &block)
     Table.parse_tsv(File.read(filename), *header_fields, &block)
-  end
-
-  def Table.tsv_stream_input(tsv)
-    tsv.each_line {|line|
-      line = line.chomp("\n")
-      line = line.chomp("\r")
-      yield line.split(/\t/, -1)
-    }
-    nil
   end
 
   def Table.parse_tsv(tsv, *header_fields)
@@ -65,6 +58,36 @@ class Table
       t.insert(h)
     }
     t
+  end
+
+  def Table.tsv_stream_input(tsv)
+    tsvreader = TSVReader.new(tsv)
+    while ary = tsvreader.shift
+      yield ary
+    end
+    nil
+  end
+
+  class TSVReader
+    def initialize(input)
+      if input.respond_to? :to_str
+        @input = StringIO.new(input)
+      else
+        @input = input
+      end
+    end
+
+    def shift
+      line = @input.gets
+      return nil if !line
+      line = line.chomp("\n")
+      line = line.chomp("\r")
+      line.split(/\t/, -1)
+    end
+
+    def close
+      @input.close
+    end
   end
 
   def Table.tsv_stream_output(out)
