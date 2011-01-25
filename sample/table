@@ -205,10 +205,14 @@ def main_rename(argv)
   end
   h = {}
   argv.each_slice(2) {|k, v| h[k] = v }
-  tbl = load_table(filename)
-  tbl2 = tbl.rename_field(h)
-  with_output {|out|
-    tbl2.generate_csv(out)
+  with_table_stream_output {|gen|
+    table_stream_input_with_header(filename,
+      lambda {|header| 
+        gen << header.map {|f| h.fetch(f, f) }
+      },
+      lambda {|ary|
+	gen << ary
+      })
   }
 end
 
