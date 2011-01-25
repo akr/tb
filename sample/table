@@ -251,7 +251,6 @@ def main_count(argv)
     h = Hash.new(0)
     tblreader = TableReader.new(filename)
     header = tblreader.header
-    header = fix_header(header)
     is = fs.map {|f| header.index(f) }
     tblreader.each {|ary| h[ary.values_at(*is)] += 1 }
     result = Table.new(result_fields)
