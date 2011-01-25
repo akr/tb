@@ -241,20 +241,26 @@ def main_join(argv)
 end
 
 def main_count(argv)
-  input = argv.pop
+  filename = argv.pop
   result_fields = argv.dup
   count_field = argv.pop
   fs = argv
-  result = Table.new(result_fields)
-  tbl = load_table(input)
   if fs.empty?
-    result.insert_values [count_field], tbl.size
+    n = 0
+    table_stream_input_with_header(filename,
+      lambda {|header| },
+      lambda {|ary| n += 1 })
+    result = Table.new([count_field], [n])
   else
+    is = nil
     h = Hash.new(0)
-    tbl.each {|rec|
-      k = rec.values_at(*fs)
-      h[k] += 1
-    }
+    table_stream_input_with_header(filename,
+      lambda {|header|
+	header = fix_header(header)
+        is = fs.map {|f| header.index(f) }
+      },
+      lambda {|ary| h[ary.values_at(*is)] += 1 })
+    result = Table.new(result_fields)
     h.each {|k, v|
       result.insert_values result_fields, k+[v]
     }
