@@ -292,7 +292,7 @@ def table_stream_input_with_header(filename, header_proc)
       if ary.all? {|elt| elt.nil? || elt == '' }
 	next
       else
-	header = ary
+	header = fix_header(ary)
         header_proc.call(header)
       end
     else
@@ -331,23 +331,26 @@ def fix_table(aa)
     aa.unshift((0...maxlen).to_a.map {|i| i.to_s })
   else
     header = aa[0]
-    header.map! {|s| s || '' }
     header << "" while header.length < maxlen
-    h = {}
-    header.map! {|s|
-      if h[s]
-	s += "(2)" if /\(\d+\)\z/ !~ s
-	while h[s]
-	  s = s.sub(/\((\d+)\)\z/) { n = $1.to_i; "(#{n+1})" }
-	end
-	s
-      end
-      h[s] = true
-      s
-    }
-    aa[0] = header
+    aa[0] = fix_header(header)
   end
   aa
+end
+
+def fix_header(header)
+  h = {}
+  header.map {|s|
+    s ||= ''
+    if h[s]
+      s += "(2)" if /\(\d+\)\z/ !~ s
+      while h[s]
+	s = s.sub(/\((\d+)\)\z/) { n = $1.to_i; "(#{n+1})" }
+      end
+      s
+    end
+    h[s] = true
+    s
+  }
 end
 
 def with_output
