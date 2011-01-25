@@ -134,30 +134,25 @@ def main_grep(argv)
   opt_v = $opt_grep_v ? true : false
   argv.each {|filename|
     Table.csv_stream_output(STDOUT) {|gen|
-      header = false
       opt_f_index = nil
-      table_stream_input(filename) {|ary|
-        if !header
-	  if ary.all? {|elt| elt.nil? || elt == '' }
-	    next
-	  else
-	    header = ary
-	    gen << ary
-	    if $opt_grep_f
-	      opt_f_index = ary.index($opt_grep_f)
-	      if opt_f_index.nil?
-	        raise "field not found: #{$opt_grep_f.inspect}"
-	      end
+      header = nil
+      table_stream_input_with_header(filename,
+        lambda {|ary| 
+	  header = ary
+	  gen << ary
+	  if $opt_grep_f
+	    opt_f_index = ary.index($opt_grep_f)
+	    if opt_f_index.nil?
+	      raise "field not found: #{$opt_grep_f.inspect}"
 	    end
 	  end
-	else
+	}) {|ary|
 	  if $opt_grep_f
 	    found = opt_v ^ !!(re =~ ary[opt_f_index])
 	  else
 	    found = opt_v ^ !!(ary.any? {|v| re =~ v.to_s })
 	  end
 	  gen << ary if found
-	end
       }
     }
   }
@@ -288,6 +283,22 @@ def load_table(filename)
     end
     raise "unknown file extension: #{filename.inspect}"
   end
+end
+
+def table_stream_input_with_header(filename, header_proc)
+  header = nil
+  table_stream_input(filename) {|ary|
+    if !header
+      if ary.all? {|elt| elt.nil? || elt == '' }
+	next
+      else
+	header = ary
+        header_proc.call(header)
+      end
+    else
+      yield ary
+    end
+  }
 end
 
 def table_stream_input(filename, &b)
