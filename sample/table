@@ -146,14 +146,15 @@ def main_grep(argv)
 	      raise "field not found: #{$opt_grep_f.inspect}"
 	    end
 	  end
-	}) {|ary|
+	},
+	lambda {|ary|
 	  if $opt_grep_f
 	    found = opt_v ^ !!(re =~ ary[opt_f_index])
 	  else
 	    found = opt_v ^ !!(ary.any? {|v| re =~ v.to_s })
 	  end
 	  gen << ary if found
-      }
+	})
     }
   }
 end
@@ -285,7 +286,7 @@ def load_table(filename)
   end
 end
 
-def table_stream_input_with_header(filename, header_proc)
+def table_stream_input_with_header(filename, header_proc, record_proc)
   header = nil
   table_stream_input(filename) {|ary|
     if !header
@@ -296,7 +297,7 @@ def table_stream_input_with_header(filename, header_proc)
         header_proc.call(header)
       end
     else
-      yield ary
+      record_proc.call(ary)
     end
   }
 end
