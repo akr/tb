@@ -135,12 +135,10 @@ def main_grep(argv)
   argv.each {|filename|
     with_table_stream_output {|gen|
       opt_f_index = nil
-      header = nil
       tblreader = TableReader.new(filename)
-      header = tblreader.header
-      gen << header
+      gen << tblreader.header
       if $opt_grep_f
-        opt_f_index = header.index($opt_grep_f)
+        opt_f_index = tblreader.field2index($opt_grep_f)
         if opt_f_index.nil?
           raise "field not found: #{$opt_grep_f.inspect}"
         end
@@ -176,17 +174,11 @@ def main_select(argv)
   filename = argv.pop
   fs = argv
   with_table_stream_output {|gen|
-    header = nil
     is = nil
     tblreader = TableReader.new(filename)
     header = tblreader.header
     is = []
-    fs.each {|f|
-      is << header.index(f)
-      if is.last.nil?
-        raise "field not found: #{f.inspect}"
-      end
-    }
+    is = fs.map {|f| tblreader.field2index(f) }
     gen << header.values_at(*is)
     tblreader.each {|ary|
       gen << ary.values_at(*is)
@@ -204,8 +196,7 @@ def main_rename(argv)
   argv.each_slice(2) {|k, v| h[k] = v }
   with_table_stream_output {|gen|
     tblreader = TableReader.new(filename)
-    header = tblreader.header
-    gen << header.map {|f| h.fetch(f, f) }
+    gen << tblreader.header.map {|f| h.fetch(f, f) }
     tblreader.each {|ary|
       gen << ary
     }
@@ -250,8 +241,7 @@ def main_count(argv)
     is = nil
     h = Hash.new(0)
     tblreader = TableReader.new(filename)
-    header = tblreader.header
-    is = fs.map {|f| header.index(f) }
+    is = fs.map {|f| tblreader.field2index(f) }
     tblreader.each {|ary| h[ary.values_at(*is)] += 1 }
     result = Table.new(result_fields)
     h.each {|k, v|
@@ -333,6 +323,14 @@ class TableReader
     end
     @header = []
     return @header
+  end
+
+  def field2index(f)
+    i = self.header.index(f)
+    if i.nil?
+      raise ArgumentError, "unexpected field name: #{f.inspect}"
+    end
+    i
   end
 
   def shift
