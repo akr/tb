@@ -133,7 +133,7 @@ def main_grep(argv)
   re = Regexp.new(pattern)
   opt_v = $opt_grep_v ? true : false
   argv.each {|filename|
-    Table.csv_stream_output(STDOUT) {|gen|
+    with_table_stream_output {|gen|
       opt_f_index = nil
       header = nil
       table_stream_input_with_header(filename,
@@ -351,6 +351,14 @@ def fix_header(header)
     end
     h[s] = true
     s
+  }
+end
+
+def with_table_stream_output
+  with_output {|out|
+    Table.csv_stream_output(out) {|gen|
+      yield gen
+    }
   }
 end
 
