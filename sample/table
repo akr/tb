@@ -177,13 +177,24 @@ end
 def main_select(argv)
   filename = argv.pop
   fs = argv
-  tbl = load_table(filename)
-  tbl2 = Table.new(fs)
-  tbl.each {|rec|
-    tbl2.insert rec.to_h.reject {|k, v| !fs.include?(k) }
-  }
-  with_output {|out|
-    tbl2.generate_csv(out)
+  with_table_stream_output {|gen|
+    opt_f_index = nil
+    header = nil
+    is = nil
+    table_stream_input_with_header(filename,
+      lambda {|header| 
+	is = []
+	fs.each {|f|
+	  is << header.index(f)
+	  if is.last.nil?
+	    raise "field not found: #{f.inspect}"
+	  end
+	}
+	gen << header.values_at(*is)
+      },
+      lambda {|ary|
+	gen << ary.values_at(*is)
+      })
   }
 end
 
