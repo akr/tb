@@ -455,22 +455,22 @@ class TableReader
     @reader.close
     @io.close
   end
-end
 
-def fix_header(header)
-  h = {}
-  header.map {|s|
-    s ||= ''
-    if h[s]
-      s += "(2)" if /\(\d+\)\z/ !~ s
-      while h[s]
-	s = s.sub(/\((\d+)\)\z/) { n = $1.to_i; "(#{n+1})" }
+  def fix_header(header)
+    h = {}
+    header.map {|s|
+      s ||= ''
+      if h[s]
+        s += "(2)" if /\(\d+\)\z/ !~ s
+        while h[s]
+          s = s.sub(/\((\d+)\)\z/) { n = $1.to_i; "(#{n+1})" }
+        end
+        s
       end
+      h[s] = true
       s
-    end
-    h[s] = true
-    s
-  }
+    }
+  end
 end
 
 def with_table_stream_output
