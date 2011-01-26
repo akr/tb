@@ -920,19 +920,22 @@ class Table
       val = hash
       common_values.each {|cv|
         val = val[cv]
+        break if !val
       }
-      val.each {|recordid|
-        record0 = record.dup
-        record1 = table2.get_record(recordid)
-        record1.each {|k, v|
-          record0[rename_field1.fetch(k, k)] = v
+      if val
+        val.each {|recordid|
+          record0 = record.dup
+          record1 = table2.get_record(recordid)
+          record1.each {|k, v|
+            record0[rename_field1.fetch(k, k)] = v
+          }
+          if block_given?
+            result.insert record0 if yield(record0)
+          else
+            result.insert record0
+          end
         }
-        if block_given?
-          result.insert record0 if yield(record0)
-        else
-          result.insert record0
-        end
-      }
+      end
     }
     result
   end
