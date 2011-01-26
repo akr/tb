@@ -391,7 +391,7 @@ def fix_table(aa)
   return aa if aa.empty?
   maxlen = aa.map {|a| a.length }.max
   if $opt_n
-    aa.unshift((0...maxlen).to_a.map {|i| i.to_s })
+    aa.unshift((1..maxlen).to_a.map {|i| i.to_s })
   else
     header = aa[0]
     header << "" while header.length < maxlen
