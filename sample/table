@@ -179,7 +179,7 @@ def main_pp(argv)
   op_pp.parse!(argv)
   with_output {|out|
     argv.each {|filename|
-      tblreader = TableReader.new(filename)
+      tblreader = TableReader.open(filename)
       tblreader.each {|ary|
         h = {}
         ary.each_with_index {|v, i|
@@ -200,7 +200,7 @@ def main_grep(argv)
   argv.each {|filename|
     with_table_stream_output {|gen|
       opt_f_index = nil
-      tblreader = TableReader.new(filename)
+      tblreader = TableReader.open(filename)
       gen.output_header tblreader.header
       if $opt_grep_f
         opt_f_index = tblreader.index_from_field($opt_grep_f)
@@ -240,7 +240,7 @@ def main_select(argv)
   op_select.parse!(argv)
   filename = argv.pop
   fs = argv
-  tblreader = TableReader.new(filename)
+  tblreader = TableReader.open(filename)
   header = tblreader.header
   is = []
   is = fs.map {|f| tblreader.index_from_field(f) }
@@ -262,7 +262,7 @@ def main_rename(argv)
   h = {}
   argv.each_slice(2) {|sf, df| h[sf] = df }
   with_table_stream_output {|gen|
-    tblreader = TableReader.new(filename)
+    tblreader = TableReader.open(filename)
     header = tblreader.header
     h.each {|sf, df|
       unless header.include? sf
@@ -311,13 +311,13 @@ def main_count(argv)
   fs = argv
   if fs.empty?
     n = 0
-    tblreader = TableReader.new(filename)
+    tblreader = TableReader.open(filename)
     tblreader.each {|ary| n += 1 }
     result = Table.new([count_field], [n])
   else
     is = nil
     h = Hash.new(0)
-    tblreader = TableReader.new(filename)
+    tblreader = TableReader.open(filename)
     is = fs.map {|f| tblreader.index_from_field(f) }
     tblreader.each {|ary| h[ary.values_at(*is)] += 1 }
     result = Table.new(result_fields)
@@ -342,7 +342,7 @@ def each_table_file(argv)
 end
 
 def load_table(filename)
-  tblreader = TableReader.new(filename)
+  tblreader = TableReader.open(filename)
   arys = []
   tblreader.each {|ary|
     arys << ary
@@ -357,25 +357,30 @@ def load_table(filename)
 end
 
 class TableReader
-  def initialize(filename)
-    @opt_n = $opt_n
-    @io = nil
+  def TableReader.open(filename)
+    io = nil
     case filename
     when /\.csv\z/
-      @io = File.open(filename)
-      @reader = Table::CSVReader.new(@io)
+      io = File.open(filename)
+      rawreader = Table::CSVReader.new(io)
     when /\.tsv\z/
-      @io = File.open(filename)
-      @reader = Table::TSVReader.new(@io)
+      io = File.open(filename)
+      rawreader = Table::TSVReader.new(io)
     else
       if filename == '-'
-        @reader = Table::CSVReader.new(STDIN)
+        rawreader = Table::CSVReader.new(STDIN)
       else
         # guess table format?
-        @io = File.open(filename)
-        @reader = Table::CSVReader.new(@io)
+        io = File.open(filename)
+        rawreader = Table::CSVReader.new(io)
       end
     end
+    TableReader.new(rawreader)
+  end
+
+  def initialize(rawreader)
+    @opt_n = $opt_n
+    @reader = rawreader
     @header = nil
   end
 
