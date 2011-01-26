@@ -114,7 +114,6 @@ end
 def op_rename
   op = OptionParser.new
   op.banner = 'Usage: table rename [options] TABLE'
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
 
@@ -261,10 +260,17 @@ def main_rename(argv)
     filename = argv.pop
   end
   h = {}
-  argv.each_slice(2) {|k, v| h[k] = v }
+  argv.each_slice(2) {|sf, df| h[sf] = df }
   with_table_stream_output {|gen|
     tblreader = TableReader.new(filename)
-    gen.output_header(tblreader.header.map {|f| h.fetch(f, f) })
+    header = tblreader.header
+    h.each {|sf, df|
+      unless header.include? sf
+        raise "field not defined: #{sf.inspect}"
+      end
+    }
+    renamed_header = tblreader.header.map {|f| h.fetch(f, f) }
+    gen.output_header(renamed_header)
     tblreader.each {|ary|
       gen << ary
     }
