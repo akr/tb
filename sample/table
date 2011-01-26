@@ -153,11 +153,16 @@ def op_cat
 end
 
 $opt_join_outer = nil
+$opt_join_outer_missing = nil
 def op_join
   op = OptionParser.new
   op.banner = 'Usage: table join [opts] TABLE...'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--outer', 'outer join') { $opt_join_outer = true }
+  op.def_option('--outer-missing=DEFAULT', 'missing value for outer join') {|missing|
+    $opt_join_outer = true
+    $opt_join_outer_missing = missing
+  }
   op
 end
 
@@ -357,7 +362,7 @@ def main_join(argv)
   result = Table.new([], [])
   if $opt_join_outer
     each_table_file(argv) {|tbl|
-      result = result.natjoin2_outer(tbl)
+      result = result.natjoin2_outer(tbl, $opt_join_outer_missing)
     }
   else
     each_table_file(argv) {|tbl|

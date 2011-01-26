@@ -927,7 +927,7 @@ class Table
 
   # :call-seq:
   #   table1.natjoin2_outer(table2)
-  def natjoin2_outer(table2)
+  def natjoin2_outer(table2, missing=nil)
     table1 = self
     fields1 = table1.list_fields
     fields2 = table2.list_fields
@@ -947,7 +947,7 @@ class Table
       rec2_list = h[k]
       values = rec1.values_at(*fields1)
       if !rec2_list || rec2_list.empty? 
-        result.insert_values total_fields, values + unique_fields2.map { nil }
+        result.insert_values total_fields, values + unique_fields2.map { missing }
       else
         rec2_list.each {|rec2|
           ids2[rec2['_recordid']] = true
@@ -957,7 +957,7 @@ class Table
     }
     table2.each {|rec2|
       if !ids2[rec2['_recordid']]
-	result.insert_values total_fields, fields2_extended.map {|f| f ? rec2[f] : nil }
+	result.insert_values total_fields, fields2_extended.map {|f| f ? rec2[f] : missing }
       end
     }
     result
