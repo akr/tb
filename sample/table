@@ -238,7 +238,7 @@ def main_sort(argv)
 end
 
 def main_select(argv)
-  op_selct.parse!(argv)
+  op_select.parse!(argv)
   filename = argv.pop
   fs = argv
   tblreader = TableReader.new(filename)
