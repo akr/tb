@@ -38,12 +38,17 @@ class Table
       aa << ary
     }
     aa = yield aa if block_given?
-    reader = Table::Reader.new(aa)
-    arys = []
-    reader.each {|ary|
-      arys << ary
-    }
-    header = reader.header
+    if header_fields.empty?
+      reader = Table::Reader.new(aa)
+      arys = []
+      reader.each {|ary|
+        arys << ary
+      }
+      header = reader.header
+    else
+      header = header_fields
+      arys = aa
+    end
     t = Table.new(header)
     arys.each {|ary|
       ary << nil while ary.length < header.length
