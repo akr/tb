@@ -900,42 +900,27 @@ class Table
 
   # :call-seq:
   #   table1.natjoin2(table2, rename_field1={}, rename_field2={}) {|record| ... }
-  def natjoin2(table2, rename_field1={}, rename_field2={})
+  def natjoin2(table2)
     table1 = self
-    fields1 = table1.list_fields.map {|f| rename_field1.fetch(f, f) }
-    fields2 = table2.list_fields.map {|f| rename_field2.fetch(f, f) }
+    fields1 = table1.list_fields
+    fields2 = table2.list_fields
     common_fields = fields1 & fields2
-    if common_fields.empty?
-      hash = table2.map {|rec| rec["_recordid"] }
-    else
-      hash = table2.categorize(*(common_fields + ["_recordid"]))
-    end
+    total_fields = fields1 | fields2
+    unique_fields2 = fields2 - common_fields
+    h = {}
+    table2.each {|rec2|
+      k = rec2.values_at(*common_fields)
+      (h[k] ||= []) << rec2
+    }
     result = Table.new(fields1 | fields2)
-    table1.each_record {|record1|
-      record = {}
-      record1.each {|k, v|
-        record[rename_field1.fetch(k, k)] = v
+    table1.each {|rec1|
+      k = rec1.values_at(*common_fields)
+      rec2_list = h[k]
+      next if !rec2_list
+      values = rec1.values_at(*fields1)
+      rec2_list.each {|rec2|
+        result.insert_values total_fields, values + rec2.values_at(*unique_fields2)
       }
-      common_values = record.values_at(*common_fields)
-      val = hash
-      common_values.each {|cv|
-        val = val[cv]
-        break if !val
-      }
-      if val
-        val.each {|recordid|
-          record0 = record.dup
-          record1 = table2.get_record(recordid)
-          record1.each {|k, v|
-            record0[rename_field1.fetch(k, k)] = v
-          }
-          if block_given?
-            result.insert record0 if yield(record0)
-          else
-            result.insert record0
-          end
-        }
-      end
     }
     result
   end
