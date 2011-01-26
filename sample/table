@@ -82,28 +82,28 @@ $opt_n = nil
 
 def op_csv
   op = OptionParser.new
-  op.banner = 'Usage: table csv [options] TABLE'
+  op.banner = 'Usage: table csv [opts] TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
 
 def op_json
   op = OptionParser.new
-  op.banner = 'Usage: table json [options] TABLE'
+  op.banner = 'Usage: table json [opts] TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
 
 def op_yaml
   op = OptionParser.new
-  op.banner = 'Usage: table yaml [options] TABLE'
+  op.banner = 'Usage: table yaml [opts] TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
 
 def op_pp
   op = OptionParser.new
-  op.banner = 'Usage: table pp [options] TABLE'
+  op.banner = 'Usage: table pp [opts] TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
@@ -113,7 +113,7 @@ $opt_grep_f = nil
 $opt_grep_v = nil
 def op_grep
   op = OptionParser.new
-  op.banner = 'Usage: table grep [options] REGEXP TABLE'
+  op.banner = 'Usage: table grep [opts] REGEXP TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f FIELD') {|field| $opt_grep_f = field }
   op.def_option('-e REGEXP') {|pattern| $opt_grep_e = pattern }
@@ -124,7 +124,7 @@ end
 $opt_sort_f = nil
 def op_sort
   op = OptionParser.new
-  op.banner = 'Usage: table sort [options] TABLE'
+  op.banner = 'Usage: table sort [opts] TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f FIELD,...', 'specify sort keys') {|fs| $opt_sort_f = fs }
   op
@@ -133,7 +133,7 @@ end
 $opt_select_v = nil
 def op_select
   op = OptionParser.new
-  op.banner = 'Usage: table select [options] TABLE'
+  op.banner = 'Usage: table select [opts] FIELD,... TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-v', 'invert match') { $opt_select_v = true }
   op
@@ -141,13 +141,13 @@ end
 
 def op_rename
   op = OptionParser.new
-  op.banner = 'Usage: table rename [options] TABLE'
+  op.banner = 'Usage: table rename [opts] SRCFIELD DSTFIELD ... TABLE'
   op
 end
 
 def op_cat
   op = OptionParser.new
-  op.banner = 'Usage: table cat [options] TABLE'
+  op.banner = 'Usage: table cat [opts] TABLE...'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
@@ -155,7 +155,7 @@ end
 $opt_join_outer = nil
 def op_join
   op = OptionParser.new
-  op.banner = 'Usage: table join [options] TABLE'
+  op.banner = 'Usage: table join [opts] TABLE...'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--outer', 'outer join') { $opt_join_outer = true }
   op
@@ -163,7 +163,7 @@ end
 
 def op_count
   op = OptionParser.new
-  op.banner = 'Usage: table count [options] TABLE'
+  op.banner = 'Usage: table count [opts] FIELD... COUNT-FIELD TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
