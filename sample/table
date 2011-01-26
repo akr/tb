@@ -173,13 +173,12 @@ end
 def main_select(argv)
   filename = argv.pop
   fs = argv
+  tblreader = TableReader.new(filename)
+  header = tblreader.header
+  is = []
+  is = fs.map {|f| tblreader.index_from_field(f) }
   with_table_stream_output {|gen|
-    is = nil
-    tblreader = TableReader.new(filename)
-    header = tblreader.header
-    is = []
-    is = fs.map {|f| tblreader.index_from_field(f) }
-    gen << header.values_at(*is)
+    gen << is.map {|i| tblreader.field_from_index(i) }
     tblreader.each {|ary|
       gen << ary.values_at(*is)
     }
@@ -331,6 +330,23 @@ class TableReader
       raise ArgumentError, "unexpected field name: #{f.inspect}"
     end
     i
+  end
+
+  def field_from_index(i)
+    raise ArgumentError, "negative index: #{i}" if i < 0
+    self.header
+    f = @header[i]
+    return f if f
+    h = {}
+    @header.each {|ff| h[ff] = true if /\A\(\d+\)\z/ =~ ff }
+    n = 1
+    while @header.length <= i
+      while h[f = "(#{n})"]
+        n += 1
+      end
+      @header << f
+    end
+    @header[i]
   end
 
   def shift
