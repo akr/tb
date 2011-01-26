@@ -59,14 +59,14 @@ $opt_n = nil
 def op_csv
   op = OptionParser.new
   op.banner = 'Usage: table csv [options] TABLE'
-  op.def_option('-n') { $opt_n = true }
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
 
 def op_pp
   op = OptionParser.new
   op.banner = 'Usage: table pp [options] TABLE'
-  op.def_option('-n') { $opt_n = true }
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
 
@@ -76,6 +76,7 @@ $opt_grep_v = nil
 def op_grep
   op = OptionParser.new
   op.banner = 'Usage: table grep [options] REGEXP TABLE'
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f FIELD') {|field| $opt_grep_f = field }
   op.def_option('-e REGEXP') {|pattern| $opt_grep_e = pattern }
   op.def_option('-v') { $opt_grep_v = true }
@@ -143,7 +144,7 @@ def main_grep(argv)
     with_table_stream_output {|gen|
       opt_f_index = nil
       tblreader = TableReader.new(filename)
-      gen << tblreader.header
+      gen.output_header tblreader.header
       if $opt_grep_f
         opt_f_index = tblreader.index_from_field($opt_grep_f)
         if opt_f_index.nil?
@@ -185,7 +186,7 @@ def main_select(argv)
   is = []
   is = fs.map {|f| tblreader.index_from_field(f) }
   with_table_stream_output {|gen|
-    gen << is.map {|i| tblreader.field_from_index(i) }
+    gen.output_header(is.map {|i| tblreader.field_from_index(i) })
     tblreader.each {|ary|
       gen << ary.values_at(*is)
     }
@@ -202,7 +203,7 @@ def main_rename(argv)
   argv.each_slice(2) {|k, v| h[k] = v }
   with_table_stream_output {|gen|
     tblreader = TableReader.new(filename)
-    gen << tblreader.header.map {|f| h.fetch(f, f) }
+    gen.output_header(tblreader.header.map {|f| h.fetch(f, f) })
     tblreader.each {|ary|
       gen << ary
     }
@@ -335,7 +336,8 @@ class TableReader
 
   def index_from_field(f)
     if @opt_n
-      raise "numeric field name expected: #{f.inspect}" if /\A\d+\z/ !~ f
+      raise "numeric field start from 1: #{f.inspect}" if /\A0+\z/ =~ f
+      raise "numeric field name expected: #{f.inspect}" if /\A(\d+)\z/ !~ f
       $1.to_i - 1
     else
       i = self.header.index(f)
@@ -419,6 +421,9 @@ end
 def with_table_stream_output
   with_output {|out|
     Table.csv_stream_output(out) {|gen|
+      def gen.output_header(header)
+        self << header if !$opt_n
+      end
       yield gen
     }
   }
