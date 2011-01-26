@@ -138,7 +138,7 @@ def main_grep(argv)
       tblreader = TableReader.new(filename)
       gen << tblreader.header
       if $opt_grep_f
-        opt_f_index = tblreader.field2index($opt_grep_f)
+        opt_f_index = tblreader.index_from_field($opt_grep_f)
         if opt_f_index.nil?
           raise "field not found: #{$opt_grep_f.inspect}"
         end
@@ -178,7 +178,7 @@ def main_select(argv)
     tblreader = TableReader.new(filename)
     header = tblreader.header
     is = []
-    is = fs.map {|f| tblreader.field2index(f) }
+    is = fs.map {|f| tblreader.index_from_field(f) }
     gen << header.values_at(*is)
     tblreader.each {|ary|
       gen << ary.values_at(*is)
@@ -241,7 +241,7 @@ def main_count(argv)
     is = nil
     h = Hash.new(0)
     tblreader = TableReader.new(filename)
-    is = fs.map {|f| tblreader.field2index(f) }
+    is = fs.map {|f| tblreader.index_from_field(f) }
     tblreader.each {|ary| h[ary.values_at(*is)] += 1 }
     result = Table.new(result_fields)
     h.each {|k, v|
@@ -325,7 +325,7 @@ class TableReader
     return @header
   end
 
-  def field2index(f)
+  def index_from_field(f)
     i = self.header.index(f)
     if i.nil?
       raise ArgumentError, "unexpected field name: #{f.inspect}"
