@@ -97,6 +97,48 @@ def op_grep
   op
 end
 
+def op_sort
+  op = OptionParser.new
+  op.banner = 'Usage: table sort [options] TABLE'
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op
+end
+
+def op_select
+  op = OptionParser.new
+  op.banner = 'Usage: table select [options] TABLE'
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op
+end
+
+def op_rename
+  op = OptionParser.new
+  op.banner = 'Usage: table rename [options] TABLE'
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op
+end
+
+def op_cat
+  op = OptionParser.new
+  op.banner = 'Usage: table cat [options] TABLE'
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op
+end
+
+def op_join
+  op = OptionParser.new
+  op.banner = 'Usage: table join [options] TABLE'
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op
+end
+
+def op_count
+  op = OptionParser.new
+  op.banner = 'Usage: table count [options] TABLE'
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op
+end
+
 def err(msg)
   STDERR.puts msg
   exit 1
@@ -180,6 +222,7 @@ def main_grep(argv)
 end
 
 def main_sort(argv)
+  op_sort.parse!(argv)
   filename = argv.pop || '-'
   fs = argv.empty? ? nil : argv
   tbl = load_table(filename)
@@ -195,6 +238,7 @@ def main_sort(argv)
 end
 
 def main_select(argv)
+  op_selct.parse!(argv)
   filename = argv.pop
   fs = argv
   tblreader = TableReader.new(filename)
@@ -210,6 +254,7 @@ def main_select(argv)
 end
 
 def main_rename(argv)
+  op_rename.parse!(argv)
   if argv.length.even?
     filename = '-'
   else
@@ -227,6 +272,7 @@ def main_rename(argv)
 end
 
 def main_cat(argv)
+  op_cat.parse!(argv)
   result = Table.new
   each_table_file(argv) {|tbl|
     fs = tbl.list_fields - result.list_fields
@@ -241,6 +287,7 @@ def main_cat(argv)
 end
 
 def main_join(argv)
+  op_join.parse!(argv)
   result = Table.new([], [])
   each_table_file(argv) {|tbl|
     result = result.natjoin2(tbl)
@@ -251,6 +298,7 @@ def main_join(argv)
 end
 
 def main_count(argv)
+  op_count.parse!(argv)
   filename = argv.pop
   result_fields = argv.dup
   count_field = argv.pop
@@ -288,28 +336,17 @@ def each_table_file(argv)
 end
 
 def load_table(filename)
-  case filename
-  when /\.csv\z/
-    Table.load_csv(filename) {|aa| fix_table aa }
-  when /\.tsv\z/
-    Table.load_tsv(filename) {|aa| fix_table aa }
-  else
-    if filename == '-'
-      content = STDIN.read
-    else
-      content = File.read(filename)
-    end
-    if /\n/ =~ content
-      firstline = $`
-      if /,/ =~ firstline
-        return Table.parse_csv(content)
-      elsif /\t/ =~ firstline
-        return Table.parse_tsv(content)
-      end
-    else
-    end
-    raise "unknown file extension: #{filename.inspect}"
-  end
+  tblreader = TableReader.new(filename)
+  arys = []
+  tblreader.each {|ary|
+    arys << ary
+  }
+  header = tblreader.header
+  tbl = Table.new(header)
+  arys.each {|ary|
+    tbl.insert_values header, ary
+  }
+  tbl
 end
 
 class TableReader
@@ -366,12 +403,15 @@ class TableReader
 
   def field_from_index(i)
     raise ArgumentError, "negative index: #{i}" if i < 0
+    self.header
+    f = @header[i]
+    return f if f
     if @opt_n
-      "#{i+1}"
+      while @header.length <= i
+        @header << "#{@header.length+1}"
+      end
+      @header[i]
     else
-      self.header
-      f = @header[i]
-      return f if f
       h = {}
       @header.each {|ff| h[ff] = true if /\A\(\d+\)\z/ =~ ff }
       n = 1
@@ -387,7 +427,9 @@ class TableReader
 
   def shift
     header
-    @reader.shift
+    ary = @reader.shift
+    field_from_index(ary.length-1) if ary
+    ary
   end
 
   def each
