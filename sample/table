@@ -297,6 +297,7 @@ end
 
 class TableReader
   def initialize(filename)
+    @opt_n = $opt_n
     @io = nil
     case filename
     when /\.csv\z/
@@ -319,6 +320,7 @@ class TableReader
 
   def header
     return @header if @header
+    return @header = [] if @opt_n
     while ary = @reader.shift
       if ary.all? {|elt| elt.nil? || elt == '' }
         next
@@ -332,28 +334,37 @@ class TableReader
   end
 
   def index_from_field(f)
-    i = self.header.index(f)
-    if i.nil?
-      raise ArgumentError, "unexpected field name: #{f.inspect}"
+    if @opt_n
+      raise "numeric field name expected: #{f.inspect}" if /\A\d+\z/ !~ f
+      $1.to_i - 1
+    else
+      i = self.header.index(f)
+      if i.nil?
+        raise ArgumentError, "unexpected field name: #{f.inspect}"
+      end
+      i
     end
-    i
   end
 
   def field_from_index(i)
     raise ArgumentError, "negative index: #{i}" if i < 0
-    self.header
-    f = @header[i]
-    return f if f
-    h = {}
-    @header.each {|ff| h[ff] = true if /\A\(\d+\)\z/ =~ ff }
-    n = 1
-    while @header.length <= i
-      while h[f = "(#{n})"]
-        n += 1
+    if @opt_n
+      "#{i+1}"
+    else
+      self.header
+      f = @header[i]
+      return f if f
+      h = {}
+      @header.each {|ff| h[ff] = true if /\A\(\d+\)\z/ =~ ff }
+      n = 1
+      while @header.length <= i
+        while h[f = "(#{n})"]
+          n += 1
+        end
+        @header << f
       end
-      @header << f
+      @header[i]
     end
-    @header[i]
   end
 
   def shift
