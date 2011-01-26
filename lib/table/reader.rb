@@ -100,6 +100,7 @@ class Table::Reader
           n += 1
         end
         @header << f
+        h[f] = true
       end
       @header[i]
     end

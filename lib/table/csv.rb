@@ -38,26 +38,16 @@ class Table
       aa << ary
     }
     aa = yield aa if block_given?
-    if header_fields.empty?
-      aa.shift while aa.first.all? {|elt| elt.nil? || elt == '' }
-      header_fields = aa.shift
-      header_fields.pop while !header_fields.empty? && header_fields.last.nil?
-      h = Hash.new(0)
-      header_fields.each {|f| h[f] += 1 }
-      h.each {|f, n|
-        if 1 < n
-          raise ArgumentError, "ambiguous header: #{f.inspect}"
-        end
-      }
-    end
-    header_fields = header_fields.map {|f| f.nil? ? "" : f }
-    t = Table.new(header_fields)
-    aa.each {|ary|
-      h = {}
-      header_fields.each_with_index {|f, i|
-        h[f] = ary[i]
-      }
-      t.insert(h)
+    reader = Table::Reader.new(aa)
+    arys = []
+    reader.each {|ary|
+      arys << ary
+    }
+    header = reader.header
+    t = Table.new(header)
+    arys.each {|ary|
+      ary << nil while ary.length < header.length
+      t.insert_values header, ary
     }
     t
   end
