@@ -350,6 +350,7 @@ def load_table(filename)
   header = tblreader.header
   tbl = Table.new(header)
   arys.each {|ary|
+    ary << nil while ary.length < header.length
     tbl.insert_values header, ary
   }
   tbl
@@ -434,7 +435,7 @@ class TableReader
   def shift
     header
     ary = @reader.shift
-    field_from_index(ary.length-1) if ary
+    field_from_index(ary.length-1) if ary && !ary.empty?
     ary
   end
 
