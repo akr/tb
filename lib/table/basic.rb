@@ -926,6 +926,44 @@ class Table
   end
 
   # :call-seq:
+  #   table1.natjoin2_outer(table2)
+  def natjoin2_outer(table2)
+    table1 = self
+    fields1 = table1.list_fields
+    fields2 = table2.list_fields
+    common_fields = fields1 & fields2
+    total_fields = fields1 | fields2
+    unique_fields1 = fields1 - common_fields
+    unique_fields2 = fields2 - common_fields
+    h = {}
+    table2.each {|rec2|
+      k = rec2.values_at(*common_fields)
+      (h[k] ||= []) << rec2
+    }
+    result = Table.new(fields1 | fields2)
+    ids2 = {}
+    table1.each {|rec1|
+      k = rec1.values_at(*common_fields)
+      rec2_list = h[k]
+      values = rec1.values_at(*fields1)
+      if !rec2_list || rec2_list.empty? 
+        result.insert_values total_fields, values + unique_fields2.map { nil }
+      else
+        rec2_list.each {|rec2|
+          ids2[rec2['_recordid']] = true
+          result.insert_values total_fields, values + rec2.values_at(*unique_fields2)
+        }
+      end
+    }
+    table2.each {|rec2|
+      if !ids2[rec2['_recordid']]
+        result.insert_values total_fields, unique_fields1.map { nil } + rec2.values_at(*fields2)
+      end
+    }
+    result
+  end
+
+  # :call-seq:
   #   table.fmap!(field) {|record, value| new_value }
   def fmap!(field)
     each_recordid {|recordid|

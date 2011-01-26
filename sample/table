@@ -124,10 +124,12 @@ def op_cat
   op
 end
 
+$opt_join_outer = nil
 def op_join
   op = OptionParser.new
   op.banner = 'Usage: table join [options] TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('--outer', 'outer join') { $opt_join_outer = true }
   op
 end
 
@@ -295,9 +297,15 @@ end
 def main_join(argv)
   op_join.parse!(argv)
   result = Table.new([], [])
-  each_table_file(argv) {|tbl|
-    result = result.natjoin2(tbl)
-  }
+  if $opt_join_outer
+    each_table_file(argv) {|tbl|
+      result = result.natjoin2_outer(tbl)
+    }
+  else
+    each_table_file(argv) {|tbl|
+      result = result.natjoin2(tbl)
+    }
+  end
   with_output {|out|
     tbl_generate_csv(result, out)
   }
