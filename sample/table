@@ -104,10 +104,12 @@ def op_sort
   op
 end
 
+$opt_select_v = nil
 def op_select
   op = OptionParser.new
   op.banner = 'Usage: table select [options] TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-v', 'invert match') { $opt_select_v = true }
   op
 end
 
@@ -243,13 +245,24 @@ def main_select(argv)
   filename = argv.pop
   fs = argv
   tblreader = tablereader_open(filename)
-  header = tblreader.header
-  is = []
-  is = fs.map {|f| tblreader.index_from_field(f) }
+  opt_select_v = !!($opt_select_v)
+
+  h = {}
+  fs.each {|f| h[tblreader.index_from_field(f)] = true }
   with_table_stream_output {|gen|
-    gen.output_header(is.map {|i| tblreader.field_from_index(i) })
+    if !$opt_n
+      header = []
+      tblreader.header.each_with_index {|f, i|
+        header << f if opt_select_v ^ h[i]
+      }
+      gen.output_header(header)
+    end
     tblreader.each {|ary|
-      gen << ary.values_at(*is)
+      values = []
+      ary.each_with_index {|v, i|
+        values << v if opt_select_v ^ h[i]
+      }
+      gen << values
     }
   }
 end
