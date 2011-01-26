@@ -58,7 +58,7 @@ Usage:
   table pp [opts] TABLE
   table grep [opts] REGEXP TABLE
   table sort [opts] TABLE
-  table select [opts] FIELD... TABLE
+  table select [opts] FIELD,... TABLE
   table rename [opts] SRCFIELD DSTFIELD ... TABLE
   table cat [opts] TABLE...
   table join [opts] TABLE...
@@ -254,7 +254,7 @@ def main_sort(argv)
   op_sort.parse!(argv)
   filename = argv.empty? ? '-' : argv.shift
   if $opt_sort_f
-    fs = Table.csv_stream_input($opt_sort_f) {|reader| break reader.shift }
+    fs = Table.csv_stream_input($opt_sort_f) {|ary| break ary }
   else
     fs = nil
   end
@@ -272,29 +272,40 @@ end
 
 def main_select(argv)
   op_select.parse!(argv)
-  filename = argv.pop
-  fs = argv
+  fs = argv.shift
+  fs = Table.csv_stream_input(fs) {|ary| break ary }
+  filename = argv.shift || '-'
   tblreader = tablereader_open(filename)
-  opt_select_v = !!($opt_select_v)
-
-  h = {}
-  fs.each {|f| h[tblreader.index_from_field(f)] = true }
-  with_table_stream_output {|gen|
-    if !$opt_n
-      header = []
-      tblreader.header.each_with_index {|f, i|
-        header << f if opt_select_v ^ h[i]
+  if $opt_select_v
+    h = {}
+    fs.each {|f| h[tblreader.index_from_field(f)] = true }
+    with_table_stream_output {|gen|
+      if !$opt_n
+        header = []
+        tblreader.header.each_with_index {|f, i|
+          header << f if !h[i]
+        }
+        gen.output_header(header)
+      end
+      tblreader.each {|ary|
+        values = []
+        ary.each_with_index {|v, i|
+          values << v if !h[i]
+        }
+        gen << values
       }
-      gen.output_header(header)
-    end
-    tblreader.each {|ary|
-      values = []
-      ary.each_with_index {|v, i|
-        values << v if opt_select_v ^ h[i]
-      }
-      gen << values
     }
-  }
+  else
+    header = tblreader.header
+    is = []
+    is = fs.map {|f| tblreader.index_from_field(f) }
+    with_table_stream_output {|gen|
+      gen.output_header(is.map {|i| tblreader.field_from_index(i) })
+      tblreader.each {|ary|
+        gen << ary.values_at(*is)
+      }
+    }
+  end
 end
 
 def main_rename(argv)
