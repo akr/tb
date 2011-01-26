@@ -62,7 +62,7 @@ Usage:
   table rename [opts] SRCFIELD DSTFIELD ... TABLE
   table cat [opts] TABLE...
   table join [opts] TABLE...
-  table count [opts] FIELD... COUNT-FIELD TABLE
+  table count [opts] FIELD,... COUNT-FIELD TABLE
 End
   exit status
 end
@@ -163,7 +163,7 @@ end
 
 def op_count
   op = OptionParser.new
-  op.banner = 'Usage: table count [opts] FIELD... COUNT-FIELD TABLE'
+  op.banner = 'Usage: table count [opts] FIELD,... COUNT-FIELD TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
@@ -371,10 +371,11 @@ end
 
 def main_count(argv)
   op_count.parse!(argv)
-  filename = argv.pop
-  result_fields = argv.dup
-  count_field = argv.pop
-  fs = argv
+  fs = argv.shift
+  fs = Table.csv_stream_input(fs) {|ary| break ary } || []
+  count_field = argv.shift
+  filename = argv.shift || '-'
+  result_fields = fs + [count_field]
   if fs.empty?
     n = 0
     tablereader_open(filename) {|tblreader|
