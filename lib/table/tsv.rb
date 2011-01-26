@@ -27,36 +27,6 @@
 require 'stringio'
 
 class Table
-
-  def Table.load_tsv(filename, *header_fields, &block)
-    Table.parse_tsv(File.read(filename), *header_fields, &block)
-  end
-
-  def Table.parse_tsv(tsv, *header_fields)
-    aa = []
-    tsv_stream_input(tsv) {|ary|
-      aa << ary
-    }
-    aa = yield aa if block_given?
-    if header_fields.empty?
-      reader = Table::Reader.new(aa)
-      arys = []
-      reader.each {|ary|
-        arys << ary
-      }
-      header = reader.header
-    else
-      header = header_fields
-      arys = aa
-    end
-    t = Table.new(header)
-    arys.each {|ary|
-      ary << nil while ary.length < header.length
-      t.insert_values header, ary
-    }
-    t
-  end
-
   def Table.tsv_stream_input(tsv)
     tsvreader = TSVReader.new(tsv)
     while ary = tsvreader.shift

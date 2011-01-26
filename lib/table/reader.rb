@@ -24,6 +24,65 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
+class Table
+  def Table.load_csv(filename, *header_fields, &block)
+    Table.parse_csv(File.read(filename), *header_fields, &block)
+  end
+
+  def Table.parse_csv(csv, *header_fields)
+    aa = []
+    csv_stream_input(csv) {|ary|
+      aa << ary
+    }
+    aa = yield aa if block_given?
+    if header_fields.empty?
+      reader = Table::Reader.new(aa)
+      arys = []
+      reader.each {|ary|
+        arys << ary
+      }
+      header = reader.header
+    else
+      header = header_fields
+      arys = aa
+    end
+    t = Table.new(header)
+    arys.each {|ary|
+      ary << nil while ary.length < header.length
+      t.insert_values header, ary
+    }
+    t
+  end
+
+  def Table.load_tsv(filename, *header_fields, &block)
+    Table.parse_tsv(File.read(filename), *header_fields, &block)
+  end
+
+  def Table.parse_tsv(tsv, *header_fields)
+    aa = []
+    tsv_stream_input(tsv) {|ary|
+      aa << ary 
+    }
+    aa = yield aa if block_given?
+    if header_fields.empty?
+      reader = Table::Reader.new(aa)
+      arys = []
+      reader.each {|ary|
+        arys << ary
+      }
+      header = reader.header
+    else
+      header = header_fields
+      arys = aa
+    end
+    t = Table.new(header)
+    arys.each {|ary|
+      ary << nil while ary.length < header.length
+      t.insert_values header, ary
+    }
+    t
+  end
+end
 class Table::Reader
   def self.open(filename, opts={})
     io = nil
