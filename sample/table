@@ -29,8 +29,8 @@ def usage(status)
   print <<'End'
 Usage:
   table csv [opts] TABLE
-  table json TABLE
-  table yaml TABLE
+  table json [opts] TABLE
+  table yaml [opts] TABLE
   table pp [opts] TABLE
   table grep [opts] REGEXP TABLE
   table sort [opts] FIELD... TABLE
@@ -59,6 +59,20 @@ $opt_n = nil
 def op_csv
   op = OptionParser.new
   op.banner = 'Usage: table csv [options] TABLE'
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op
+end
+
+def op_json
+  op = OptionParser.new
+  op.banner = 'Usage: table json [options] TABLE'
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op
+end
+
+def op_yaml
+  op = OptionParser.new
+  op.banner = 'Usage: table yaml [options] TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
@@ -92,13 +106,14 @@ def main_csv(argv)
   op_csv.parse!(argv)
   each_table_file(argv) {|tbl|
     with_output {|out|
-      tbl.generate_csv(out)
+      tbl_generate_csv(tbl, out)
     }
   }
 end
 
 def main_json(argv)
   require 'json'
+  op_json.parse!(argv)
   each_table_file(argv) {|tbl|
     ary = tbl.map {|rec| rec.to_h }
     with_output {|out|
@@ -109,6 +124,7 @@ end
 
 def main_yaml(argv)
   require 'yaml'
+  op_yaml.parse!(argv)
   each_table_file(argv) {|tbl|
     ary = tbl.map {|rec| rec.to_h }
     with_output {|out|
@@ -174,7 +190,7 @@ def main_sort(argv)
   end
   tbl2 = tbl.reorder_records_by(&blk)
   with_output {|out|
-    tbl2.generate_csv(out)
+    tbl_generate_csv(tbl2, out)
   }
 end
 
@@ -220,7 +236,7 @@ def main_cat(argv)
     tbl.each {|rec| result.insert rec }
   }
   with_output {|out|
-    result.generate_csv(out)
+    tbl_generate_csv(result, out)
   }
 end
 
@@ -230,7 +246,7 @@ def main_join(argv)
     result = result.natjoin2(tbl)
   }
   with_output {|out|
-    result.generate_csv(out)
+    tbl_generate_csv(result, out)
   }
 end
 
@@ -256,7 +272,7 @@ def main_count(argv)
     }
   end
   with_output {|out|
-    result.generate_csv(out)
+    tbl_generate_csv(result, out)
   }
 end
 
@@ -427,6 +443,19 @@ def with_table_stream_output
       yield gen
     }
   }
+end
+
+def tbl_generate_csv(tbl, out)
+  if $opt_n
+    header = tbl.list_fields
+    Table.csv_stream_output(out) {|gen|
+      tbl.each {|rec|
+        gen << rec.values_at(*header)
+      }
+    }
+  else
+    tbl.generate_csv(out)
+  end
 end
 
 def with_output
