@@ -119,10 +119,17 @@ end
 
 def main_pp(argv)
   op_pp.parse!(argv)
-  each_table_file(argv) {|tbl|
-    ary = tbl.map {|rec| rec.to_h }
-    with_output {|out|
-      PP.pp ary, out
+  with_output {|out|
+    argv.each {|filename|
+      tblreader = TableReader.new(filename)
+      tblreader.each {|ary|
+        h = {}
+        ary.each_with_index {|v, i|
+          next if v.nil?
+          h[tblreader.field_from_index(i)] = v
+        }
+        PP.pp h, out
+      }
     }
   }
 end
