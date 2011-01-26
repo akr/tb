@@ -179,7 +179,7 @@ def main_pp(argv)
   op_pp.parse!(argv)
   with_output {|out|
     argv.each {|filename|
-      tblreader = Table::Reader.open(filename)
+      tblreader = TableReader.open(filename)
       tblreader.each {|ary|
         h = {}
         ary.each_with_index {|v, i|
@@ -200,7 +200,7 @@ def main_grep(argv)
   argv.each {|filename|
     with_table_stream_output {|gen|
       opt_f_index = nil
-      tblreader = Table::Reader.open(filename)
+      tblreader = TableReader.open(filename)
       gen.output_header tblreader.header
       if $opt_grep_f
         opt_f_index = tblreader.index_from_field($opt_grep_f)
@@ -240,7 +240,7 @@ def main_select(argv)
   op_select.parse!(argv)
   filename = argv.pop
   fs = argv
-  tblreader = Table::Reader.open(filename)
+  tblreader = TableReader.open(filename)
   header = tblreader.header
   is = []
   is = fs.map {|f| tblreader.index_from_field(f) }
@@ -262,7 +262,7 @@ def main_rename(argv)
   h = {}
   argv.each_slice(2) {|sf, df| h[sf] = df }
   with_table_stream_output {|gen|
-    tblreader = Table::Reader.open(filename)
+    tblreader = TableReader.open(filename)
     header = tblreader.header
     h.each {|sf, df|
       unless header.include? sf
@@ -311,13 +311,13 @@ def main_count(argv)
   fs = argv
   if fs.empty?
     n = 0
-    tblreader = Table::Reader.open(filename)
+    tblreader = TableReader.open(filename)
     tblreader.each {|ary| n += 1 }
     result = Table.new([count_field], [n])
   else
     is = nil
     h = Hash.new(0)
-    tblreader = Table::Reader.open(filename)
+    tblreader = TableReader.open(filename)
     is = fs.map {|f| tblreader.index_from_field(f) }
     tblreader.each {|ary| h[ary.values_at(*is)] += 1 }
     result = Table.new(result_fields)
@@ -342,7 +342,7 @@ def each_table_file(argv)
 end
 
 def load_table(filename)
-  tblreader = Table::Reader.open(filename)
+  tblreader = TableReader.open(filename)
   arys = []
   tblreader.each {|ary|
     arys << ary
@@ -354,6 +354,12 @@ def load_table(filename)
     tbl.insert_values header, ary
   }
   tbl
+end
+
+class TableReader
+  def self.open(filename)
+    Table::Reader.open(filename, {:numeric=>$opt_n})
+  end
 end
 
 def with_table_stream_output

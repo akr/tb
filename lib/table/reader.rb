@@ -25,7 +25,7 @@
 # OF SUCH DAMAGE.
 
 class Table::Reader
-  def self.open(filename)
+  def self.open(filename, opts={})
     io = nil
     case filename
     when /\.csv\z/
@@ -43,11 +43,11 @@ class Table::Reader
         rawreader = Table::CSVReader.new(io)
       end
     end
-    self.new(rawreader)
+    self.new(rawreader, opts)
   end
 
-  def initialize(rawreader)
-    @opt_n = $opt_n
+  def initialize(rawreader, opts={})
+    @opt_n = opts[:numeric]
     @reader = rawreader
     @header = nil
   end
