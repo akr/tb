@@ -899,7 +899,7 @@ class Table
   end
 
   # :call-seq:
-  #   table1.natjoin2(table2, rename_field1={}, rename_field2={}) {|record| ... }
+  #   table1.natjoin2(table2)
   def natjoin2(table2)
     table1 = self
     fields1 = table1.list_fields
