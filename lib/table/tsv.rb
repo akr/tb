@@ -39,23 +39,20 @@ class Table
     }
     aa = yield aa if block_given?
     if header_fields.empty?
-      aa.shift while aa.first.all? {|elt| elt.nil? || elt == '' }
-      header_fields = aa.shift
-      h = Hash.new(0)
-      header_fields.each_with_index {|f, i|
-        if h.include? f
-          raise ArgumentError, "ambiguous header field: #{f.inspect} (#{h[f]}th and #{i}th)"
-        end
-        h[f] = i
+      reader = Table::Reader.new(aa)
+      arys = []
+      reader.each {|ary|
+        arys << ary
       }
+      header = reader.header
+    else
+      header = header_fields
+      arys = aa
     end
-    t = Table.new(header_fields)
-    aa.each {|ary|
-      h = {}
-      header_fields.each_with_index {|f, i|
-        h[f] = ary[i]
-      }
-      t.insert(h)
+    t = Table.new(header)
+    arys.each {|ary|
+      ary << nil while ary.length < header.length
+      t.insert_values header, ary
     }
     t
   end
