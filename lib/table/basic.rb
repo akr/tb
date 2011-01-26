@@ -933,8 +933,8 @@ class Table
     fields2 = table2.list_fields
     common_fields = fields1 & fields2
     total_fields = fields1 | fields2
-    unique_fields1 = fields1 - common_fields
     unique_fields2 = fields2 - common_fields
+    fields2_extended = total_fields.map {|f| fields2.include?(f) ? f : nil }
     h = {}
     table2.each {|rec2|
       k = rec2.values_at(*common_fields)
@@ -957,7 +957,7 @@ class Table
     }
     table2.each {|rec2|
       if !ids2[rec2['_recordid']]
-        result.insert_values total_fields, unique_fields1.map { nil } + rec2.values_at(*fields2)
+	result.insert_values total_fields, fields2_extended.map {|f| f ? rec2[f] : nil }
       end
     }
     result
