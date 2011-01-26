@@ -457,21 +457,6 @@ class TableReader
   end
 end
 
-def fix_table(aa)
-  aa.shift while aa.first.all? {|elt| elt.nil? || elt == '' }
-  aa.pop while aa.last.all? {|elt| elt.nil? || elt == '' }
-  return aa if aa.empty?
-  maxlen = aa.map {|a| a.length }.max
-  if $opt_n
-    aa.unshift((1..maxlen).to_a.map {|i| i.to_s })
-  else
-    header = aa[0]
-    header << "" while header.length < maxlen
-    aa[0] = fix_header(header)
-  end
-  aa
-end
-
 def fix_header(header)
   h = {}
   header.map {|s|
