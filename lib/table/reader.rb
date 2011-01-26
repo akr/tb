@@ -102,7 +102,17 @@ class Table::Reader
         rawreader = Table::CSVReader.new(io)
       end
     end
-    self.new(rawreader, opts)
+    reader = self.new(rawreader, opts)
+    if block_given?
+      begin
+        yield reader
+      ensure
+        reader.close
+      end
+    else
+      reader
+    end
+
   end
 
   def initialize(rawreader, opts={})
@@ -181,7 +191,6 @@ class Table::Reader
 
   def close
     @reader.close
-    @io.close
   end
 
   def fix_header(header)

@@ -209,14 +209,15 @@ def main_pp(argv)
   op_pp.parse!(argv)
   with_output {|out|
     argv.each {|filename|
-      tblreader = tablereader_open(filename)
-      tblreader.each {|ary|
-        h = {}
-        ary.each_with_index {|v, i|
-          next if v.nil?
-          h[tblreader.field_from_index(i)] = v
+      tablereader_open(filename) {|tblreader|
+        tblreader.each {|ary|
+          h = {}
+          ary.each_with_index {|v, i|
+            next if v.nil?
+            h[tblreader.field_from_index(i)] = v
+          }
+          PP.pp h, out
         }
-        PP.pp h, out
       }
     }
   }
@@ -230,21 +231,22 @@ def main_grep(argv)
   argv.each {|filename|
     with_table_stream_output {|gen|
       opt_f_index = nil
-      tblreader = tablereader_open(filename)
-      gen.output_header tblreader.header
-      if $opt_grep_f
-        opt_f_index = tblreader.index_from_field($opt_grep_f)
-        if opt_f_index.nil?
-          raise "field not found: #{$opt_grep_f.inspect}"
-        end
-      end
-      tblreader.each {|ary|
+      tablereader_open(filename) {|tblreader|
+        gen.output_header tblreader.header
         if $opt_grep_f
-          found = opt_v ^ !!(re =~ ary[opt_f_index])
-        else
-          found = opt_v ^ !!(ary.any? {|v| re =~ v.to_s })
+          opt_f_index = tblreader.index_from_field($opt_grep_f)
+          if opt_f_index.nil?
+            raise "field not found: #{$opt_grep_f.inspect}"
+          end
         end
-        gen << ary if found
+        tblreader.each {|ary|
+          if $opt_grep_f
+            found = opt_v ^ !!(re =~ ary[opt_f_index])
+          else
+            found = opt_v ^ !!(ary.any? {|v| re =~ v.to_s })
+          end
+          gen << ary if found
+        }
       }
     }
   }
@@ -275,37 +277,38 @@ def main_select(argv)
   fs = argv.shift
   fs = Table.csv_stream_input(fs) {|ary| break ary }
   filename = argv.shift || '-'
-  tblreader = tablereader_open(filename)
-  if $opt_select_v
-    h = {}
-    fs.each {|f| h[tblreader.index_from_field(f)] = true }
-    with_table_stream_output {|gen|
-      if !$opt_n
-        header = []
-        tblreader.header.each_with_index {|f, i|
-          header << f if !h[i]
+  tablereader_open(filename) {|tblreader|
+    if $opt_select_v
+      h = {}
+      fs.each {|f| h[tblreader.index_from_field(f)] = true }
+      with_table_stream_output {|gen|
+        if !$opt_n
+          header = []
+          tblreader.header.each_with_index {|f, i|
+            header << f if !h[i]
+          }
+          gen.output_header(header)
+        end
+        tblreader.each {|ary|
+          values = []
+          ary.each_with_index {|v, i|
+            values << v if !h[i]
+          }
+          gen << values
         }
-        gen.output_header(header)
-      end
-      tblreader.each {|ary|
-        values = []
-        ary.each_with_index {|v, i|
-          values << v if !h[i]
+      }
+    else
+      header = tblreader.header
+      is = []
+      is = fs.map {|f| tblreader.index_from_field(f) }
+      with_table_stream_output {|gen|
+        gen.output_header(is.map {|i| tblreader.field_from_index(i) })
+        tblreader.each {|ary|
+          gen << ary.values_at(*is)
         }
-        gen << values
       }
-    }
-  else
-    header = tblreader.header
-    is = []
-    is = fs.map {|f| tblreader.index_from_field(f) }
-    with_table_stream_output {|gen|
-      gen.output_header(is.map {|i| tblreader.field_from_index(i) })
-      tblreader.each {|ary|
-        gen << ary.values_at(*is)
-      }
-    }
-  end
+    end
+  }
 end
 
 def main_rename(argv)
@@ -318,17 +321,18 @@ def main_rename(argv)
   h = {}
   argv.each_slice(2) {|sf, df| h[sf] = df }
   with_table_stream_output {|gen|
-    tblreader = tablereader_open(filename)
-    header = tblreader.header
-    h.each {|sf, df|
-      unless header.include? sf
-        raise "field not defined: #{sf.inspect}"
-      end
-    }
-    renamed_header = tblreader.header.map {|f| h.fetch(f, f) }
-    gen.output_header(renamed_header)
-    tblreader.each {|ary|
-      gen << ary
+    tablereader_open(filename) {|tblreader|
+      header = tblreader.header
+      h.each {|sf, df|
+        unless header.include? sf
+          raise "field not defined: #{sf.inspect}"
+        end
+      }
+      renamed_header = tblreader.header.map {|f| h.fetch(f, f) }
+      gen.output_header(renamed_header)
+      tblreader.each {|ary|
+        gen << ary
+      }
     }
   }
 end
@@ -373,18 +377,20 @@ def main_count(argv)
   fs = argv
   if fs.empty?
     n = 0
-    tblreader = tablereader_open(filename)
-    tblreader.each {|ary| n += 1 }
+    tablereader_open(filename) {|tblreader|
+      tblreader.each {|ary| n += 1 }
+    }
     result = Table.new([count_field], [n])
   else
     is = nil
     h = Hash.new(0)
-    tblreader = tablereader_open(filename)
-    is = fs.map {|f| tblreader.index_from_field(f) }
-    tblreader.each {|ary| h[ary.values_at(*is)] += 1 }
-    result = Table.new(result_fields)
-    h.each {|k, v|
-      result.insert_values result_fields, k+[v]
+    tablereader_open(filename) {|tblreader|
+      is = fs.map {|f| tblreader.index_from_field(f) }
+      tblreader.each {|ary| h[ary.values_at(*is)] += 1 }
+      result = Table.new(result_fields)
+      h.each {|k, v|
+        result.insert_values result_fields, k+[v]
+      }
     }
   end
   with_output {|out|
@@ -404,22 +410,23 @@ def each_table_file(argv)
 end
 
 def load_table(filename)
-  tblreader = tablereader_open(filename)
-  arys = []
-  tblreader.each {|ary|
-    arys << ary
+  tablereader_open(filename) {|tblreader|
+    arys = []
+    tblreader.each {|ary|
+      arys << ary
+    }
+    header = tblreader.header
+    tbl = Table.new(header)
+    arys.each {|ary|
+      ary << nil while ary.length < header.length
+      tbl.insert_values header, ary
+    }
+    tbl
   }
-  header = tblreader.header
-  tbl = Table.new(header)
-  arys.each {|ary|
-    ary << nil while ary.length < header.length
-    tbl.insert_values header, ary
-  }
-  tbl
 end
 
-def tablereader_open(filename)
-  Table::Reader.open(filename, {:numeric=>$opt_n})
+def tablereader_open(filename, &b)
+  Table::Reader.open(filename, {:numeric=>$opt_n}, &b)
 end
 
 def with_table_stream_output
