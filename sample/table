@@ -179,7 +179,7 @@ def main_pp(argv)
   op_pp.parse!(argv)
   with_output {|out|
     argv.each {|filename|
-      tblreader = TableReader.open(filename)
+      tblreader = Table::Reader.open(filename)
       tblreader.each {|ary|
         h = {}
         ary.each_with_index {|v, i|
@@ -200,7 +200,7 @@ def main_grep(argv)
   argv.each {|filename|
     with_table_stream_output {|gen|
       opt_f_index = nil
-      tblreader = TableReader.open(filename)
+      tblreader = Table::Reader.open(filename)
       gen.output_header tblreader.header
       if $opt_grep_f
         opt_f_index = tblreader.index_from_field($opt_grep_f)
@@ -240,7 +240,7 @@ def main_select(argv)
   op_select.parse!(argv)
   filename = argv.pop
   fs = argv
-  tblreader = TableReader.open(filename)
+  tblreader = Table::Reader.open(filename)
   header = tblreader.header
   is = []
   is = fs.map {|f| tblreader.index_from_field(f) }
@@ -262,7 +262,7 @@ def main_rename(argv)
   h = {}
   argv.each_slice(2) {|sf, df| h[sf] = df }
   with_table_stream_output {|gen|
-    tblreader = TableReader.open(filename)
+    tblreader = Table::Reader.open(filename)
     header = tblreader.header
     h.each {|sf, df|
       unless header.include? sf
@@ -311,13 +311,13 @@ def main_count(argv)
   fs = argv
   if fs.empty?
     n = 0
-    tblreader = TableReader.open(filename)
+    tblreader = Table::Reader.open(filename)
     tblreader.each {|ary| n += 1 }
     result = Table.new([count_field], [n])
   else
     is = nil
     h = Hash.new(0)
-    tblreader = TableReader.open(filename)
+    tblreader = Table::Reader.open(filename)
     is = fs.map {|f| tblreader.index_from_field(f) }
     tblreader.each {|ary| h[ary.values_at(*is)] += 1 }
     result = Table.new(result_fields)
@@ -342,7 +342,7 @@ def each_table_file(argv)
 end
 
 def load_table(filename)
-  tblreader = TableReader.open(filename)
+  tblreader = Table::Reader.open(filename)
   arys = []
   tblreader.each {|ary|
     arys << ary
@@ -354,123 +354,6 @@ def load_table(filename)
     tbl.insert_values header, ary
   }
   tbl
-end
-
-class TableReader
-  def TableReader.open(filename)
-    io = nil
-    case filename
-    when /\.csv\z/
-      io = File.open(filename)
-      rawreader = Table::CSVReader.new(io)
-    when /\.tsv\z/
-      io = File.open(filename)
-      rawreader = Table::TSVReader.new(io)
-    else
-      if filename == '-'
-        rawreader = Table::CSVReader.new(STDIN)
-      else
-        # guess table format?
-        io = File.open(filename)
-        rawreader = Table::CSVReader.new(io)
-      end
-    end
-    TableReader.new(rawreader)
-  end
-
-  def initialize(rawreader)
-    @opt_n = $opt_n
-    @reader = rawreader
-    @header = nil
-  end
-
-  def header
-    return @header if @header
-    return @header = [] if @opt_n
-    while ary = @reader.shift
-      if ary.all? {|elt| elt.nil? || elt == '' }
-        next
-      else
-        @header = fix_header(ary)
-        return @header
-      end
-    end
-    @header = []
-    return @header
-  end
-
-  def index_from_field(f)
-    if @opt_n
-      raise "numeric field start from 1: #{f.inspect}" if /\A0+\z/ =~ f
-      raise "numeric field name expected: #{f.inspect}" if /\A(\d+)\z/ !~ f
-      $1.to_i - 1
-    else
-      i = self.header.index(f)
-      if i.nil?
-        raise ArgumentError, "unexpected field name: #{f.inspect}"
-      end
-      i
-    end
-  end
-
-  def field_from_index(i)
-    raise ArgumentError, "negative index: #{i}" if i < 0
-    self.header
-    f = @header[i]
-    return f if f
-    if @opt_n
-      while @header.length <= i
-        @header << "#{@header.length+1}"
-      end
-      @header[i]
-    else
-      h = {}
-      @header.each {|ff| h[ff] = true if /\A\(\d+\)\z/ =~ ff }
-      n = 1
-      while @header.length <= i
-        while h[f = "(#{n})"]
-          n += 1
-        end
-        @header << f
-      end
-      @header[i]
-    end
-  end
-
-  def shift
-    header
-    ary = @reader.shift
-    field_from_index(ary.length-1) if ary && !ary.empty?
-    ary
-  end
-
-  def each
-    while ary = self.shift
-      yield ary
-    end
-    nil
-  end
-
-  def close
-    @reader.close
-    @io.close
-  end
-
-  def fix_header(header)
-    h = {}
-    header.map {|s|
-      s ||= ''
-      if h[s]
-        s += "(2)" if /\(\d+\)\z/ !~ s
-        while h[s]
-          s = s.sub(/\((\d+)\)\z/) { n = $1.to_i; "(#{n+1})" }
-        end
-        s
-      end
-      h[s] = true
-      s
-    }
-  end
 end
 
 def with_table_stream_output
