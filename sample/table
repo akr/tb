@@ -57,7 +57,7 @@ Usage:
   table yaml [opts] TABLE
   table pp [opts] TABLE
   table grep [opts] REGEXP TABLE
-  table sort [opts] FIELD... TABLE
+  table sort [opts] TABLE
   table select [opts] FIELD... TABLE
   table rename [opts] SRCFIELD DSTFIELD ... TABLE
   table cat [opts] TABLE...
@@ -121,10 +121,12 @@ def op_grep
   op
 end
 
+$opt_sort_f = nil
 def op_sort
   op = OptionParser.new
   op.banner = 'Usage: table sort [options] TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-f FIELD,...', 'specify sort keys') {|fs| $opt_sort_f = fs }
   op
 end
 
@@ -250,8 +252,12 @@ end
 
 def main_sort(argv)
   op_sort.parse!(argv)
-  filename = argv.pop || '-'
-  fs = argv.empty? ? nil : argv
+  filename = argv.empty? ? '-' : argv.shift
+  if $opt_sort_f
+    fs = Table.csv_stream_input($opt_sort_f) {|reader| break reader.shift }
+  else
+    fs = nil
+  end
   tbl = load_table(filename)
   if fs
     blk = lambda {|rec| rec.values_at(*fs) }
