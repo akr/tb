@@ -26,6 +26,7 @@
 
 require 'table'
 require 'optparse'
+require 'enumerator'
 
 def main(argv)
   subcommand = argv.shift
@@ -60,7 +61,7 @@ Usage:
   table grep [opts] REGEXP TABLE
   table sort [opts] TABLE
   table select [opts] FIELD,... TABLE
-  table rename [opts] SRCFIELD DSTFIELD ... TABLE
+  table rename [opts] SRC,DST,... TABLE
   table cat [opts] TABLE...
   table join [opts] TABLE...
   table count [opts] TABLE
@@ -154,7 +155,7 @@ end
 
 def op_rename
   op = OptionParser.new
-  op.banner = 'Usage: table rename [opts] SRCFIELD DSTFIELD ... TABLE'
+  op.banner = 'Usage: table rename [opts] SRC,DST,... TABLE'
   op
 end
 
@@ -341,13 +342,10 @@ end
 
 def main_rename(argv)
   op_rename.parse!(argv)
-  if argv.length.even?
-    filename = '-'
-  else
-    filename = argv.pop
-  end
+  fs = split_csv_argument(argv.shift)
+  filename = argv.shift || '-'
   h = {}
-  argv.each_slice(2) {|sf, df| h[sf] = df }
+  fs.each_slice(2) {|sf, df| h[sf] = df }
   with_table_stream_output {|gen|
     tablereader_open(filename) {|tblreader|
       header = tblreader.header
