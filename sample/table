@@ -97,6 +97,7 @@ $opt_n = nil
 def op_csv
   op = OptionParser.new
   op.banner = 'Usage: table csv [opts] TABLE'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
@@ -104,6 +105,7 @@ end
 def op_json
   op = OptionParser.new
   op.banner = 'Usage: table json [opts] TABLE'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
@@ -111,6 +113,7 @@ end
 def op_yaml
   op = OptionParser.new
   op.banner = 'Usage: table yaml [opts] TABLE'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
@@ -118,6 +121,7 @@ end
 def op_pp
   op = OptionParser.new
   op.banner = 'Usage: table pp [opts] TABLE'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
@@ -128,6 +132,7 @@ $opt_grep_v = nil
 def op_grep
   op = OptionParser.new
   op.banner = 'Usage: table grep [opts] REGEXP TABLE'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f FIELD') {|field| $opt_grep_f = field }
   op.def_option('-e REGEXP') {|pattern| $opt_grep_e = pattern }
@@ -139,6 +144,7 @@ $opt_sort_f = nil
 def op_sort
   op = OptionParser.new
   op.banner = 'Usage: table sort [opts] TABLE'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f FIELD,...', 'specify sort keys') {|fs| $opt_sort_f = fs }
   op
@@ -148,6 +154,7 @@ $opt_select_v = nil
 def op_select
   op = OptionParser.new
   op.banner = 'Usage: table select [opts] FIELD,... TABLE'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-v', 'invert match') { $opt_select_v = true }
   op
@@ -156,12 +163,14 @@ end
 def op_rename
   op = OptionParser.new
   op.banner = 'Usage: table rename [opts] SRC,DST,... TABLE'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op
 end
 
 def op_cat
   op = OptionParser.new
   op.banner = 'Usage: table cat [opts] TABLE...'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op
 end
@@ -171,6 +180,7 @@ $opt_join_outer_missing = nil
 def op_join
   op = OptionParser.new
   op.banner = 'Usage: table join [opts] TABLE...'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--outer', 'outer join') { $opt_join_outer = true }
   op.def_option('--outer-missing=DEFAULT', 'missing value for outer join') {|missing|
@@ -184,6 +194,7 @@ $opt_count_f
 def op_count
   op = OptionParser.new
   op.banner = 'Usage: table count [opts] TABLE'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f KEY-FIELD1,...,COUNT-FIELD', 'zero or more key fields and one count field') {|arg| $opt_count_f = arg }
   op
@@ -193,6 +204,7 @@ $opt_sum_f
 def op_sum
   op = OptionParser.new
   op.banner = 'Usage: table sum [opts] TABLE'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f KEY-FIELD1,...,SUM-FIELD', 'zero or more key fields and one sum field') {|arg| $opt_sum_f = arg }
   op
