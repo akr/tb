@@ -83,6 +83,7 @@ class Table
     t
   end
 end
+
 class Table::Reader
   def self.open(filename, opts={})
     io = nil
