@@ -62,7 +62,7 @@ Usage:
   table rename [opts] SRCFIELD DSTFIELD ... TABLE
   table cat [opts] TABLE...
   table join [opts] TABLE...
-  table count [opts] FIELD,... COUNT-FIELD TABLE
+  table count [opts] TABLE
 End
   exit status
 end
@@ -70,7 +70,17 @@ end
 def main_help(argv)
   subcommand = argv.shift
   case subcommand
+  when 'csv' then puts op_csv
+  when 'json' then puts op_json
+  when 'yaml' then puts op_yaml
+  when 'pp' then puts op_pp
   when 'grep' then puts op_grep
+  when 'sort' then puts op_sort
+  when 'select' then puts op_select
+  when 'rename' then puts op_rename
+  when 'cat' then puts op_cat
+  when 'join' then puts op_join
+  when 'count' then puts op_count
   when nil
     usage(true)
   else
@@ -166,10 +176,12 @@ def op_join
   op
 end
 
+$opt_count_f
 def op_count
   op = OptionParser.new
-  op.banner = 'Usage: table count [opts] FIELD,... COUNT-FIELD TABLE'
+  op.banner = 'Usage: table count [opts] TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-f KEY-FIELD1,...,COUNT-FIELD', 'zero or more key fields and one count field') {|arg| $opt_count_f = arg }
   op
 end
 
@@ -261,7 +273,7 @@ def main_sort(argv)
   op_sort.parse!(argv)
   filename = argv.empty? ? '-' : argv.shift
   if $opt_sort_f
-    fs = Table.csv_stream_input($opt_sort_f) {|ary| break ary }
+    fs = split_csv_argument($opt_sort_f)
   else
     fs = nil
   end
@@ -279,8 +291,7 @@ end
 
 def main_select(argv)
   op_select.parse!(argv)
-  fs = argv.shift
-  fs = Table.csv_stream_input(fs) {|ary| break ary }
+  fs = split_csv_argument(argv.shift)
   filename = argv.shift || '-'
   tablereader_open(filename) {|tblreader|
     if $opt_select_v
@@ -376,9 +387,13 @@ end
 
 def main_count(argv)
   op_count.parse!(argv)
-  fs = argv.shift
-  fs = Table.csv_stream_input(fs) {|ary| break ary } || []
-  count_field = argv.shift
+  if $opt_count_f
+    fs = split_csv_argument($opt_count_f)
+    count_field = fs.pop
+  else
+    fs = []
+    count_field = 'count'
+  end
   filename = argv.shift || '-'
   result_fields = fs + [count_field]
   if fs.empty?
@@ -402,6 +417,11 @@ def main_count(argv)
   with_output {|out|
     tbl_generate_csv(result, out)
   }
+end
+
+def split_csv_argument(arg)
+  Table.csv_stream_input(arg) {|ary| return ary }
+  return []
 end
 
 def each_table_file(argv)
