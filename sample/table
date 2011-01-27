@@ -42,6 +42,7 @@ def main(argv)
   when 'cat' then main_cat(argv)
   when 'join' then main_join(argv)
   when 'count' then main_count(argv)
+  when 'sum' then main_sum(argv)
   when nil
     err "Usage: table subcommand args..."
   else
@@ -63,6 +64,7 @@ Usage:
   table cat [opts] TABLE...
   table join [opts] TABLE...
   table count [opts] TABLE
+  table sum [opts] TABLE
 End
   exit status
 end
@@ -81,6 +83,7 @@ def main_help(argv)
   when 'cat' then puts op_cat
   when 'join' then puts op_join
   when 'count' then puts op_count
+  when 'sum' then puts op_sum
   when nil
     usage(true)
   else
@@ -182,6 +185,15 @@ def op_count
   op.banner = 'Usage: table count [opts] TABLE'
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f KEY-FIELD1,...,COUNT-FIELD', 'zero or more key fields and one count field') {|arg| $opt_count_f = arg }
+  op
+end
+
+$opt_sum_f
+def op_sum
+  op = OptionParser.new
+  op.banner = 'Usage: table sum [opts] TABLE'
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-f KEY-FIELD1,...,SUM-FIELD', 'zero or more key fields and one sum field') {|arg| $opt_sum_f = arg }
   op
 end
 
@@ -414,6 +426,41 @@ def main_count(argv)
       }
     }
   end
+  with_output {|out|
+    tbl_generate_csv(result, out)
+  }
+end
+
+def main_sum(argv)
+  op_sum.parse!(argv)
+  fs = split_csv_argument(argv.shift)
+  sum_field = fs.pop
+  filename = argv.shift || '-'
+  result_fields = fs + [sum_field]
+  is = nil
+  h = Hash.new(0)
+  tablereader_open(filename) {|tblreader|
+    is = fs.map {|f| tblreader.index_from_field(f) }
+    sum_index = tblreader.index_from_field(sum_field)
+    tblreader.each {|ary|
+      v = ary[sum_index]
+      v = v.strip
+      if !v.nil? && v != ''
+	if /\A-?\d+\z/ =~ v
+	  v = v.to_i
+	elsif /\A-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\z/ =~ v
+	  v = v.to_f
+	else
+	  raise "numeric value expected: #{v.inspect}"
+	end
+	h[ary.values_at(*is)] += v
+      end
+    }
+  }
+  result = Table.new(result_fields)
+  h.each {|k, v|
+    result.insert_values result_fields, k+[v]
+  }
   with_output {|out|
     tbl_generate_csv(result, out)
   }
