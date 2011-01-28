@@ -63,8 +63,8 @@ Usage:
   table sort [opts] TABLE
   table select [opts] FIELD,... TABLE
   table rename [opts] SRC,DST,... TABLE
-  table cat [opts] TABLE...
-  table join [opts] TABLE...
+  table cat [opts] TABLE ...
+  table join [opts] TABLE ...
   table count [opts] TABLE
   table sum [opts] TABLE
   table shape [opts] TABLE ...
@@ -415,17 +415,50 @@ end
 
 def main_cat(argv)
   op_cat.parse!(argv)
-  result = Table.new
-  each_table_file(argv) {|tbl|
-    fs = tbl.list_fields - result.list_fields
-    fs.each {|f|
-      result.define_field(f)
+  argv = ['-'] if argv.empty?
+  if $opt_n
+    argv.each {|filename|
+      with_table_stream_output {|gen|
+        tablereader_open(filename) {|tblreader|
+          tblreader.each {|ary|
+            gen << ary
+          }
+        }
+      }
     }
-    tbl.each {|rec| result.insert rec }
-  }
-  with_output {|out|
-    tbl_generate_csv(result, out)
-  }
+  else
+    readers = []
+    h = {}
+    argv.each {|filename|
+      r = tablereader_open(filename)
+      readers << r
+      r.header.each {|f|
+        h[f] = h.size if !h[f]
+      }
+    }
+    with_table_stream_output {|gen|
+      gen.output_header h.keys.sort_by {|k| h[k] }
+      readers.each {|r|
+        header = r.header.dup
+        r.each {|ary|
+          if header.length < r.header.length
+            while header.length < ary.length
+              f = r.field_from_index(header.length)
+              header << f
+              h[f] = h.size if !h[f]
+            end
+          end
+          ary2 = []
+          ary.each_with_index {|v, i|
+            f = r.field_from_index(i)
+            j = h.fetch(f)
+            ary2[j] = v
+          }
+          gen << ary2
+        }
+      }
+    }
+  end
 end
 
 def main_join(argv)

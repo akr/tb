@@ -56,19 +56,20 @@ class Table::FieldSet
     fs.each {|f|
       h[f] += 1
     }
-    fs2 = fs.map {|f|
+    fs2 = []
+    fs.each {|f|
       if h[f] != 1
         re = /\A#{Regexp.escape(f)}\((\d+)\)\z/
-        max = 1
-        fs.each {|ff|
+        max = 0
+        (fs+fs2).each {|ff|
           if re =~ ff
             n = $1.to_i
-            max = n if n < max
+            max = n if max < n
           end
         }
-        "#{f}#{max + 1}"
+        fs2 << "#{f}(#{max + 1})"
       else
-        f
+        fs2 << f
       end
     }
     @header.concat fs2
