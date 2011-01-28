@@ -119,61 +119,47 @@ class Table::Reader
   def initialize(rawreader, opts={})
     @opt_n = opts[:numeric]
     @reader = rawreader
-    @header = nil
+    @fieldset = nil
   end
 
   def header
-    return @header if @header
-    return @header = [] if @opt_n
-    while ary = @reader.shift
-      if ary.all? {|elt| elt.nil? || elt == '' }
-        next
-      else
-        @header = fix_header(ary)
-        return @header
+    return @fieldset.header if @fieldset
+    if @opt_n
+      @fieldset = Table::FieldSet.new
+    else
+      while ary = @reader.shift
+        if ary.all? {|elt| elt.nil? || elt == '' }
+          next
+        else
+          @fieldset = Table::FieldSet.new(*ary)
+          return @fieldset.header
+        end
       end
+      @fieldset = Table::FieldSet.new
     end
-    @header = []
-    return @header
+    return @fieldset.header
   end
 
   def index_from_field(f)
+    self.header
     if @opt_n
       raise "numeric field start from 1: #{f.inspect}" if /\A0+\z/ =~ f
       raise "numeric field name expected: #{f.inspect}" if /\A(\d+)\z/ !~ f
       $1.to_i - 1
     else
-      i = self.header.index(f)
-      if i.nil?
-        raise ArgumentError, "unexpected field name: #{f.inspect}"
-      end
-      i
+      @fieldset.index_from_field(f)
     end
   end
 
   def field_from_index(i)
     raise ArgumentError, "negative index: #{i}" if i < 0
     self.header
-    f = @header[i]
-    return f if f
     if @opt_n
-      while @header.length <= i
-        @header << "#{@header.length+1}"
+      if @fieldset.header.length <= i
+        @fieldset.add_fields(*(@fieldset.header.length..i).to_a.map {|j| "#{j+1}" })
       end
-      @header[i]
-    else
-      h = {}
-      @header.each {|ff| h[ff] = true if /\A\(\d+\)\z/ =~ ff }
-      n = 1
-      while @header.length <= i
-        while h[f = "(#{n})"]
-          n += 1
-        end
-        @header << f
-        h[f] = true
-      end
-      @header[i]
     end
+    @fieldset.field_from_index(i)
   end
 
   def shift
