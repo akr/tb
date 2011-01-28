@@ -336,7 +336,7 @@ def main_sort(argv)
   op_sort.parse!(argv)
   filename = argv.empty? ? '-' : argv.shift
   if $opt_sort_f
-    fs = split_csv_argument($opt_sort_f)
+    fs = split_field_list_argument($opt_sort_f)
   else
     fs = nil
   end
@@ -354,7 +354,7 @@ end
 
 def main_select(argv)
   op_select.parse!(argv)
-  fs = split_csv_argument(argv.shift).map {|f| f || '' }
+  fs = split_field_list_argument(argv.shift)
   filename = argv.shift || '-'
   tablereader_open(filename) {|tblreader|
     if $opt_select_v
@@ -392,7 +392,7 @@ end
 
 def main_rename(argv)
   op_rename.parse!(argv)
-  fs = split_csv_argument(argv.shift)
+  fs = split_field_list_argument(argv.shift)
   filename = argv.shift || '-'
   h = {}
   fs.each_slice(2) {|sf, df| h[sf] = df }
@@ -479,7 +479,7 @@ end
 def main_count(argv)
   op_count.parse!(argv)
   if $opt_count_f
-    fs = split_csv_argument($opt_count_f)
+    fs = split_field_list_argument($opt_count_f)
     count_field = fs.pop
   else
     fs = []
@@ -512,7 +512,7 @@ end
 
 def main_sum(argv)
   op_sum.parse!(argv)
-  fs = split_csv_argument(argv.shift)
+  fs = split_field_list_argument(argv.shift)
   sum_field = fs.pop
   filename = argv.shift || '-'
   result_fields = fs + [sum_field]
@@ -576,6 +576,10 @@ def main_shape(argv)
     # don't use tbl_generate_csv() because the header should always outputted.
     result.generate_csv(out)
   }
+end
+
+def split_field_list_argument(arg)
+  split_csv_argument(arg).map {|f| f || '' }
 end
 
 def split_csv_argument(arg)
