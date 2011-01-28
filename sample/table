@@ -354,7 +354,7 @@ end
 
 def main_select(argv)
   op_select.parse!(argv)
-  fs = split_csv_argument(argv.shift)
+  fs = split_csv_argument(argv.shift).map {|f| f || '' }
   filename = argv.shift || '-'
   tablereader_open(filename) {|tblreader|
     if $opt_select_v
