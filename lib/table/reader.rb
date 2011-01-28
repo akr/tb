@@ -151,13 +151,22 @@ class Table::Reader
     end
   end
 
+  def field_from_index_ex(i)
+    raise ArgumentError, "negative index: #{i}" if i < 0
+    self.header
+    if @opt_n
+      if @fieldset.length <= i
+        @fieldset.add_fields(*(@fieldset.header.length..i).to_a.map {|j| "#{j+1}" })
+      end
+    end
+    @fieldset.field_from_index_ex(i)
+  end
+
   def field_from_index(i)
     raise ArgumentError, "negative index: #{i}" if i < 0
     self.header
     if @opt_n
-      if @fieldset.header.length <= i
-        @fieldset.add_fields(*(@fieldset.header.length..i).to_a.map {|j| "#{j+1}" })
-      end
+      return "#{i+1}"
     end
     @fieldset.field_from_index(i)
   end
@@ -165,7 +174,7 @@ class Table::Reader
   def shift
     header
     ary = @reader.shift
-    field_from_index(ary.length-1) if ary && !ary.empty?
+    field_from_index_ex(ary.length-1) if ary && !ary.empty?
     ary
   end
 

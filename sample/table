@@ -283,7 +283,7 @@ def main_pp(argv)
           h = {}
           ary.each_with_index {|v, i|
             next if v.nil?
-            h[tblreader.field_from_index(i)] = v
+            h[tblreader.field_from_index_ex(i)] = v
           }
           PP.pp h, out
         }
@@ -320,7 +320,7 @@ def main_grep(argv)
         tblreader.each {|ary|
           h = {}
           ary.each_with_index {|str, i|
-            f = tblreader.field_from_index(i)
+            f = tblreader.field_from_index_ex(i)
             h[f] = str
           }
           found = pred.call(h)
@@ -381,7 +381,7 @@ def main_select(argv)
       is = []
       is = fs.map {|f| tblreader.index_from_field(f) }
       with_table_stream_output {|gen|
-        gen.output_header(is.map {|i| tblreader.field_from_index(i) })
+        gen.output_header(is.map {|i| tblreader.field_from_index_ex(i) })
         tblreader.each {|ary|
           gen << ary.values_at(*is)
         }
@@ -441,12 +441,10 @@ def main_cat(argv)
       readers.each {|r|
         header = r.header.dup
         r.each {|ary|
-          if header.length < r.header.length
-            while header.length < ary.length
-              f = r.field_from_index(header.length)
-              header << f
-              h[f] = h.size if !h[f]
-            end
+          while header.length < ary.length
+            f = r.field_from_index_ex(header.length)
+            header << f
+            h[f] = h.size if !h[f]
           end
           ary2 = []
           ary.each_with_index {|v, i|

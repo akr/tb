@@ -39,13 +39,31 @@ class Table::FieldSet
     i
   end
 
+  def field_from_index_ex(i)
+    if self.length <= i
+      fs2 = extend_length(i+1)
+      fs2.last
+    else
+      field_from_index(i)
+    end
+  end
+
   def field_from_index(i)
     raise ArgumentError, "negative index: #{i}" if i < 0
     f = self.header[i]
-    return f if f
-    fs = [""] * (i - self.header.length + 1)
-    fs2 = add_fields(*fs)
-    fs2.last
+    if f.nil?
+      raise ArgumentError, "index too big: #{i}"
+    end
+    f
+  end
+
+  def length
+    @header.length
+  end
+
+  def extend_length(len)
+    fs = [""] * (len - self.length)
+    add_fields(*fs)
   end
 
   def add_fields(*fs)
