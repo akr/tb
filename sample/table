@@ -135,6 +135,7 @@ def op_pp
 end
 
 $opt_grep_e = nil
+$opt_grep_ruby = nil
 $opt_grep_f = nil
 $opt_grep_v = nil
 def op_grep
@@ -143,7 +144,8 @@ def op_grep
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f FIELD') {|field| $opt_grep_f = field }
-  op.def_option('-e REGEXP') {|pattern| $opt_grep_e = pattern }
+  op.def_option('-e REGEXP', 'specify a regexp.  no usual regexp argument.') {|pattern| $opt_grep_e = pattern }
+  op.def_option('--ruby RUBY-EXP', 'specify a regexp.  no usual regexp argument.') {|ruby_exp| $opt_grep_ruby = ruby_exp }
   op.def_option('-v') { $opt_grep_v = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
@@ -292,8 +294,17 @@ end
 
 def main_grep(argv)
   op_grep.parse!(argv)
-  pattern = $opt_grep_e || argv.shift
-  re = Regexp.new(pattern)
+  if $opt_grep_ruby
+    pred = eval("lambda {|_| #{$opt_grep_ruby} }")
+  elsif $opt_grep_e
+    re = Regexp.new($opt_grep_e)
+    pred = $opt_grep_f ? lambda {|_| re =~ _[$opt_grep_f] } :
+                         lambda {|_| _.any? {|k, v| re =~ v.to_s } }
+  else
+    re = Regexp.new(argv.shift)
+    pred = $opt_grep_f ? lambda {|_| re =~ _[$opt_grep_f] } :
+                         lambda {|_| _.any? {|k, v| re =~ v.to_s } }
+  end
   opt_v = $opt_grep_v ? true : false
   argv.each {|filename|
     with_table_stream_output {|gen|
@@ -307,11 +318,13 @@ def main_grep(argv)
           end
         end
         tblreader.each {|ary|
-          if $opt_grep_f
-            found = opt_v ^ !!(re =~ ary[opt_f_index])
-          else
-            found = opt_v ^ !!(ary.any? {|v| re =~ v.to_s })
-          end
+          h = {}
+          ary.each_with_index {|str, i|
+            f = tblreader.field_from_index(i)
+            h[f] = str
+          }
+          found = pred.call(h)
+          found = opt_v ^ !!(found)
           gen << ary if found
         }
       }
