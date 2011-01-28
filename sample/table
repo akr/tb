@@ -542,7 +542,8 @@ def main_shape(argv)
     }
   }
   with_output {|out|
-    tbl_generate_csv(result, out)
+    # don't use tbl_generate_csv() because the header should always outputted.
+    result.generate_csv(out)
   }
 end
 
