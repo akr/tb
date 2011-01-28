@@ -144,7 +144,7 @@ def op_grep
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f FIELD') {|field| $opt_grep_f = field }
-  op.def_option('-e REGEXP', 'specify a regexp.  no usual regexp argument.') {|pattern| $opt_grep_e = pattern }
+  op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| $opt_grep_e = pattern }
   op.def_option('--ruby RUBY-EXP', 'specify a regexp.  no usual regexp argument.') {|ruby_exp| $opt_grep_ruby = ruby_exp }
   op.def_option('-v') { $opt_grep_v = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
