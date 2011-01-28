@@ -49,28 +49,27 @@ class Table::FieldSet
   end
 
   def add_fields(*fs)
-    h = Hash.new(0)
+    h = {}
+    max = {}
     @header.each {|f|
-      h[f] += 1
-    }
-    fs.each {|f|
-      h[f] += 1
+      h[f] = true
+      if /\((\d+)\)\z/ =~ f
+        prefix = $`
+        n = $1.to_i
+        max[prefix] = n if !max[prefix] || max[prefix] < n
+      end
     }
     fs2 = []
     fs.each {|f|
-      if h[f] != 1
-        re = /\A#{Regexp.escape(f)}\((\d+)\)\z/
-        max = 0
-        (fs+fs2).each {|ff|
-          if re =~ ff
-            n = $1.to_i
-            max = n if max < n
-          end
-        }
-        fs2 << "#{f}(#{max + 1})"
+      if !h[f]
+        f2 = f
       else
-        fs2 << f
+        max[f] = 1 if !max[f]
+        max[f] += 1
+        f2 = "#{f}(#{max[f]})"
       end
+      fs2 << f2
+      h[f2] = true
     }
     @header.concat fs2
     fs2
