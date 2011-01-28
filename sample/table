@@ -342,9 +342,9 @@ def main_sort(argv)
   end
   tbl = load_table(filename)
   if fs
-    blk = lambda {|rec| rec.values_at(*fs) }
+    blk = lambda {|rec| fs.map {|f| rec[f] || '' } }
   else
-    blk = lambda {|rec| rec.map {|k, v| v } }
+    blk = lambda {|rec| rec.map {|k, v| v || '' } }
   end
   tbl2 = tbl.reorder_records_by(&blk)
   with_output {|out|
