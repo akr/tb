@@ -55,19 +55,19 @@ end
 def usage(status)
   print <<'End'
 Usage:
-  table csv [opts] [TABLE]
-  table json [opts] [TABLE]
-  table yaml [opts] [TABLE]
-  table pp [opts] [TABLE]
-  table grep [opts] REGEXP [TABLE]
-  table sort [opts] [TABLE]
-  table select [opts] FIELD,... [TABLE]
-  table rename [opts] SRC,DST,... [TABLE]
-  table cat [opts] [TABLE ...]
-  table join [opts] [TABLE ...]
-  table count [opts] [TABLE]
-  table sum [opts] [TABLE]
-  table shape [opts] [TABLE ...]
+  table csv [OPTS] [TABLE]
+  table json [OPTS] [TABLE]
+  table yaml [OPTS] [TABLE]
+  table pp [OPTS] [TABLE]
+  table grep [OPTS] REGEXP [TABLE]
+  table sort [OPTS] [TABLE]
+  table select [OPTS] FIELD,... [TABLE]
+  table rename [OPTS] SRC,DST,... [TABLE]
+  table cat [OPTS] [TABLE ...]
+  table join [OPTS] [TABLE ...]
+  table count [OPTS] [TABLE]
+  table sum [OPTS] [TABLE]
+  table shape [OPTS] [TABLE ...]
 End
   exit status
 end
@@ -100,7 +100,7 @@ $opt_no_pager = nil
 
 def op_csv
   op = OptionParser.new
-  op.banner = 'Usage: table csv [opts] [TABLE]'
+  op.banner = 'Usage: table csv [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -109,7 +109,7 @@ end
 
 def op_json
   op = OptionParser.new
-  op.banner = 'Usage: table json [opts] [TABLE]'
+  op.banner = 'Usage: table json [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -118,7 +118,7 @@ end
 
 def op_yaml
   op = OptionParser.new
-  op.banner = 'Usage: table yaml [opts] [TABLE]'
+  op.banner = 'Usage: table yaml [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -127,7 +127,7 @@ end
 
 def op_pp
   op = OptionParser.new
-  op.banner = 'Usage: table pp [opts] [TABLE]'
+  op.banner = 'Usage: table pp [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -140,7 +140,7 @@ $opt_grep_f = nil
 $opt_grep_v = nil
 def op_grep
   op = OptionParser.new
-  op.banner = 'Usage: table grep [opts] REGEXP [TABLE]'
+  op.banner = 'Usage: table grep [OPTS] REGEXP [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f FIELD', 'search field') {|field| $opt_grep_f = field }
@@ -154,7 +154,7 @@ end
 $opt_sort_f = nil
 def op_sort
   op = OptionParser.new
-  op.banner = 'Usage: table sort [opts] [TABLE]'
+  op.banner = 'Usage: table sort [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f FIELD,...', 'specify sort keys') {|fs| $opt_sort_f = fs }
@@ -165,7 +165,7 @@ end
 $opt_select_v = nil
 def op_select
   op = OptionParser.new
-  op.banner = 'Usage: table select [opts] FIELD,... [TABLE]'
+  op.banner = 'Usage: table select [OPTS] FIELD,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-v', 'invert match') { $opt_select_v = true }
@@ -175,7 +175,7 @@ end
 
 def op_rename
   op = OptionParser.new
-  op.banner = 'Usage: table rename [opts] SRC,DST,... [TABLE]'
+  op.banner = 'Usage: table rename [OPTS] SRC,DST,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
@@ -183,7 +183,7 @@ end
 
 def op_cat
   op = OptionParser.new
-  op.banner = 'Usage: table cat [opts] [TABLE ...]'
+  op.banner = 'Usage: table cat [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -194,7 +194,7 @@ $opt_join_outer = nil
 $opt_join_outer_missing = nil
 def op_join
   op = OptionParser.new
-  op.banner = 'Usage: table join [opts] [TABLE ...]'
+  op.banner = 'Usage: table join [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--outer', 'outer join') { $opt_join_outer = true }
@@ -209,7 +209,7 @@ end
 $opt_count_f
 def op_count
   op = OptionParser.new
-  op.banner = 'Usage: table count [opts] [TABLE]'
+  op.banner = 'Usage: table count [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f KEY-FIELD1,...,COUNT-FIELD', 'zero or more key fields and one count field') {|arg| $opt_count_f = arg }
@@ -220,7 +220,7 @@ end
 $opt_sum_f
 def op_sum
   op = OptionParser.new
-  op.banner = 'Usage: table sum [opts] [TABLE]'
+  op.banner = 'Usage: table sum [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('-f KEY-FIELD1,...,SUM-FIELD', 'zero or more key fields and one sum field') {|arg| $opt_sum_f = arg }
@@ -230,7 +230,7 @@ end
 
 def op_shape
   op = OptionParser.new
-  op.banner = 'Usage: table sum [opts] [TABLE]'
+  op.banner = 'Usage: table sum [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
