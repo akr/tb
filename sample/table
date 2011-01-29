@@ -307,16 +307,9 @@ def main_grep(argv)
   end
   opt_v = $opt_grep_v ? true : false
   argv.each {|filename|
-    with_table_stream_output {|gen|
-      opt_f_index = nil
-      tablereader_open(filename) {|tblreader|
+    tablereader_open(filename) {|tblreader|
+      with_table_stream_output {|gen|
         gen.output_header tblreader.header
-        if $opt_grep_f
-          opt_f_index = tblreader.index_from_field($opt_grep_f)
-          if opt_f_index.nil?
-            raise "field not found: #{$opt_grep_f.inspect}"
-          end
-        end
         tblreader.each {|ary|
           h = {}
           ary.each_with_index {|str, i|
@@ -360,14 +353,15 @@ def main_select(argv)
     if $opt_select_v
       h = {}
       fs.each {|f| h[tblreader.index_from_field(f)] = true }
+      header = nil
+      if !$opt_n
+        header = []
+        tblreader.header.each_with_index {|f, i|
+          header << f if !h[i]
+        }
+      end
       with_table_stream_output {|gen|
-        if !$opt_n
-          header = []
-          tblreader.header.each_with_index {|f, i|
-            header << f if !h[i]
-          }
-          gen.output_header(header)
-        end
+        gen.output_header(header)
         tblreader.each {|ary|
           values = []
           ary.each_with_index {|v, i|
@@ -396,15 +390,15 @@ def main_rename(argv)
   filename = argv.shift || '-'
   h = {}
   fs.each_slice(2) {|sf, df| h[sf] = df }
-  with_table_stream_output {|gen|
-    tablereader_open(filename) {|tblreader|
-      header = tblreader.header
-      h.each {|sf, df|
-        unless header.include? sf
-          raise "field not defined: #{sf.inspect}"
-        end
-      }
-      renamed_header = tblreader.header.map {|f| h.fetch(f, f) }
+  tablereader_open(filename) {|tblreader|
+    header = tblreader.header
+    h.each {|sf, df|
+      unless header.include? sf
+        raise "field not defined: #{sf.inspect}"
+      end
+    }
+    renamed_header = tblreader.header.map {|f| h.fetch(f, f) }
+    with_table_stream_output {|gen|
       gen.output_header(renamed_header)
       tblreader.each {|ary|
         gen << ary
