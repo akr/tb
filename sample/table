@@ -254,10 +254,24 @@ end
 def main_json(argv)
   require 'json'
   op_json.parse!(argv)
-  each_table_file(argv) {|tbl|
-    ary = tbl.map {|rec| rec.to_h }
-    with_output {|out|
-      out.puts JSON.pretty_generate(ary)
+  argv = ['-'] if argv.empty?
+  with_output {|out|
+    argv.each {|filename|
+      out.print "["
+      tablereader_open(filename) {|tblreader|
+        sep = nil
+        tblreader.each {|ary|
+          out.print sep if sep
+          header = tblreader.header
+          h = {}
+          ary.each_with_index {|e, i|
+            h[header[i]] = e if !e.nil?
+          }
+          out.print JSON.pretty_generate(h)
+          sep = ",\n"
+        }
+      }
+      out.puts "]"
     }
   }
 end
