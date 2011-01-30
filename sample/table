@@ -256,10 +256,11 @@ def main_json(argv)
   op_json.parse!(argv)
   argv = ['-'] if argv.empty?
   with_output {|out|
+    out.print "["
+    sep = nil
     argv.each {|filename|
-      out.print "["
+      sep = ",\n\n" if sep
       tablereader_open(filename) {|tblreader|
-        sep = nil
         tblreader.each {|ary|
           out.print sep if sep
           header = tblreader.header
@@ -271,8 +272,8 @@ def main_json(argv)
           sep = ",\n"
         }
       }
-      out.puts "]"
     }
+    out.puts "]"
   }
 end
 
