@@ -229,20 +229,18 @@ def op_count
   op
 end
 
-$opt_sum_f
 def op_sum
   op = OptionParser.new
-  op.banner = 'Usage: table sum [OPTS] [TABLE]'
+  op.banner = 'Usage: table sum [OPTS] KEY-FIELD1,...,SUM-FIELD [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
-  op.def_option('-f KEY-FIELD1,...,SUM-FIELD', 'zero or more key fields and one sum field') {|arg| $opt_sum_f = arg }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
 
 def op_shape
   op = OptionParser.new
-  op.banner = 'Usage: table sum [OPTS] [TABLE]'
+  op.banner = 'Usage: table shape [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
