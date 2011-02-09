@@ -33,6 +33,7 @@ def main(argv)
   case subcommand
   when 'help' then main_help(argv)
   when 'csv' then main_csv(argv)
+  when 'tsv' then main_tsv(argv)
   when 'json' then main_json(argv)
   when 'yaml' then main_yaml(argv)
   when 'pp' then main_pp(argv)
@@ -56,6 +57,7 @@ def usage(status)
   print <<'End'
 Usage:
   table csv [OPTS] [TABLE]
+  table tsv [OPTS] [TABLE]
   table json [OPTS] [TABLE]
   table yaml [OPTS] [TABLE]
   table pp [OPTS] [TABLE]
@@ -76,6 +78,7 @@ def main_help(argv)
   subcommand = argv.shift
   case subcommand
   when 'csv' then puts op_csv
+  when 'tsv' then puts op_tsv
   when 'json' then puts op_json
   when 'yaml' then puts op_yaml
   when 'pp' then puts op_pp
@@ -101,6 +104,15 @@ $opt_no_pager = nil
 def op_csv
   op = OptionParser.new
   op.banner = 'Usage: table csv [OPTS] [TABLE]'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op
+end
+
+def op_tsv
+  op = OptionParser.new
+  op.banner = 'Usage: table tsv [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -247,6 +259,15 @@ def main_csv(argv)
   each_table_file(argv) {|tbl|
     with_output {|out|
       tbl_generate_csv(tbl, out)
+    }
+  }
+end
+
+def main_tsv(argv)
+  op_tsv.parse!(argv)
+  each_table_file(argv) {|tbl|
+    with_output {|out|
+      tbl_generate_tsv(tbl, out)
     }
   }
 end
@@ -648,6 +669,19 @@ def tbl_generate_csv(tbl, out)
     }
   else
     tbl.generate_csv(out)
+  end
+end
+
+def tbl_generate_tsv(tbl, out)
+  if $opt_n
+    header = tbl.list_fields
+    Table.tsv_stream_output(out) {|gen|
+      tbl.each {|rec|
+        gen << rec.values_at(*header)
+      }
+    }
+  else
+    tbl.generate_tsv(out)
   end
 end
 
