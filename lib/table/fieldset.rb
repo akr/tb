@@ -92,8 +92,4 @@ class Table::FieldSet
     @header.concat fs2
     fs2
   end
-
-  def header
-    @header
-  end
 end
