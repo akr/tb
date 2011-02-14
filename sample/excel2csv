@@ -1,0 +1,103 @@
+#!/usr/bin/ruby
+
+# works only on Windows with Microsoft Excel.
+# (This script invokes Excel using win32ole.)
+
+# usage:
+#   excel2csv [opts] filename.xls ...
+#
+# options:
+#   -h : show help message
+#   -a : convert all sheets (sheet name is prepended to all rows)
+#   -f : prepend filename for all rows
+#   --mergecells=fill : set the value for all cells in a merged cells
+#   --mergecells=topleft : set the value for the top left cell in a merged cells
+
+require 'table'
+
+require 'win32ole'
+require 'optparse'
+require 'pp'
+
+def getAbsolutePath filename
+  fso = WIN32OLE.new('Scripting.FileSystemObject')
+  return fso.GetAbsolutePathName(filename)
+end
+
+module Excel
+end
+
+$opt_all_sheets = false
+$opt_prepend_filename = false
+$opt_mergecells = 'fill'
+
+op = OptionParser.new
+op.def_option('-h', 'show help message') { puts op; exit true }
+op.def_option('-a', 'convert all sheets (sheet name is prepended to all rows)') { $opt_all_sheets = true }
+op.def_option('-f', 'prepend filename for all rows') { $opt_prepend_filename = true }
+op.def_option('--mergecells=mode', '"fill" or "topleft"') {|v| $opt_mergecells = v }
+op.parse!(ARGV)
+
+def convert_sheet(filename, sheet, csvgen)
+  sheetname = sheet.Name
+  sheet.UsedRange.Rows.each do |row|
+    record = []
+    row.Columns.each do |cell|
+      if !cell.MergeCells
+	record << cell.Value
+      else
+	c_row = cell.Row
+	c_col = cell.Column
+        mergearea = cell.MergeArea
+	m_row = mergearea.Row
+	m_col = mergearea.Column
+	m_numrows = mergearea.Rows.Count
+	m_numcols = mergearea.Columns.Count
+	val = cell.MergeArea.Item(1,1).Value
+	if $opt_mergecells == 'topleft'
+	  if c_row == m_row && c_col == m_col
+	    v = val
+	  else
+	    v = nil
+	  end
+	else
+	  v = val
+	end
+	record << v
+      end
+    end
+    if $opt_all_sheets
+      record.unshift sheetname
+    end
+    if $opt_prepend_filename
+      record.unshift filename
+    end
+    csvgen << record
+  end
+end
+
+excel = WIN32OLE.new('Excel.Application')
+begin
+  excel.displayAlerts = false
+  Table.csv_stream_output(STDOUT) {|gen|
+    ARGV.each {|excel_filename|
+      ifn = getAbsolutePath(excel_filename)
+      ofn = ifn.sub(/\.xls\z/, '.csv')
+      wb = excel.Workbooks.Open(ifn)
+      begin
+	if $opt_all_sheets
+	  wb.Worksheets.each {|sheet|
+	    sheetname = sheet.Name
+	    convert_sheet(excel_filename, sheet, gen)
+	  }
+	else
+	  convert_sheet(excel_filename, wb.Worksheets(1), gen)
+	end
+      ensure
+	wb.Close
+      end
+    }
+  }
+ensure
+  excel.Quit
+end
