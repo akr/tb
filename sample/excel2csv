@@ -82,7 +82,6 @@ begin
   Table.csv_stream_output(STDOUT) {|gen|
     ARGV.each {|excel_filename|
       ifn = getAbsolutePath(excel_filename)
-      ofn = ifn.sub(/\.xls\z/, '.csv')
       wb = excel.Workbooks.Open(ifn)
       begin
 	if $opt_all_sheets
