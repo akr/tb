@@ -46,6 +46,7 @@ def main(argv)
   when 'count' then main_count(argv)
   when 'sum' then main_sum(argv)
   when 'shape' then main_shape(argv)
+  when 'collapse' then main_collapse(argv)
   when nil
     err "Usage: table subcommand args..."
   else
@@ -70,6 +71,7 @@ Usage:
   table count [OPTS] [TABLE]
   table sum [OPTS] [TABLE]
   table shape [OPTS] [TABLE ...]
+  table collapse [OPTS] [TABLE]
 End
   exit status
 end
@@ -91,6 +93,7 @@ def main_help(argv)
   when 'count' then puts op_count
   when 'sum' then puts op_sum
   when 'shape' then puts op_shape
+  when 'collapse' then puts op_collapse
   when nil
     usage(true)
   else
@@ -240,9 +243,17 @@ end
 
 def op_shape
   op = OptionParser.new
-  op.banner = 'Usage: table shape [OPTS] [TABLE]'
+  op.banner = 'Usage: table shape [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op
+end
+
+def op_collapse
+  op = OptionParser.new
+  op.banner = 'Usage: table collapse [OPTS] [TABLE]'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -603,6 +614,31 @@ def main_shape(argv)
   with_output {|out|
     # don't use tbl_generate_csv() because the header should always outputted.
     result.generate_csv(out)
+  }
+end
+
+def main_collapse(argv)
+  op_collapse.parse!(argv)
+  filename = argv.shift || '-'
+  with_table_stream_output {|gen|
+    Table::Reader.open(filename, {:numeric=>true}) {|tblreader|
+      header = []
+      tblreader.each {|ary|
+        if header
+          ary.each_with_index {|v,i|
+            header[i] ||= []
+            header[i] << v
+          }
+          h2 = header.map {|a| a.compact.join(' ') }.uniq
+          if header.length == h2.length
+            gen << h2
+            header = nil
+          end
+        else
+          gen << ary
+        end
+      }
+    }
   }
 end
 
