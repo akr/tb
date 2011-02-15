@@ -46,7 +46,7 @@ def main(argv)
   when 'count' then main_count(argv)
   when 'sum' then main_sum(argv)
   when 'shape' then main_shape(argv)
-  when 'header' then main_header(argv)
+  when 'mheader' then main_mheader(argv)
   when 'crop' then main_crop(argv)
   when nil
     err "Usage: table subcommand args..."
@@ -72,7 +72,7 @@ Usage:
   table count [OPTS] [TABLE]
   table sum [OPTS] [TABLE]
   table shape [OPTS] [TABLE ...]
-  table header [OPTS] [TABLE]
+  table mheader [OPTS] [TABLE]
   table crop [OPTS] [TABLE]
 End
   exit status
@@ -95,7 +95,7 @@ def main_help(argv)
   when 'count' then puts op_count
   when 'sum' then puts op_sum
   when 'shape' then puts op_shape
-  when 'header' then puts op_header
+  when 'mheader' then puts op_mheader
   when 'crop' then puts op_crop
   when nil
     usage(true)
@@ -253,12 +253,12 @@ def op_shape
   op
 end
 
-$opt_header_count = nil
-def op_header
+$opt_mheader_count = nil
+def op_mheader
   op = OptionParser.new
-  op.banner = 'Usage: table header [OPTS] [TABLE]'
+  op.banner = 'Usage: table mheader [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-c N', 'number of header records') {|arg| $opt_header_count = arg.to_i }
+  op.def_option('-c N', 'number of header records') {|arg| $opt_mheader_count = arg.to_i }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -632,12 +632,12 @@ def main_shape(argv)
   }
 end
 
-def main_header(argv)
-  op_header.parse!(argv)
+def main_mheader(argv)
+  op_mheader.parse!(argv)
   filename = argv.shift || '-'
   header = []
-  if $opt_header_count
-    c = $opt_header_count
+  if $opt_mheader_count
+    c = $opt_mheader_count
     header_end_p = lambda {
       c -= 1
       c == 0 ? header.map {|a| a.compact.join(' ').strip } : nil
