@@ -47,6 +47,7 @@ def main(argv)
   when 'sum' then main_sum(argv)
   when 'shape' then main_shape(argv)
   when 'collapse' then main_collapse(argv)
+  when 'crop' then main_crop(argv)
   when nil
     err "Usage: table subcommand args..."
   else
@@ -72,6 +73,7 @@ Usage:
   table sum [OPTS] [TABLE]
   table shape [OPTS] [TABLE ...]
   table collapse [OPTS] [TABLE]
+  table crop [OPTS] [TABLE]
 End
   exit status
 end
@@ -94,6 +96,7 @@ def main_help(argv)
   when 'sum' then puts op_sum
   when 'shape' then puts op_shape
   when 'collapse' then puts op_collapse
+  when 'crop' then puts op_crop
   when nil
     usage(true)
   else
@@ -254,6 +257,16 @@ def op_collapse
   op = OptionParser.new
   op.banner = 'Usage: table collapse [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
+  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op
+end
+
+$opt_crop_range = nil
+def op_crop
+  op = OptionParser.new
+  op.banner = 'Usage: table crop [OPTS] [TABLE]'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
+  op.def_option('-r RANGE', 'range.  i.e. "2,1-4,3", "B1:D3"') {|arg| $opt_crop_range = arg }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -627,7 +640,7 @@ def main_collapse(argv)
         if header
           ary.each_with_index {|v,i|
             header[i] ||= []
-            header[i] << v
+            header[i] << v if header[i].empty? || header[i].last != v
           }
           h2 = header.map {|a| a.compact.join(' ') }.uniq
           if header.length == h2.length
@@ -640,6 +653,72 @@ def main_collapse(argv)
       }
     }
   }
+end
+
+def main_crop(argv)
+  op_crop.parse!(argv)
+  filename = argv.shift || '-'
+  stream = false
+  if $opt_crop_range
+    case $opt_crop_range
+    when /\A(\d+),(\d+)-(\d+),(\d+)\z/ # 1-based
+      stream = true
+      range_col1 = $1.to_i
+      range_row1 = $2.to_i
+      range_col2 = $3.to_i
+      range_row2 = $4.to_i
+    when /\A([A-Z]+)(\d+):([A-Z]+)(\d+)\z/ # 1-based
+      stream = true
+      range_col1 = $1
+      range_row1 = $2.to_i
+      range_col2 = $3
+      range_row2 = $4.to_i
+      range_col1 = (26**range_col1.length-1)/25+range_col1.tr("A-Z", "0-9A-P").to_i(26)
+      range_col2 = (26**range_col2.length-1)/25+range_col2.tr("A-Z", "0-9A-P").to_i(26)
+    else
+      raise ArgumentError, "unexpected range argument: #{$opt_crop_range.inspect}"
+    end
+  end
+  if stream
+    with_table_stream_output {|gen|
+      Table::Reader.open(filename, {:numeric=>true}) {|tblreader|
+        rownum = 1
+	tblreader.each {|ary|
+	  if range_row2 < rownum
+	    break
+	  end
+	  if range_row1 <= rownum
+	    if range_col2 < ary.length
+	      ary[range_col2..-1] = []
+	    end
+	    if 1 < range_col1
+	      ary[0...(range_col1-1)] = []
+	    end
+	    gen << ary
+	  end
+	  rownum += 1
+	}
+      }
+    }
+  else
+    arys = []
+    Table::Reader.open(filename, {:numeric=>true}) {|tblreader|
+      tblreader.each {|a|
+        a.pop while !a.empty? && (a.last.nil? || a.last == '')
+	arys << a
+      }
+    }
+    arys.pop while !arys.empty? && arys.last.all? {|v| v.nil? || v == '' }
+    arys.shift while !arys.empty? && arys.first.all? {|v| v.nil? || v == '' }
+    if !arys.empty?
+      while arys.all? {|a| a.empty? || (a.first.nil? || a.first == '') }
+	arys.each {|a| a.shift }
+      end
+    end
+    with_table_stream_output {|gen|
+      arys.each {|a| gen << a }
+    }
+  end
 end
 
 def split_field_list_argument(arg)
