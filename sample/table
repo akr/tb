@@ -46,7 +46,7 @@ def main(argv)
   when 'count' then main_count(argv)
   when 'sum' then main_sum(argv)
   when 'shape' then main_shape(argv)
-  when 'collapse' then main_collapse(argv)
+  when 'header' then main_header(argv)
   when 'crop' then main_crop(argv)
   when nil
     err "Usage: table subcommand args..."
@@ -72,7 +72,7 @@ Usage:
   table count [OPTS] [TABLE]
   table sum [OPTS] [TABLE]
   table shape [OPTS] [TABLE ...]
-  table collapse [OPTS] [TABLE]
+  table header [OPTS] [TABLE]
   table crop [OPTS] [TABLE]
 End
   exit status
@@ -95,7 +95,7 @@ def main_help(argv)
   when 'count' then puts op_count
   when 'sum' then puts op_sum
   when 'shape' then puts op_shape
-  when 'collapse' then puts op_collapse
+  when 'header' then puts op_header
   when 'crop' then puts op_crop
   when nil
     usage(true)
@@ -253,10 +253,12 @@ def op_shape
   op
 end
 
-def op_collapse
+$opt_header_count = nil
+def op_header
   op = OptionParser.new
-  op.banner = 'Usage: table collapse [OPTS] [TABLE]'
+  op.banner = 'Usage: table header [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
+  op.def_option('-c N', 'number of header records') {|arg| $opt_header_count = arg.to_i }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -630,20 +632,32 @@ def main_shape(argv)
   }
 end
 
-def main_collapse(argv)
-  op_collapse.parse!(argv)
+def main_header(argv)
+  op_header.parse!(argv)
   filename = argv.shift || '-'
+  header = []
+  if $opt_header_count
+    c = $opt_header_count
+    header_end_p = lambda {
+      c -= 1
+      c == 0 ? header.map {|a| a.compact.join(' ').strip } : nil
+    }
+  else
+    header_end_p = lambda {
+      h2 = header.map {|a| a.compact.join(' ').strip }.uniq
+      header.length == h2.length ? h2 : nil
+    }
+  end
   with_table_stream_output {|gen|
     Table::Reader.open(filename, {:numeric=>true}) {|tblreader|
-      header = []
       tblreader.each {|ary|
         if header
           ary.each_with_index {|v,i|
             header[i] ||= []
             header[i] << v if header[i].empty? || header[i].last != v
           }
-          h2 = header.map {|a| a.compact.join(' ') }.uniq
-          if header.length == h2.length
+          h2 = header_end_p.call
+          if h2
             gen << h2
             header = nil
           end
