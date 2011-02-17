@@ -259,6 +259,8 @@ def op_group
   op.def_option('-a FIELD[,NEW-FIELD]',
                 '--avg FIELD[,NEW-FIELD]',
                 '--average FIELD[,NEW-FIELD]', 'add a average field') {|arg| $opt_group_fields << [:avg, arg]  }
+  op.def_option('--min FIELD[,NEW-FIELD]', 'add a min field') {|arg| $opt_group_fields << [:min, arg]  }
+  op.def_option('--max FIELD[,NEW-FIELD]', 'add a max field') {|arg| $opt_group_fields << [:max, arg]  }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -683,6 +685,44 @@ def main_group(argv)
              state
            },
            lambda {|state| state[0] / state[1].to_f }
+          ]
+        }
+      ]
+    when :min
+      field, new_field = split_field_list_argument(arg)
+      new_field ||= "min #{field}"
+      [:min, new_field,
+        lambda {|tblreader| 
+          i = tblreader.index_from_field(field)
+          [lambda {|ary|
+             v = ary[i]
+             (v.nil? || v == '') ? nil : conv_to_numeric.call(v)
+           },
+           lambda {|min, ary|
+             v = ary[i]
+             v = (v.nil? || v == '') ? nil : conv_to_numeric.call(v)
+             (min && v) ? (min <= v ? min : v) : (min || v)
+           },
+           lambda {|min| min }
+          ]
+        }
+      ]
+    when :max
+      field, new_field = split_field_list_argument(arg)
+      new_field ||= "max #{field}"
+      [:max, new_field,
+        lambda {|tblreader| 
+          i = tblreader.index_from_field(field)
+          [lambda {|ary|
+             v = ary[i]
+             (v.nil? || v == '') ? nil : conv_to_numeric.call(v)
+           },
+           lambda {|max, ary|
+             v = ary[i]
+             v = (v.nil? || v == '') ? nil : conv_to_numeric.call(v)
+             (max && v) ? (v <= max ? max : v) : (max || v)
+           },
+           lambda {|max| max }
           ]
         }
       ]
