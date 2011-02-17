@@ -45,6 +45,7 @@ def main(argv)
   when 'join' then main_join(argv)
   when 'count' then main_count(argv)
   when 'sum' then main_sum(argv)
+  when 'group' then main_group(argv)
   when 'shape' then main_shape(argv)
   when 'mheader' then main_mheader(argv)
   when 'crop' then main_crop(argv)
@@ -71,6 +72,7 @@ Usage:
   table join [OPTS] [TABLE ...]
   table count [OPTS] [TABLE]
   table sum [OPTS] [TABLE]
+  table group [OPTS] [TABLE]
   table shape [OPTS] [TABLE ...]
   table mheader [OPTS] [TABLE]
   table crop [OPTS] [TABLE]
@@ -94,6 +96,7 @@ def main_help(argv)
   when 'join' then puts op_join
   when 'count' then puts op_count
   when 'sum' then puts op_sum
+  when 'group' then puts op_group
   when 'shape' then puts op_shape
   when 'mheader' then puts op_mheader
   when 'crop' then puts op_crop
@@ -240,6 +243,22 @@ def op_sum
   op.banner = 'Usage: table sum [OPTS] KEY-FIELD1,...,SUM-FIELD [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op
+end
+
+$opt_group_fields = []
+def op_group
+  op = OptionParser.new
+  op.banner = 'Usage: table sum [OPTS] KEY-FIELD1,... [TABLE]'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
+  op.def_option('-c NEW-FIELD',
+                '--count NEW-FIELD', 'add a count field') {|arg| $opt_group_fields << [:count, arg]  }
+  op.def_option('-s FIELD[,NEW-FIELD]',
+                '--sum FIELD[,NEW-FIELD]', 'add a sum field') {|arg| $opt_group_fields << [:sum, arg]  }
+  op.def_option('-a FIELD[,NEW-FIELD]',
+                '--avg FIELD[,NEW-FIELD]',
+                '--average FIELD[,NEW-FIELD]', 'add a average field') {|arg| $opt_group_fields << [:avg, arg]  }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -598,6 +617,108 @@ def main_sum(argv)
   }
   with_output {|out|
     tbl_generate_csv(result, out)
+  }
+end
+
+def main_group(argv)
+  op_group.parse!(argv)
+  kfs = split_field_list_argument(argv.shift)
+  conv_to_numeric = lambda {|v|
+    v = v.strip
+    if /\A-?\d+\z/ =~ v
+      v = v.to_i
+    elsif /\A-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\z/ =~ v
+      v = v.to_f
+    else
+      raise "numeric value expected: #{v.inspect}"
+    end
+    v
+  }
+  opt_group_fields = $opt_group_fields.map {|agr, arg|
+    case agr
+    when :count
+      new_field, = split_field_list_argument(arg)
+      [:count, new_field,
+        lambda {|tblreader| 
+          [lambda {|ary| 1 },
+           lambda {|count, ary| count + 1 },
+           lambda {|count| count }
+          ]
+        }
+      ]
+    when :sum
+      field, new_field = split_field_list_argument(arg)
+      new_field ||= "sum #{field}"
+      [:sum, new_field,
+        lambda {|tblreader| 
+          i = tblreader.index_from_field(field)
+          [lambda {|ary|
+             v = ary[i]
+             (v.nil? || v == '') ? 0 : conv_to_numeric.call(v)
+           },
+           lambda {|sum, ary|
+             v = ary[i]
+             (v.nil? || v == '') ? sum : sum + conv_to_numeric.call(v)
+           },
+           lambda {|sum| sum }
+          ]
+        }
+      ]
+    when :avg
+      field, new_field = split_field_list_argument(arg)
+      new_field ||= "avg #{field}"
+      [:avg, new_field,
+        lambda {|tblreader| 
+          i = tblreader.index_from_field(field)
+          [lambda {|ary|
+             v = ary[i]
+             v = (v.nil? || v == '') ? 0 : conv_to_numeric.call(v)
+             [v, 1]
+           },
+           lambda {|state, ary|
+             v = ary[i]
+             v = (v.nil? || v == '') ? 0 : conv_to_numeric.call(v)
+             state[0] += v
+             state[1] += 1
+             state
+           },
+           lambda {|state| state[0] / state[1].to_f }
+          ]
+        }
+      ]
+    else
+      raise "unexpected aggregate tag: #{agr}"
+    end
+  }
+  filename = argv.shift || '-'
+  h = {}
+  tablereader_open(filename) {|tblreader|
+    kis = kfs.map {|f| tblreader.index_from_field(f) }
+    state_list = opt_group_fields.map {|tag, f, ops| [f, *ops.call(tblreader)] }
+    result_fields = kfs + state_list.map {|f, ini, upd, fin| f }
+    tblreader.each {|ary|
+      kvs = ary.values_at(*kis)
+      if !h.include?(kvs)
+        h[kvs] = state_list.map {|f, ini, upd, fin| ini.call(ary) }
+      else
+        a = h[kvs]
+        a.each_with_index {|state, i|
+          f, ini, upd, fin = state_list[i]
+          a[i] = upd.call(state, ary)
+        }
+      end
+    }
+    result = Table.new(result_fields)
+    h.each {|k, a|
+      a.each_with_index {|state, i|
+        f, ini, upd, fin = state_list[i]
+        a[i] = fin.call(state)
+      }
+      result.insert_values result_fields, k+a
+    }
+    with_output {|out|
+      tbl_generate_csv(result, out)
+    }
   }
 end
 
