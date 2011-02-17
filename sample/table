@@ -366,6 +366,7 @@ def main_grep(argv)
                          lambda {|_| _.any? {|k, v| re =~ v.to_s } }
   end
   opt_v = $opt_grep_v ? true : false
+  argv.unshift '-' if argv.empty?
   argv.each {|filename|
     tablereader_open(filename) {|tblreader|
       with_table_stream_output {|gen|
