@@ -336,6 +336,7 @@ end
 
 def main_pp(argv)
   op_pp.parse!(argv)
+  argv.unshift '-' if argv.empty?
   with_output {|out|
     argv.each {|filename|
       tablereader_open(filename) {|tblreader|
