@@ -108,6 +108,7 @@ def main_help(argv)
 end
 
 $opt_n = nil
+$opt_debug = 0
 $opt_no_pager = nil
 
 def op_csv
@@ -217,10 +218,13 @@ def op_join
   op = OptionParser.new
   op.banner = 'Usage: table join [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
+  op.def_option('-d', '--debug', 'show debug message') { $opt_debug += 1 }
   op.def_option('-n', 'use numeric field name') { $opt_n = true }
-  op.def_option('--outer', 'outer join') { $opt_join_outer = true }
+  op.def_option('--outer', 'outer join') { $opt_join_outer = :full }
+  op.def_option('--left', 'left outer join') { $opt_join_outer = :left }
+  op.def_option('--right', 'right outer join') { $opt_join_outer = :right }
   op.def_option('--outer-missing=DEFAULT', 'missing value for outer join') {|missing|
-    $opt_join_outer = true
+    $opt_join_outer ||= :full
     $opt_join_outer_missing = missing
   }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -539,12 +543,28 @@ end
 def main_join(argv)
   op_join.parse!(argv)
   result = Table.new([], [])
+  retain_left = false
+  retain_right = false
+  case $opt_join_outer
+  when :full
+    retain_left = true
+    retain_right = true
+  when :left
+    retain_left = true
+  when :right
+    retain_right = true
+  when nil
+  else
+    raise "unexpected $opt_join_outer: #{$opt_join_outer.inspect}"
+  end
   if $opt_join_outer
     each_table_file(argv) {|tbl|
-      result = result.natjoin2_outer(tbl, $opt_join_outer_missing)
+      STDERR.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= $opt_debug
+      result = result.natjoin2_outer(tbl, $opt_join_outer_missing, retain_left, retain_right)
     }
   else
     each_table_file(argv) {|tbl|
+      STDERR.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= $opt_debug
       result = result.natjoin2(tbl)
     }
   end
@@ -600,8 +620,8 @@ def main_sum(argv)
     sum_index = tblreader.index_from_field(sum_field)
     tblreader.each {|ary|
       v = ary[sum_index]
-      v = v.strip
       if !v.nil? && v != ''
+        v = v.strip
 	if /\A-?\d+\z/ =~ v
 	  v = v.to_i
 	elsif /\A-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\z/ =~ v
