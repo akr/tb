@@ -79,7 +79,7 @@ end
 excel = WIN32OLE.new('Excel.Application')
 begin
   excel.displayAlerts = false
-  Table.csv_stream_output(STDOUT) {|gen|
+  Table.csv_stream_output(STDOUT) {|csvgen|
     ARGV.each {|excel_filename|
       ifn = getAbsolutePath(excel_filename)
       wb = excel.Workbooks.Open(ifn)
@@ -87,10 +87,10 @@ begin
 	if $opt_all_sheets
 	  wb.Worksheets.each {|sheet|
 	    sheetname = sheet.Name
-	    convert_sheet(excel_filename, sheet, gen)
+	    convert_sheet(excel_filename, sheet, csvgen)
 	  }
 	else
-	  convert_sheet(excel_filename, wb.Worksheets(1), gen)
+	  convert_sheet(excel_filename, wb.Worksheets(1), csvgen)
 	end
       ensure
 	wb.Close
