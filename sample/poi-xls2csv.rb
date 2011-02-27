@@ -138,39 +138,47 @@ def convert_horizontal_borders(sheet, upper_y, min_firstcol)
       left_x = right_x - 1
       upper_line = lower_line = left_line = right_line = false
       if upper_row
-	if upper_cellrange.include?(left_x)
-	  upperleft_cell = upper_row.getCell(left_x)
-	  upper_line = true if upperleft_cell && upperleft_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
+	if !upper_line && upper_cellrange.include?(left_x) &&
+	   (upperleft_cell = upper_row.getCell(left_x)) &&
+	   upperleft_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
+	  upper_line = true
 	end
-        if upper_cellrange.include?(right_x)
-	  upperright_cell = upper_row.getCell(right_x)
-	  upper_line = true if upperright_cell && upperright_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
+        if !upper_line && upper_cellrange.include?(right_x) &&
+	   (upperright_cell = upper_row.getCell(right_x)) &&
+	   upperright_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
+	  upper_line = true
 	end
-	if upper_cellrange.include?(left_x)
-	  upperleft_cell = upper_row.getCell(left_x)
-	  left_line = true if upperleft_cell && upperleft_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
+	if !left_line && upper_cellrange.include?(left_x) &&
+	   (upperleft_cell = upper_row.getCell(left_x)) &&
+	   upperleft_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
+	  left_line = true
 	end
-	if upper_cellrange.include?(right_x)
-	  upperright_cell = upper_row.getCell(right_x)
-	  right_line = true if upperright_cell && upperright_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
+	if !right_line && upper_cellrange.include?(right_x) &&
+	   (upperright_cell = upper_row.getCell(right_x)) &&
+	   upperright_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
+	  right_line = true
 	end
       end
       if lower_row
-	if lower_cellrange.include?(left_x)
-	  lowerleft_cell = lower_row.getCell(left_x)
-	  lower_line = true if lowerleft_cell && lowerleft_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
+	if !lower_line && lower_cellrange.include?(left_x) &&
+	   (lowerleft_cell = lower_row.getCell(left_x)) &&
+	   lowerleft_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
+	  lower_line = true
 	end
-        if lower_cellrange.include?(right_x)
-	  lowerright_cell = lower_row.getCell(right_x)
-	  lower_line = true if lowerright_cell && lowerright_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
+        if !lower_line && lower_cellrange.include?(right_x) &&
+	   (lowerright_cell = lower_row.getCell(right_x)) &&
+	   lowerright_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
+	  lower_line = true
 	end
-	if lower_cellrange.include?(left_x)
-	  lowerleft_cell = lower_row.getCell(left_x)
-	  left_line = true if lowerleft_cell && lowerleft_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
+	if !left_line && lower_cellrange.include?(left_x) &&
+	   (lowerleft_cell = lower_row.getCell(left_x)) &&
+	   lowerleft_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
+	  left_line = true
 	end
-	if lower_cellrange.include?(right_x)
-	  lowerright_cell = lower_row.getCell(right_x)
-	  right_line = true if lowerright_cell && lowerright_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
+	if !right_line && lower_cellrange.include?(right_x) &&
+	   (lowerright_cell = lower_row.getCell(right_x)) &&
+	   lowerright_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
+	  right_line = true
 	end
       end
       if upper_line && lower_line && !left_line && !right_line
@@ -188,13 +196,15 @@ def convert_horizontal_borders(sheet, upper_y, min_firstcol)
       # cell
       hborder = nil
       cell_x = min_firstcol + i / 2
-      if !hborder && upper_row && upper_cellrange.include?(cell_x)
-        upper_cell = upper_row.getCell(cell_x)
-	hborder = '-' if upper_cell && upper_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
+      if !hborder && upper_row && upper_cellrange.include?(cell_x) &&
+         (upper_cell = upper_row.getCell(cell_x)) &&
+	 upper_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
+	hborder = '-'
       end
-      if !hborder && lower_row && lower_cellrange.include?(cell_x)
-        lower_cell = lower_row.getCell(cell_x)
-	hborder = '-' if lower_cell && lower_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
+      if !hborder && lower_row && lower_cellrange.include?(cell_x) &&
+         (lower_cell = lower_row.getCell(cell_x)) &&
+	 lower_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
+	hborder = '-'
       end
       #hborder ||= ' '
       ary << hborder
@@ -208,13 +218,15 @@ def convert_vertical_border(sheet, y, left_x)
   row = sheet.getRow(y)
   cellrange = row.getFirstCellNum...row.getLastCellNum
   vborder = nil
-  if !vborder && cellrange.include?(left_x)
-    left_cell = row.getCell(left_x)
-    vborder = '|' if left_cell && left_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
+  if !vborder && cellrange.include?(left_x) &&
+     (left_cell = row.getCell(left_x)) &&
+     left_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
+    vborder = '|'
   end
-  if !vborder && cellrange.include?(right_x)
-    right_cell = row.getCell(right_x)
-    vborder = '|' if right_cell && right_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
+  if !vborder && cellrange.include?(right_x) &&
+     (right_cell = row.getCell(right_x)) &&
+     right_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
+    vborder = '|'
   end
   #vborder ||= ' '
   vborder
