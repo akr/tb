@@ -24,12 +24,7 @@ def getAbsolutePath(filename)
   return fso.GetAbsolutePathName(filename)
 end
 
-module Border
-  def Border.init_constants(borders)
-    if !Border.const_defined?(:XlEdgeLeft)
-      WIN32OLE.const_load(borders,self)
-    end
-  end
+module Excel
 end
 
 $opt_all_sheets = false
@@ -88,20 +83,20 @@ def convert_horizontal_borders(usedrange, upper_y)
       lowerleft_cell = (0 < lower_y && 0 < left_x) ? usedrange.Cells(lower_y, left_x) : nil
       lowerright_cell = (0 < lower_y && 0 < right_x) ? usedrange.Cells(lower_y, right_x) : nil
       upper_line = lower_line = left_line = right_line = false
-      if (upperleft_cell && upperleft_cell.borders(Border::XlEdgeRight).linestyle != Border::XlNone) ||
-         (upperright_cell && upperright_cell.borders(Border::XlEdgeLeft).linestyle != Border::XlNone)
+      if (upperleft_cell && upperleft_cell.borders(Excel::XlEdgeRight).linestyle != Excel::XlNone) ||
+         (upperright_cell && upperright_cell.borders(Excel::XlEdgeLeft).linestyle != Excel::XlNone)
 	upper_line = true
       end
-      if (lowerleft_cell && lowerleft_cell.borders(Border::XlEdgeRight).linestyle != Border::XlNone) ||
-         (lowerright_cell && lowerright_cell.borders(Border::XlEdgeLeft).linestyle != Border::XlNone)
+      if (lowerleft_cell && lowerleft_cell.borders(Excel::XlEdgeRight).linestyle != Excel::XlNone) ||
+         (lowerright_cell && lowerright_cell.borders(Excel::XlEdgeLeft).linestyle != Excel::XlNone)
 	lower_line = true
       end
-      if (upperleft_cell && upperleft_cell.borders(Border::XlEdgeBottom).linestyle != Border::XlNone) ||
-         (lowerleft_cell && lowerleft_cell.borders(Border::XlEdgeTop).linestyle != Border::XlNone)
+      if (upperleft_cell && upperleft_cell.borders(Excel::XlEdgeBottom).linestyle != Excel::XlNone) ||
+         (lowerleft_cell && lowerleft_cell.borders(Excel::XlEdgeTop).linestyle != Excel::XlNone)
 	left_line = true
       end
-      if (upperright_cell && upperright_cell.borders(Border::XlEdgeBottom).linestyle != Border::XlNone) ||
-         (lowerright_cell && lowerright_cell.borders(Border::XlEdgeTop).linestyle != Border::XlNone)
+      if (upperright_cell && upperright_cell.borders(Excel::XlEdgeBottom).linestyle != Excel::XlNone) ||
+         (lowerright_cell && lowerright_cell.borders(Excel::XlEdgeTop).linestyle != Excel::XlNone)
 	right_line = true
       end
       if upper_line && lower_line && !left_line && !right_line
@@ -120,8 +115,8 @@ def convert_horizontal_borders(usedrange, upper_y)
       cell_x = (i+1) / 2
       upper_cell = (0 < upper_y) ? usedrange.Cells(upper_y, cell_x) : nil
       lower_cell = (0 < lower_y) ? usedrange.Cells(lower_y, cell_x) : nil
-      if (upper_cell && upper_cell.borders(Border::XlEdgeBottom).linestyle != Border::XlNone) ||
-         (lower_cell && lower_cell.borders(Border::XlEdgeTop).linestyle != Border::XlNone)
+      if (upper_cell && upper_cell.borders(Excel::XlEdgeBottom).linestyle != Excel::XlNone) ||
+         (lower_cell && lower_cell.borders(Excel::XlEdgeTop).linestyle != Excel::XlNone)
         hborder = '-'
       end
       ary << hborder
@@ -137,8 +132,8 @@ def convert_vertical_border(usedrange, y, left_x)
   left_cell = 0 < left_x ? usedrange.Cells(y, left_x) : nil
   right_cell = 0 < right_x ? usedrange.Cells(y, right_x) : nil
   vborder = nil
-  if (left_cell && left_cell.borders(Border::XlEdgeRight).linestyle != Border::XlNone) ||
-     (right_cell && right_cell.borders(Border::XlEdgeLeft).linestyle != Border::XlNone)
+  if (left_cell && left_cell.borders(Excel::XlEdgeRight).linestyle != Excel::XlNone) ||
+     (right_cell && right_cell.borders(Excel::XlEdgeLeft).linestyle != Excel::XlNone)
     vborder = '|'
   end
   #vborder ||= ' '
@@ -148,7 +143,6 @@ end
 def convert_sheet(filename, sheet, csvgen)
   sheetname = sheet.Name
   usedrange = sheet.UsedRange
-  Border.init_constants(usedrange.borders) if $opt_border
   sheet_header = []
   sheet_header << filename if $opt_prepend_filename
   sheet_header << sheetname if $opt_all_sheets
@@ -172,6 +166,7 @@ def convert_sheet(filename, sheet, csvgen)
 end
 
 excel = WIN32OLE.new('Excel.Application')
+WIN32OLE.const_load(excel,Excel)
 begin
   excel.displayAlerts = false
   Table.csv_stream_output(STDOUT) {|csvgen|
