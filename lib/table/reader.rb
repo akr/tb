@@ -94,6 +94,12 @@ class Table::Reader
     when /\.tsv\z/
       io = File.open(filename)
       rawreader = Table::TSVReader.new(io)
+    when /\Acsv:/
+      io = File.open($')
+      rawreader = Table::CSVReader.new(io)
+    when /\Atsv:/
+      io = File.open($')
+      rawreader = Table::TSVReader.new(io)
     else
       if filename == '-'
         rawreader = Table::CSVReader.new(STDIN)
