@@ -93,10 +93,10 @@ module Table::Pathfinder
     when nil; lambda { yield pos, cap }
     when String; try_lit(pat, aa, pos, cap, &b)
     when Regexp; try_regexp(pat, aa, pos, cap, &b)
-    when :right; try_rmove(pat, aa, pos, cap, &b)
-    when :left; try_rmove(pat, aa, pos, cap, &b)
-    when :up; try_rmove(pat, aa, pos, cap, &b)
-    when :down; try_rmove(pat, aa, pos, cap, &b)
+    when :n, :north; try_rmove(:north, aa, pos, cap, &b)
+    when :s, :south; try_rmove(:south, aa, pos, cap, &b)
+    when :e, :east; try_rmove(:east, aa, pos, cap, &b)
+    when :w, :west; try_rmove(:west, aa, pos, cap, &b)
     when Array
       case pat[0]
       when :rmove; _, dir = pat; try_rmove(dir, aa, pos, cap, &b)
@@ -126,10 +126,10 @@ module Table::Pathfinder
   def try_rmove(dir, aa, pos, cap)
     x, y = pos
     case dir
-    when :right then x += 1
-    when :left then x -= 1
-    when :up then y -= 1
-    when :down then y += 1
+    when :east then x += 1
+    when :west then x -= 1
+    when :north then y -= 1
+    when :south then y += 1
     end
     lambda { yield [x,y], cap }
   end
