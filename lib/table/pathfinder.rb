@@ -39,12 +39,12 @@ module Table::Pathfinder
   end
 
   def match(pat, aa, start=nil)
-    match_all(pat, aa, start) {|spos, epos, cap|
+    each_match(pat, aa, start) {|spos, epos, cap|
       return spos, epos, cap
     }
   end
 
-  def match_all(pat, aa, spos=nil)
+  def each_match(pat, aa, spos=nil)
     if spos
       run {
         try(pat, aa, spos, {}.freeze) {|epos, cap2|
@@ -97,6 +97,7 @@ module Table::Pathfinder
     when :s, :south; try_rmove(:south, aa, pos, cap, &b)
     when :e, :east; try_rmove(:east, aa, pos, cap, &b)
     when :w, :west; try_rmove(:west, aa, pos, cap, &b)
+    when :debug_print_state; p [pos, cap]; yield pos, cap
     when Array
       case pat[0]
       when :rmove; _, dir = pat; try_rmove(dir, aa, pos, cap, &b)
@@ -104,18 +105,23 @@ module Table::Pathfinder
       when :regexp; _, re = pat; try_regexp(re, aa, pos, cap, &b)
       when :cat; _, *ps = pat; try_cat(ps, aa, pos, cap, &b)
       when :alt; _, *ps = pat; try_alt(ps, aa, pos, cap, &b)
-      when :rep; _, *ps = pat; try_rep_generic(0, nil, ps, true, aa, pos, cap, &b)
-      when :rep1; _, *ps = pat; try_rep_generic(1, nil, ps, true, aa, pos, cap, &b)
-      when :rep_nongreedy; _, *ps = pat; try_rep_generic(0, nil, ps, false, aa, pos, cap, &b)
-      when :rep1_nongreedy; _, *ps = pat; try_rep_generic(1, nil, ps, false, aa, pos, cap, &b)
-      when :opt; _, *ps = pat; try_rep_generic(0, 1, ps, true, aa, pos, cap, &b)
-      when :opt_nongreedy; _, *ps = pat; try_rep_generic(0, 1, ps, false, aa, pos, cap, &b)
+      when :rep; _, *ps = pat; try_rep_generic(nil, 0, nil, true, ps, aa, pos, cap, &b)
+      when :rep1; _, *ps = pat; try_rep_generic(nil, 1, nil, true, ps, aa, pos, cap, &b)
+      when :rep_nongreedy; _, *ps = pat; try_rep_generic(nil, 0, nil, false, ps, aa, pos, cap, &b)
+      when :rep1_nongreedy; _, *ps = pat; try_rep_generic(nil, 1, nil, false, ps, aa, pos, cap, &b)
+      when :opt; _, *ps = pat; try_rep_generic(nil, 0, 1, true, ps, aa, pos, cap, &b)
+      when :opt_nongreedy; _, *ps = pat; try_rep_generic(nil, 0, 1, false, ps, aa, pos, cap, &b)
+      when :repn; _, num, *ps = pat; try_rep_generic(nil, num, num, true, ps, aa, pos, cap, &b)
+      when :repeat; _, var, min, max, greedy, *ps = pat; try_rep_generic(var, min, max, greedy, ps, aa, pos, cap, &b)
       when :grid; _, *arys = pat; try_grid(arys, aa, pos, cap, &b)
       when :capval; _, n = pat; try_capval(n, aa, pos, cap, &b)
       when :refval; _, n = pat; try_refval(n, aa, pos, cap, &b)
       when :tmp_pos; _, dx, dy, *ps = pat; try_tmp_pos(dx, dy, ps, aa, pos, cap, &b)
+      when :save_pos; _, n = pat; try_save_pos(n, aa, pos, cap, &b)
       when :push_pos; _, n = pat; try_push_pos(n, aa, pos, cap, &b)
       when :pop_pos; _, n = pat; try_pop_pos(n, aa, pos, cap, &b)
+      when :update; _, pr = pat; try_update(pr, aa, pos, cap, &b)
+      when :assert; _, pr = pat; try_assert(pr, aa, pos, cap, &b)
       else raise "unexpected: #{pat.inspect}"
       end
     else
@@ -181,12 +187,20 @@ module Table::Pathfinder
   # (p1 p2 ...)*?
   # (p1 p2 ...){min,}?
   # (p1 p2 ...){min,max}?
-  def try_rep_generic(min, max, ps, greedy, aa, pos, cap, visited={}, &block)
+  def try_rep_generic(var, min, max, greedy, ps, aa, pos, cap, visited={}, &block)
+    min = cap[min].to_int if Symbol === min
+    max = cap[max].to_int if Symbol === max
     visited2 = visited.dup
     visited2[pos] = true
     result = []
     if min <= 0 && !greedy
-      result << lambda { yield pos, cap }
+      result << lambda { 
+        if var
+          cap = cap.dup
+          cap[var] = visited.size
+        end
+        yield pos, cap
+      }
     end
     if max.nil? || 0 < max
       min2 = min <= 0 ? 0 : min-1
@@ -194,7 +208,7 @@ module Table::Pathfinder
       result << lambda {
         try_cat(ps, aa, pos, cap) {|pos2, cap2|
           if !visited2[pos2]
-            try_rep_generic(min2, max2, ps, greedy, aa, pos2, cap2, visited2, &block)
+            try_rep_generic(var, min2, max2, greedy, ps, aa, pos2, cap2, visited2, &block)
           else
             nil
           end
@@ -202,7 +216,13 @@ module Table::Pathfinder
       }
     end
     if min <= 0 && greedy
-      result << lambda { yield pos, cap }
+      result << lambda {
+        if var
+          cap = cap.dup
+          cap[var] = visited.size
+        end
+        yield pos, cap
+      }
     end
     result
   end
@@ -286,11 +306,11 @@ module Table::Pathfinder
     x, y = pos
     if 0 <= y && y < aa.length &&
        0 <= x && x < aa[y].length &&
-      cap2 = cap.dup
       val = aa[y][x]
     else
       val = nil
     end
+    cap2 = cap.dup
     cap2[n] = val
     lambda { yield pos, cap2 }
   end
@@ -318,6 +338,12 @@ module Table::Pathfinder
     }
   end
 
+  def try_save_pos(n, aa, pos, cap, &b)
+    cap2 = cap.dup
+    cap2[n] = pos
+    lambda { yield pos, cap2 }
+  end
+
   def try_push_pos(n, aa, pos, cap, &b)
     cap2 = cap.dup
     cap2[n] ||= []
@@ -336,5 +362,18 @@ module Table::Pathfinder
     cap2 = cap.dup
     cap2[n] = ary[0...-1]
     lambda { yield pos2, cap2 }
+  end
+
+  def try_update(pr, aa, pos, cap)
+    pos2, cap2 = pr.call(pos.dup, cap.dup)
+    lambda { yield pos2, cap2 }
+  end
+
+  def try_assert(pr, aa, pos, cap)
+    if pr.call(pos, cap)
+      lambda { yield pos, cap }
+    else
+      nil
+    end
   end
 end
