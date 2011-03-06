@@ -111,7 +111,7 @@ def get_merged_regions(sheet)
   merged
 end
 
-def convert_horizontal_borders(sheet, upper_y, min_firstcol)
+def convert_horizontal_borders(sheet, merged, upper_y, min_firstcol)
   rownums = sheet.getFirstRowNum..sheet.getLastRowNum
   lower_y = upper_y+1
   min = 0
@@ -138,47 +138,65 @@ def convert_horizontal_borders(sheet, upper_y, min_firstcol)
       left_x = right_x - 1
       upper_line = lower_line = left_line = right_line = false
       if upper_row
-	if !upper_line && upper_cellrange.include?(left_x) &&
-	   (upperleft_cell = upper_row.getCell(left_x)) &&
-	   upperleft_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
-	  upper_line = true
+	if !merged[[left_x, upper_y]] || !merged[[right_x, upper_y]] ||
+	   merged[[left_x, upper_y]] != merged[[right_x, upper_y]]
+	  if !upper_line && upper_cellrange.include?(left_x) &&
+	     (upperleft_cell = upper_row.getCell(left_x)) &&
+	     upperleft_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
+	    upper_line = true
+	  end
+	  if !upper_line && upper_cellrange.include?(right_x) &&
+	     (upperright_cell = upper_row.getCell(right_x)) &&
+	     upperright_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
+	    upper_line = true
+	  end
 	end
-        if !upper_line && upper_cellrange.include?(right_x) &&
-	   (upperright_cell = upper_row.getCell(right_x)) &&
-	   upperright_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
-	  upper_line = true
+	if !merged[[left_x, upper_y]] || !merged[[left_x, lower_y]] ||
+	   merged[[left_x, upper_y]] != merged[[left_x, lower_y]]
+	  if !left_line && upper_cellrange.include?(left_x) &&
+	     (upperleft_cell = upper_row.getCell(left_x)) &&
+	     upperleft_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
+	    left_line = true
+	  end
 	end
-	if !left_line && upper_cellrange.include?(left_x) &&
-	   (upperleft_cell = upper_row.getCell(left_x)) &&
-	   upperleft_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
-	  left_line = true
-	end
-	if !right_line && upper_cellrange.include?(right_x) &&
-	   (upperright_cell = upper_row.getCell(right_x)) &&
-	   upperright_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
-	  right_line = true
+	if !merged[[right_x, upper_y]] || !merged[[right_x, lower_y]] ||
+	   merged[[right_x, upper_y]] != merged[[right_x, lower_y]]
+	  if !right_line && upper_cellrange.include?(right_x) &&
+	     (upperright_cell = upper_row.getCell(right_x)) &&
+	     upperright_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
+	    right_line = true
+	  end
 	end
       end
       if lower_row
-	if !lower_line && lower_cellrange.include?(left_x) &&
-	   (lowerleft_cell = lower_row.getCell(left_x)) &&
-	   lowerleft_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
-	  lower_line = true
+	if !merged[[left_x, lower_y]] || !merged[[right_x, lower_y]] ||
+	   merged[[left_x, lower_y]] != merged[[right_x, lower_y]]
+	  if !lower_line && lower_cellrange.include?(left_x) &&
+	     (lowerleft_cell = lower_row.getCell(left_x)) &&
+	     lowerleft_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
+	    lower_line = true
+	  end
+	  if !lower_line && lower_cellrange.include?(right_x) &&
+	     (lowerright_cell = lower_row.getCell(right_x)) &&
+	     lowerright_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
+	    lower_line = true
+	  end
 	end
-        if !lower_line && lower_cellrange.include?(right_x) &&
-	   (lowerright_cell = lower_row.getCell(right_x)) &&
-	   lowerright_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
-	  lower_line = true
+	if !merged[[left_x, upper_y]] || !merged[[left_x, lower_y]] ||
+	   merged[[left_x, upper_y]] != merged[[left_x, lower_y]]
+	  if !left_line && lower_cellrange.include?(left_x) &&
+	     (lowerleft_cell = lower_row.getCell(left_x)) &&
+	     lowerleft_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
+	    left_line = true
+	  end
 	end
-	if !left_line && lower_cellrange.include?(left_x) &&
-	   (lowerleft_cell = lower_row.getCell(left_x)) &&
-	   lowerleft_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
-	  left_line = true
-	end
-	if !right_line && lower_cellrange.include?(right_x) &&
-	   (lowerright_cell = lower_row.getCell(right_x)) &&
-	   lowerright_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
-	  right_line = true
+	if !merged[[right_x, upper_y]] || !merged[[right_x, lower_y]] ||
+	   merged[[right_x, upper_y]] != merged[[right_x, lower_y]]
+	  if !right_line && lower_cellrange.include?(right_x) &&
+	     (lowerright_cell = lower_row.getCell(right_x)) &&
+	     lowerright_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
+	    right_line = true
+	  end
 	end
       end
       if upper_line && lower_line && !left_line && !right_line
@@ -196,15 +214,18 @@ def convert_horizontal_borders(sheet, upper_y, min_firstcol)
       # cell
       hborder = nil
       cell_x = min_firstcol + i / 2
-      if !hborder && upper_row && upper_cellrange.include?(cell_x) &&
-         (upper_cell = upper_row.getCell(cell_x)) &&
-	 upper_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
-	hborder = '-'
-      end
-      if !hborder && lower_row && lower_cellrange.include?(cell_x) &&
-         (lower_cell = lower_row.getCell(cell_x)) &&
-	 lower_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
-	hborder = '-'
+      if !merged[[cell_x, upper_y]] || !merged[[cell_x, lower_y]] ||
+	 merged[[cell_x, upper_y]] != merged[[cell_x, lower_y]]
+	if !hborder && upper_row && upper_cellrange.include?(cell_x) &&
+	   (upper_cell = upper_row.getCell(cell_x)) &&
+	   upper_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
+	  hborder = '-'
+	end
+	if !hborder && lower_row && lower_cellrange.include?(cell_x) &&
+	   (lower_cell = lower_row.getCell(cell_x)) &&
+	   lower_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
+	  hborder = '-'
+	end
       end
       #hborder ||= ' '
       ary << hborder
@@ -213,20 +234,23 @@ def convert_horizontal_borders(sheet, upper_y, min_firstcol)
   ary
 end
 
-def convert_vertical_border(sheet, y, left_x)
+def convert_vertical_border(sheet, merged, cell_y, left_x)
   right_x = left_x+1
-  row = sheet.getRow(y)
+  row = sheet.getRow(cell_y)
   cellrange = row.getFirstCellNum...row.getLastCellNum
   vborder = nil
-  if !vborder && cellrange.include?(left_x) &&
-     (left_cell = row.getCell(left_x)) &&
-     left_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
-    vborder = '|'
-  end
-  if !vborder && cellrange.include?(right_x) &&
-     (right_cell = row.getCell(right_x)) &&
-     right_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
-    vborder = '|'
+  if !merged[[left_x, cell_y]] || !merged[[right_x, cell_y]] ||
+     merged[[left_x, cell_y]] != merged[[right_x, cell_y]]
+    if !vborder && cellrange.include?(left_x) &&
+       (left_cell = row.getCell(left_x)) &&
+       left_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
+      vborder = '|'
+    end
+    if !vborder && cellrange.include?(right_x) &&
+       (right_cell = row.getCell(right_x)) &&
+       right_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
+      vborder = '|'
+    end
   end
   #vborder ||= ' '
   vborder
@@ -242,20 +266,20 @@ def convert_sheet(filename, book, i, csvgen)
   sheet_header = []
   sheet_header << filename if $opt_prepend_filename
   sheet_header << sheetname if $opt_all_sheets
-  csvgen << (sheet_header + convert_horizontal_borders(sheet, rownums.first-1, min_firstcol)) if $opt_border
+  csvgen << (sheet_header + convert_horizontal_borders(sheet, merged, rownums.first-1, min_firstcol)) if $opt_border
   rownums.each {|y|
     record = []
     row = sheet.getRow(y)
     row_cellrange = row.getFirstCellNum...row.getLastCellNum
-    record << convert_vertical_border(sheet, y, min_firstcol-1) if $opt_border
+    record << convert_vertical_border(sheet, merged, y, min_firstcol-1) if $opt_border
     min_firstcol.upto(row_cellrange.end-1) {|x|
       val = row_cellrange.include?(x) ? convert_cell(sheet, merged, row, x, y) : nil
       record << val
       #record << ' '
-      record << convert_vertical_border(sheet, y, x) if $opt_border
+      record << convert_vertical_border(sheet, merged, y, x) if $opt_border
     }
     csvgen << (sheet_header + record)
-    csvgen << (sheet_header + convert_horizontal_borders(sheet, y, min_firstcol)) if $opt_border
+    csvgen << (sheet_header + convert_horizontal_borders(sheet, merged, y, min_firstcol)) if $opt_border
   }
 end
 
