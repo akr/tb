@@ -38,6 +38,7 @@ def main(argv)
   when 'yaml' then main_yaml(argv)
   when 'pp' then main_pp(argv)
   when 'grep' then main_grep(argv)
+  when 'gsub' then main_gsub(argv)
   when 'sort' then main_sort(argv)
   when 'select' then main_select(argv)
   when 'rename' then main_rename(argv)
@@ -65,6 +66,7 @@ Usage:
   table yaml [OPTS] [TABLE]
   table pp [OPTS] [TABLE]
   table grep [OPTS] REGEXP [TABLE]
+  table gsub [OPTS] REGEXP STRING [TABLE]
   table sort [OPTS] [TABLE]
   table select [OPTS] FIELD,... [TABLE]
   table rename [OPTS] SRC,DST,... [TABLE]
@@ -89,6 +91,7 @@ def main_help(argv)
   when 'yaml' then puts op_yaml
   when 'pp' then puts op_pp
   when 'grep' then puts op_grep
+  when 'gsub' then puts op_gsub
   when 'sort' then puts op_sort
   when 'select' then puts op_select
   when 'rename' then puts op_rename
@@ -169,6 +172,19 @@ def op_grep
   op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| $opt_grep_e = pattern }
   op.def_option('--ruby RUBY-EXP', 'specify a regexp.  no usual regexp argument.') {|ruby_exp| $opt_grep_ruby = ruby_exp }
   op.def_option('-v', 'ouput the records which doesn\'t match') { $opt_grep_v = true }
+  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op
+end
+
+$opt_gsub_e = nil
+$opt_gsub_f = nil
+def op_gsub
+  op = OptionParser.new
+  op.banner = 'Usage: table gsub [OPTS] REGEXP STRING [TABLE]'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
+  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-f FIELD', 'search field') {|field| $opt_gsub_f = field }
+  op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| $opt_gsub_e = pattern }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -407,6 +423,42 @@ def main_grep(argv)
           found = opt_v ^ !!(found)
           gen << ary if found
         }
+      }
+    }
+  }
+end
+
+def main_gsub(argv)
+  op_gsub.parse!(argv)
+  if $opt_gsub_e
+    re = Regexp.new($opt_gsub_e)
+  else
+    re = Regexp.new(argv.shift)
+  end
+  repl = argv.shift
+  filename = argv.empty? ? '-' : argv.shift
+  tablereader_open(filename) {|tblreader|
+    with_table_stream_output {|gen|
+      gen.output_header tblreader.header
+      tblreader.each {|ary|
+        if $opt_gsub_f
+	  ary2 = []
+          ary.each_with_index {|str, i|
+            f = tblreader.field_from_index_ex(i)
+	    if f == $opt_gsub_f
+	      str ||= ''
+	      ary2 << str.gsub(re, repl)
+	    else
+	      ary2 << str
+	    end
+          }
+	else
+	  ary2 = ary.map {|s|
+	    s ||= ''
+	    s.gsub(re, repl)
+	  }
+	end
+	gen << ary2
       }
     }
   }
