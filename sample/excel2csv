@@ -83,20 +83,36 @@ def convert_horizontal_borders(usedrange, upper_y)
       lowerleft_cell = (0 < lower_y && 0 < left_x) ? usedrange.Cells(lower_y, left_x) : nil
       lowerright_cell = (0 < lower_y && 0 < right_x) ? usedrange.Cells(lower_y, right_x) : nil
       upper_line = lower_line = left_line = right_line = false
-      if (upperleft_cell && upperleft_cell.borders(Excel::XlEdgeRight).linestyle != Excel::XlNone) ||
-         (upperright_cell && upperright_cell.borders(Excel::XlEdgeLeft).linestyle != Excel::XlNone)
+      if (!upperleft_cell || !upperright_cell ||
+          !upperleft_cell.MergeCells || !upperright_cell.MergeCells ||
+	  upperleft_cell.MergeArea.Row != upperright_cell.MergeArea.Row ||
+	  upperleft_cell.MergeArea.Column != upperright_cell.MergeArea.Column) &&
+         ((upperleft_cell && upperleft_cell.borders(Excel::XlEdgeRight).linestyle != Excel::XlNone) ||
+          (upperright_cell && upperright_cell.borders(Excel::XlEdgeLeft).linestyle != Excel::XlNone))
 	upper_line = true
       end
-      if (lowerleft_cell && lowerleft_cell.borders(Excel::XlEdgeRight).linestyle != Excel::XlNone) ||
-         (lowerright_cell && lowerright_cell.borders(Excel::XlEdgeLeft).linestyle != Excel::XlNone)
+      if (!lowerleft_cell || !lowerright_cell ||
+          !lowerleft_cell.MergeCells || !lowerright_cell.MergeCells ||
+	  lowerleft_cell.MergeArea.Row != lowerright_cell.MergeArea.Row ||
+	  lowerleft_cell.MergeArea.Column != lowerright_cell.MergeArea.Column) &&
+         ((lowerleft_cell && lowerleft_cell.borders(Excel::XlEdgeRight).linestyle != Excel::XlNone) ||
+          (lowerright_cell && lowerright_cell.borders(Excel::XlEdgeLeft).linestyle != Excel::XlNone))
 	lower_line = true
       end
-      if (upperleft_cell && upperleft_cell.borders(Excel::XlEdgeBottom).linestyle != Excel::XlNone) ||
-         (lowerleft_cell && lowerleft_cell.borders(Excel::XlEdgeTop).linestyle != Excel::XlNone)
+      if (!upperleft_cell || !lowerleft_cell ||
+          !upperleft_cell.MergeCells || !lowerleft_cell.MergeCells ||
+	  upperleft_cell.MergeArea.Row != lowerleft_cell.MergeArea.Row ||
+	  upperleft_cell.MergeArea.Column != lowerleft_cell.MergeArea.Column) &&
+         ((upperleft_cell && upperleft_cell.borders(Excel::XlEdgeBottom).linestyle != Excel::XlNone) ||
+          (lowerleft_cell && lowerleft_cell.borders(Excel::XlEdgeTop).linestyle != Excel::XlNone))
 	left_line = true
       end
-      if (upperright_cell && upperright_cell.borders(Excel::XlEdgeBottom).linestyle != Excel::XlNone) ||
-         (lowerright_cell && lowerright_cell.borders(Excel::XlEdgeTop).linestyle != Excel::XlNone)
+      if (!upperright_cell || !lowerright_cell ||
+          !upperright_cell.MergeCells || !lowerright_cell.MergeCells ||
+	  upperright_cell.MergeArea.Row != lowerright_cell.MergeArea.Row ||
+	  upperright_cell.MergeArea.Column != lowerright_cell.MergeArea.Column) &&
+         ((upperright_cell && upperright_cell.borders(Excel::XlEdgeBottom).linestyle != Excel::XlNone) ||
+          (lowerright_cell && lowerright_cell.borders(Excel::XlEdgeTop).linestyle != Excel::XlNone))
 	right_line = true
       end
       if upper_line && lower_line && !left_line && !right_line
@@ -115,8 +131,12 @@ def convert_horizontal_borders(usedrange, upper_y)
       cell_x = (i+1) / 2
       upper_cell = (0 < upper_y) ? usedrange.Cells(upper_y, cell_x) : nil
       lower_cell = (0 < lower_y) ? usedrange.Cells(lower_y, cell_x) : nil
-      if (upper_cell && upper_cell.borders(Excel::XlEdgeBottom).linestyle != Excel::XlNone) ||
-         (lower_cell && lower_cell.borders(Excel::XlEdgeTop).linestyle != Excel::XlNone)
+      if (!upper_cell || !lower_cell ||
+          !upper_cell.MergeCells || !lower_cell.MergeCells ||
+	  upper_cell.MergeArea.Row != lower_cell.MergeArea.Row ||
+	  upper_cell.MergeArea.Column != lower_cell.MergeArea.Column) &&
+         ((upper_cell && upper_cell.borders(Excel::XlEdgeBottom).linestyle != Excel::XlNone) ||
+          (lower_cell && lower_cell.borders(Excel::XlEdgeTop).linestyle != Excel::XlNone))
         hborder = '-'
       end
       ary << hborder
@@ -132,8 +152,12 @@ def convert_vertical_border(usedrange, y, left_x)
   left_cell = 0 < left_x ? usedrange.Cells(y, left_x) : nil
   right_cell = 0 < right_x ? usedrange.Cells(y, right_x) : nil
   vborder = nil
-  if (left_cell && left_cell.borders(Excel::XlEdgeRight).linestyle != Excel::XlNone) ||
-     (right_cell && right_cell.borders(Excel::XlEdgeLeft).linestyle != Excel::XlNone)
+  if (!left_cell || !right_cell ||
+      !left_cell.MergeCells || !right_cell.MergeCells ||
+      left_cell.MergeArea.Row != right_cell.MergeArea.Row ||
+      left_cell.MergeArea.Column != right_cell.MergeArea.Column) &&
+     ((left_cell && left_cell.borders(Excel::XlEdgeRight).linestyle != Excel::XlNone) ||
+      (right_cell && right_cell.borders(Excel::XlEdgeLeft).linestyle != Excel::XlNone))
     vborder = '|'
   end
   #vborder ||= ' '
