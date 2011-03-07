@@ -187,11 +187,11 @@ module Table::Pathfinder
   # (p1 p2 ...)*?
   # (p1 p2 ...){min,}?
   # (p1 p2 ...){min,max}?
-  def try_rep_generic(var, min, max, greedy, ps, aa, st, visited={}, &block)
+  def try_rep_generic(var, min, max, greedy, ps, aa, st, visit_keys=[:pos], visited={}, &block)
     min = st[min].to_int if Symbol === min
     max = st[max].to_int if Symbol === max
     visited2 = visited.dup
-    visited2[st.pos] = true
+    visited2[st.values_at(*visit_keys)] = true
     result = []
     if min <= 0 && !greedy
       result << lambda { 
@@ -204,8 +204,8 @@ module Table::Pathfinder
       max2 = max ? max-1 : nil
       result << lambda {
         try_cat(ps, aa, st) {|st2|
-          if !visited2[st2.pos]
-            try_rep_generic(var, min2, max2, greedy, ps, aa, st2, visited2, &block)
+          if !visited2[st2.values_at(*visit_keys)]
+            try_rep_generic(var, min2, max2, greedy, ps, aa, st2, visit_keys, visited2, &block)
           else
             nil
           end
@@ -377,10 +377,14 @@ class Table::Pathfinder::State
 
   def [](k)
     if k == :pos
-      v
+      @pos
     else
       @store[k]
     end
+  end
+
+  def values_at(*ks)
+    ks.map {|k| self[k] }
   end
 
   def merge(h)
