@@ -402,5 +402,11 @@ class Table::Pathfinder::State
     store.freeze
     Table::Pathfinder::State.new(pos, store)
   end
+
+  def inspect
+    h = {:pos => @pos}
+    h.update @store
+    "<#{self.class}: #{h.inspect.gsub(/\A\{|\}\z/, '')}>"
+  end
 end
 
