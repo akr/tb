@@ -113,6 +113,7 @@ module Table::Pathfinder
       when :opt_nongreedy; _, *ps = pat; try_rep_generic(nil, 0, 1, false, ps, aa, st, &b)
       when :repn; _, num, *ps = pat; try_rep_generic(nil, num, num, true, ps, aa, st, &b)
       when :repeat; _, var, min, max, greedy, *ps = pat; try_rep_generic(var, min, max, greedy, ps, aa, st, &b)
+      when :bfs; _, keys, *ps = pat; try_bfs(keys, ps, aa, st, &b)
       when :grid; _, *arys = pat; try_grid(arys, aa, st, &b)
       when :capval; _, n = pat; try_capval(n, aa, st, &b)
       when :refval; _, n = pat; try_refval(n, aa, st, &b)
@@ -219,6 +220,38 @@ module Table::Pathfinder
       }
     end
     result
+  end
+
+  def try_bfs(keys, ps, aa, st, &b)
+    queue = [st]
+    visited = {st.values_at(*keys) => true}
+    try_bfs_loop(queue, visited, keys, ps, aa, &b)
+  end
+
+  def try_bfs_loop(queue, visited, keys, ps, aa, &b)
+    if queue.empty?
+      nil
+    else
+      st = queue.shift
+      result = []
+      result << lambda {
+        yield st
+      } 
+      result << lambda {
+        try_cat(ps, aa, st) {|st2|
+          k = st2.values_at(*keys)
+          if !visited[k]
+            visited[k] = true
+            queue << st2
+          end
+          nil
+        }
+      }
+      result << lambda {
+        try_bfs_loop(queue, visited, keys, ps, aa, &b)
+      } 
+      result
+    end
   end
 
   def try_grid(arys, aa, st)
