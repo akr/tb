@@ -47,8 +47,8 @@ module Table::Pathfinder
   def each_match(pat, aa, spos=nil)
     if spos
       run {
-        try(pat, aa, State.new(spos, {}.freeze)) {|st2|
-          yield spos, st2.pos, st2.store
+        try(pat, aa, Table::Pathfinder::EmptyState.merge(:pos => spos)) {|st2|
+          yield spos, st2.fetch(:pos), st2.reject {|k,v| k == :pos }
           nil
         }
       }
@@ -57,8 +57,8 @@ module Table::Pathfinder
         a.each_index {|x|
           spos = [x,y]
           run {
-            try(pat, aa, State.new(spos, {}.freeze)) {|st2|
-              yield spos, st2.pos, st2.store
+            try(pat, aa, Table::Pathfinder::EmptyState.merge(:pos => spos)) {|st2|
+              yield spos, st2.fetch(:pos), st2.reject {|k,v| k == :pos }
               nil
             }
           }
@@ -131,7 +131,7 @@ module Table::Pathfinder
   end
 
   def try_rmove(dir, aa, st)
-    x, y = st.pos
+    x, y = st.fetch(:pos)
     case dir
     when :east then x += 1
     when :west then x -= 1
@@ -142,7 +142,7 @@ module Table::Pathfinder
   end
 
   def try_lit(val, aa, st)
-    x, y = st.pos
+    x, y = st.fetch(:pos)
     if 0 <= y && y < aa.length &&
        0 <= x && x < aa[y].length &&
        aa[y][x] == val
@@ -153,7 +153,7 @@ module Table::Pathfinder
   end
 
   def try_regexp(re, aa, st)
-    x, y = st.pos
+    x, y = st.fetch(:pos)
     if 0 <= y && y < aa.length &&
        0 <= x && x < aa[y].length &&
        re =~ aa[y][x]
@@ -294,7 +294,7 @@ module Table::Pathfinder
     }
     raise ArgumentError, "no start" if !start
     raise ArgumentError, "no goal" if !goal
-    pos = st.pos
+    pos = st.fetch(:pos)
     try_grid_rect(newarys, aa, st.merge(:pos => [pos[0]-start[0], pos[1]-start[1]])) {|st2|
       lambda { yield st2.merge(:pos => [pos[0]-start[0]+goal[0], pos[1]-start[1]+goal[1]]) }
     }
@@ -305,11 +305,11 @@ module Table::Pathfinder
       lambda { yield st }
     else
       ary, *rest = arys
-      x, y = st.pos
+      x, y = st.fetch(:pos)
       pos1 = [x, y+1]
       try_grid_row(ary, aa, st) {|st2|
         try_grid_rect(rest, aa, st2.merge(:pos => pos1)) {|st3|
-          lambda { yield st3.merge(:pos => st.pos) }
+          lambda { yield st3.merge(:pos => st.fetch(:pos)) }
         }
       }
     end
@@ -320,18 +320,18 @@ module Table::Pathfinder
       lambda { yield st }
     else
       pat, *rest = ary
-      x, y = st.pos
+      x, y = st.fetch(:pos)
       pos1 = [x+1, y]
       try(pat, aa, st) {|st2|
         try_grid_row(rest, aa, st2.merge(:pos => pos1)) {|st3|
-          lambda { yield st3.merge(:pos => st.pos) }
+          lambda { yield st3.merge(:pos => st.fetch(:pos)) }
         }
       }
     end
   end
 
   def try_capval(n, aa, st)
-    x, y = st.pos
+    x, y = st.fetch(:pos)
     if 0 <= y && y < aa.length &&
        0 <= x && x < aa[y].length &&
       val = aa[y][x]
@@ -343,7 +343,7 @@ module Table::Pathfinder
   end
 
   def try_refval(n, aa, st)
-    x, y = st.pos
+    x, y = st.fetch(:pos)
     if 0 <= y && y < aa.length &&
        0 <= x && x < aa[y].length
       val = aa[y][x]
@@ -358,19 +358,19 @@ module Table::Pathfinder
   end
 
   def try_tmp_pos(dx, dy, ps, aa, st, &b)
-    x, y = st.pos
+    x, y = st.fetch(:pos)
     try_cat(ps, aa, st.merge(:pos => [x+dx, y+dy])) {|st2|
-      lambda { yield st2.merge(:pos => st.pos) }
+      lambda { yield st2.merge(:pos => st.fetch(:pos)) }
     }
   end
 
   def try_save_pos(n, aa, st, &b)
-    st2 = st.merge(n => st.pos)
+    st2 = st.merge(n => st.fetch(:pos))
     lambda { yield st2 }
   end
 
   def try_push_pos(n, aa, st, &b)
-    ary = (st[n] || []) + [st.pos]
+    ary = (st[n] || []) + [st.fetch(:pos)]
     st2 = st.merge(n => ary)
     lambda { yield st2 }
   end
@@ -401,45 +401,164 @@ module Table::Pathfinder
   end
 end
 
-class Table::Pathfinder::State
-  def initialize(pos, store)
-    @pos = pos
-    @store = store.frozen? ? store : store.dup.freeze
+module Table::Pathfinder::EmptyState
+  module_function
+
+  def empty?
+    true
   end
-  attr_reader :pos, :store
+
+  def each
+  end
+
+  def fetch(k, *rest)
+    if block_given?
+      yield k
+    elsif !rest.empty?
+      return rest[0]
+    else
+      raise KeyError, "key not found: #{k}"
+    end
+  end
 
   def [](k)
-    if k == :pos
-      @pos
-    else
-      @store[k]
+    nil
+  end
+
+  def values_at(*ks)
+    ks.map {|k| nil }
+  end
+
+  def keys
+    []
+  end
+
+  def merge(h)
+    pairs = self
+    h.reverse_each {|k, v|
+      pairs = Table::Pathfinder::State.new(k, v, pairs)
+    }
+    pairs
+  end
+
+  def reject
+    self
+  end
+
+  def inspect
+    "\#<Table::Pathfinder::EmptyState>"
+  end
+end
+
+class Table::Pathfinder::State
+  def initialize(key, val, tail=nil)
+    @key = key
+    @val = val
+    @tail = tail
+  end
+  attr_reader :key, :val, :tail
+
+  def empty?
+    false
+  end
+
+  def each
+    pairs = self
+    while !pairs.empty?
+      yield [pairs.key, pairs.val]
+      pairs = pairs.tail
     end
+    nil
+  end
+
+  def fetch(k, *rest)
+    pairs = self
+    while !pairs.empty?
+      return pairs.val if k == pairs.key
+      pairs = pairs.tail
+    end
+    if block_given?
+      yield k
+    elsif !rest.empty?
+      return rest[0]
+    else
+      raise KeyError, "key not found: #{k}"
+    end
+  end
+
+  def [](k)
+    fetch(k, nil)
   end
 
   def values_at(*ks)
     ks.map {|k| self[k] }
   end
 
+  def keys
+    result = []
+    pairs = self
+    while !pairs.empty?
+      result << pairs.key
+      pairs = pairs.tail
+    end
+    result
+  end
+
   def merge(h)
     return self if h.empty?
-    pos = @pos
-    store = @store
-    h.each {|k,v|
-      if k == :pos
-        pos = v
+    n = 0
+    pairs = self
+    ary = []
+    result = self
+    needs_copy = 0
+    while !pairs.empty?
+      if h.include? pairs.key
+        needs_copy = ary.length
+        result = pairs.tail
+        n += 1
+        break if n == h.size
       else
-        store = store.dup if store.frozen?
-        store[k] = v
+        ary << pairs
       end
+      pairs = pairs.tail
+    end
+    (needs_copy-1).downto(0) {|i|
+      pairs = ary[i]
+      result = Table::Pathfinder::State.new(pairs.key, pairs.val, result)
     }
-    store.freeze
-    Table::Pathfinder::State.new(pos, store)
+    h.reverse_each {|k, v|
+      result = Table::Pathfinder::State.new(k, v, result)
+    }
+    result
+  end
+
+  def reject
+    ary = []
+    pairs = self
+    while !pairs.empty?
+      unless yield pairs.key, pairs.val
+        ary << pairs
+      end
+      pairs = pairs.tail
+    end
+    result = Table::Pathfinder::EmptyState
+    ary.reverse_each {|pairs|
+      result = Table::Pathfinder::State.new(pairs.key, pairs.val, result)
+    }
+    result
   end
 
   def inspect
-    h = {:pos => @pos}
-    h.update @store
-    "<#{self.class}: #{h.inspect.gsub(/\A\{|\}\z/, '')}>"
+    h = {}
+    pairs = self
+    str = ''
+    while !pairs.empty?
+      str << pairs.key.inspect << "=>" << pairs.val.inspect << ", "
+      pairs = pairs.tail
+    end
+    str.sub!(/, \z/, '')
+    "\#<#{self.class}: #{str}>"
   end
+
 end
 
