@@ -138,7 +138,12 @@ module Table::Pathfinder
     when :north then y -= 1
     when :south then y += 1
     end
-    lambda { yield st.merge(:pos => [x,y]) }
+    if 0 <= y && y < aa.length &&
+       0 <= x && x < aa[y].length
+      lambda { yield st.merge(:pos => [x,y]) }
+    else
+      nil
+    end
   end
 
   def try_lit(val, aa, st)
