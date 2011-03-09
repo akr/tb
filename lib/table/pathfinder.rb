@@ -138,7 +138,7 @@ module Table::Pathfinder
     when :north then y -= 1
     when :south then y += 1
     end
-    lambda { yield State.new([x,y], st.store) }
+    lambda { yield st.merge(:pos => [x,y]) }
   end
 
   def try_lit(val, aa, st)
@@ -295,8 +295,8 @@ module Table::Pathfinder
     raise ArgumentError, "no start" if !start
     raise ArgumentError, "no goal" if !goal
     pos = st.pos
-    try_grid_rect(newarys, aa, State.new([pos[0]-start[0], pos[1]-start[1]], st.store)) {|st2|
-      lambda { yield State.new([pos[0]-start[0]+goal[0], pos[1]-start[1]+goal[1]], st2.store) }
+    try_grid_rect(newarys, aa, st.merge(:pos => [pos[0]-start[0], pos[1]-start[1]])) {|st2|
+      lambda { yield st2.merge(:pos => [pos[0]-start[0]+goal[0], pos[1]-start[1]+goal[1]]) }
     }
   end
 
@@ -308,8 +308,8 @@ module Table::Pathfinder
       x, y = st.pos
       pos1 = [x, y+1]
       try_grid_row(ary, aa, st) {|st2|
-        try_grid_rect(rest, aa, State.new(pos1, st2.store)) {|st3|
-          lambda { yield State.new(st.pos, st3.store) }
+        try_grid_rect(rest, aa, st2.merge(:pos => pos1)) {|st3|
+          lambda { yield st3.merge(:pos => st.pos) }
         }
       }
     end
@@ -323,8 +323,8 @@ module Table::Pathfinder
       x, y = st.pos
       pos1 = [x+1, y]
       try(pat, aa, st) {|st2|
-        try_grid_row(rest, aa, State.new(pos1, st2.store)) {|st3|
-          lambda { yield State.new(st.pos, st3.store) }
+        try_grid_row(rest, aa, st2.merge(:pos => pos1)) {|st3|
+          lambda { yield st3.merge(:pos => st.pos) }
         }
       }
     end
@@ -359,8 +359,8 @@ module Table::Pathfinder
 
   def try_tmp_pos(dx, dy, ps, aa, st, &b)
     x, y = st.pos
-    try_cat(ps, aa, State.new([x+dx, y+dy], st.store)) {|st2|
-      lambda { yield State.new(st.pos, st2.store) }
+    try_cat(ps, aa, st.merge(:pos => [x+dx, y+dy])) {|st2|
+      lambda { yield st2.merge(:pos => st.pos) }
     }
   end
 
