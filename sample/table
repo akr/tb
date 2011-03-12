@@ -918,12 +918,10 @@ def main_crop(argv)
       range_row2 = $4.to_i
     when /\A([A-Z]+)(\d+):([A-Z]+)(\d+)\z/ # 1-based
       stream = true
-      range_col1 = $1
+      range_col1 = decode_a1_addressing_col($1)
       range_row1 = $2.to_i
-      range_col2 = $3
+      range_col2 = decode_a1_addressing_col($3)
       range_row2 = $4.to_i
-      range_col1 = (26**range_col1.length-1)/25+range_col1.tr("A-Z", "0-9A-P").to_i(26)
-      range_col2 = (26**range_col2.length-1)/25+range_col2.tr("A-Z", "0-9A-P").to_i(26)
     else
       raise ArgumentError, "unexpected range argument: #{$opt_crop_range.inspect}"
     end
@@ -968,6 +966,10 @@ def main_crop(argv)
       arys.each {|a| gen << a }
     }
   end
+end
+
+def decode_a1_addressing_col(str)
+  (26**str.length-1)/25+str.tr("A-Z", "0-9A-P").to_i(26)
 end
 
 def split_field_list_argument(arg)

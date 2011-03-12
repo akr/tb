@@ -14,6 +14,7 @@ $opt_all_sheets = false
 $opt_prepend_filename = false
 $opt_mergecells = 'fill'
 $opt_border = false
+$opt_type = false
 
 op = OptionParser.new
 op.def_option('-h', 'show help message') { puts op; exit true }
@@ -21,6 +22,7 @@ op.def_option('-a', 'convert all sheets (sheet name is prepended to all rows)') 
 op.def_option('-f', 'prepend filename for all rows') { $opt_prepend_filename = true }
 op.def_option('--mergecells=mode', '"fill" or "topleft"') {|v| $opt_mergecells = v }
 op.def_option('--border', 'extract borders') { $opt_border = true }
+op.def_option('-t', '--type', 'add type suffix') { $opt_type = true }
 op.parse!(ARGV)
 
 # http://sc.openoffice.org/excelfileformat.pdf 5.49 FORMAT
@@ -43,6 +45,9 @@ Java::HSSFCellStyle::constants.each {|n|
 }
 
 def convert_single_cell(cell)
+  if !cell
+    return nil
+  end
   style = cell.getCellStyle
   case cell.getCellType
   when Java::OrgApachePoiHssfUsermodel::HSSFCell::CELL_TYPE_NUMERIC
@@ -52,20 +57,26 @@ def convert_single_cell(cell)
       val = "%d-%02d-%02d %02d:%02d:%02d" % [
 	d.getYear+1900, d.getMonth+1, d.getDate, d.getHours, d.getMinutes, d.getSeconds
       ]
+      val = val + ":date" if $opt_type
     else
       val = cell.getNumericCellValue
+      val = val.to_s + ":numeric" if $opt_type
     end
   when Java::OrgApachePoiHssfUsermodel::HSSFCell::CELL_TYPE_STRING
     str = cell.getRichStringCellValue.getString
     val = str
+    val = val + ":string" if $opt_type
   when Java::OrgApachePoiHssfUsermodel::HSSFCell::CELL_TYPE_FORMULA
     val = cell.getCellFormula
+    val = val.to_s + ":formula" if $opt_type
   when Java::OrgApachePoiHssfUsermodel::HSSFCell::CELL_TYPE_BLANK
     val = nil
   when Java::OrgApachePoiHssfUsermodel::HSSFCell::CELL_TYPE_BOOLEAN
     val = cell.getBooleanCellValue
+    val = val.to_s + ":boolean" if $opt_type
   when Java::OrgApachePoiHssfUsermodel::HSSFCell::CELL_TYPE_ERROR
     val = "\#ERR#{cell.getErrorCellValue}"
+    val = val + ":error" if $opt_type
   else
     raise "unexpected cell type: #{cell.getCellType.inspect}"
   end
@@ -85,10 +96,11 @@ def convert_cell(sheet, merged, row, x, y)
     else
       val = convert_single_cell(topleft_cell)
     end
-  elsif (cell = row.getCell(x))
-    val = convert_single_cell(cell)
+    if $opt_type
+      val = val.to_s + ":mergedarea(#{x2-x1+1}x#{y2-y1+1},#{x1+1},#{y1+1})"
+    end
   else
-    val = nil
+    val = convert_single_cell(row.getCell(x))
   end
   val
 end
@@ -109,6 +121,27 @@ def get_merged_regions(sheet)
     }
   }
   merged
+end
+
+def bordertype(border)
+  case border
+  when Java::HSSFCellStyle::BORDER_NONE then "border(none)"
+  when Java::HSSFCellStyle::BORDER_THIN then "border(thin)"
+  when Java::HSSFCellStyle::BORDER_MEDIUM then "border(medium)"
+  when Java::HSSFCellStyle::BORDER_DASHED then "border(dashed)"
+  when Java::HSSFCellStyle::BORDER_DOTTED then "border(dotted)"
+  when Java::HSSFCellStyle::BORDER_THICK then "border(thick)"
+  when Java::HSSFCellStyle::BORDER_DOUBLE then "border(double)"
+  when Java::HSSFCellStyle::BORDER_HAIR then "border(hair)"
+  when Java::HSSFCellStyle::BORDER_MEDIUM_DASHED then "border(medium_dashed)"
+  when Java::HSSFCellStyle::BORDER_DASH_DOT then "border(dash_dot)"
+  when Java::HSSFCellStyle::BORDER_MEDIUM_DASH_DOT then "border(medium_dash_dot)"
+  when Java::HSSFCellStyle::BORDER_DASH_DOT_DOT then "border(dash_dot_dot)"
+  when Java::HSSFCellStyle::BORDER_MEDIUM_DASH_DOT_DOT then "border(medium_dash_dot_dot)"
+  when Java::HSSFCellStyle::BORDER_SLANTED_DASH_DOT then "border(slanted_dash_dot)"
+  else
+    "border(#{border})"
+  end
 end
 
 def convert_horizontal_borders(sheet, merged, upper_y, min_firstcol)
@@ -209,6 +242,7 @@ def convert_horizontal_borders(sheet, merged, upper_y, min_firstcol)
         joint = nil
       end
       #joint ||= ' '
+      joint = joint + ":joint" if joint && $opt_type
       ary << joint
     else
       # cell
@@ -220,11 +254,13 @@ def convert_horizontal_borders(sheet, merged, upper_y, min_firstcol)
 	   (upper_cell = upper_row.getCell(cell_x)) &&
 	   upper_cell.getCellStyle.getBorderBottom != Java::HSSFCellStyle::BORDER_NONE
 	  hborder = '-'
+	  hborder = hborder + ":#{bordertype(upper_cell.getCellStyle.getBorderBottom)}" if $opt_type
 	end
 	if !hborder && lower_row && lower_cellrange.include?(cell_x) &&
 	   (lower_cell = lower_row.getCell(cell_x)) &&
 	   lower_cell.getCellStyle.getBorderTop != Java::HSSFCellStyle::BORDER_NONE
 	  hborder = '-'
+	  hborder = hborder + ":#{bordertype(lower_cell.getCellStyle.getBorderTop)}" if $opt_type
 	end
       end
       #hborder ||= ' '
@@ -245,11 +281,13 @@ def convert_vertical_border(sheet, merged, cell_y, left_x)
        (left_cell = row.getCell(left_x)) &&
        left_cell.getCellStyle.getBorderRight != Java::HSSFCellStyle::BORDER_NONE
       vborder = '|'
+      vborder = vborder + ":#{bordertype(left_cell.getCellStyle.getBorderRight)}" if $opt_type
     end
     if !vborder && cellrange.include?(right_x) &&
        (right_cell = row.getCell(right_x)) &&
        right_cell.getCellStyle.getBorderLeft != Java::HSSFCellStyle::BORDER_NONE
       vborder = '|'
+      vborder = vborder + ":#{bordertype(right_cell.getCellStyle.getBorderLeft)}" if $opt_type
     end
   end
   #vborder ||= ' '
@@ -264,8 +302,14 @@ def convert_sheet(filename, book, i, csvgen)
   min_firstcol = rownums.map {|y| sheet.getRow(y).getFirstCellNum }.min
   max_lastcol = rownums.map {|y| sheet.getRow(y).getLastCellNum-1 }.max
   sheet_header = []
-  sheet_header << filename if $opt_prepend_filename
-  sheet_header << sheetname if $opt_all_sheets
+  if $opt_prepend_filename
+    filename += ":filename" if $opt_type
+    sheet_header << filename
+  end
+  if $opt_all_sheets
+    sheetname += ":sheetname" if $opt_type
+    sheet_header << sheetname
+  end
   csvgen << (sheet_header + convert_horizontal_borders(sheet, merged, rownums.first-1, min_firstcol)) if $opt_border
   rownums.each {|y|
     record = []
