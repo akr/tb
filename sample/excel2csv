@@ -65,11 +65,13 @@ def convert_cell(cell)
   v
 end
 
-def convert_horizontal_borders(usedrange, upper_y)
+def convert_horizontal_borders(sheet_xrange, sheet_yrange, usedrange, upper_y)
   # upper_y is base 1.
   lower_y = upper_y+1
   min = 0
   max = usedrange.Columns.Count*2
+  usedrange_xoff = usedrange.Column-1
+  usedrange_yoff = usedrange.Row-1
   usedrange_width = usedrange.Columns.Count
   usedrange_height = usedrange.Rows.Count
   ary = []
@@ -78,10 +80,14 @@ def convert_horizontal_borders(usedrange, upper_y)
       # border
       left_x = i / 2
       right_x = left_x + 1
-      upperleft_cell = (0 < upper_y && 0 < left_x) ? usedrange.Cells(upper_y, left_x) : nil
-      upperright_cell = (0 < upper_y && 0 < right_x) ? usedrange.Cells(upper_y, right_x) : nil
-      lowerleft_cell = (0 < lower_y && 0 < left_x) ? usedrange.Cells(lower_y, left_x) : nil
-      lowerright_cell = (0 < lower_y && 0 < right_x) ? usedrange.Cells(lower_y, right_x) : nil
+      upperleft_cell = (sheet_yrange.include?(usedrange_yoff+upper_y) && sheet_yrange.include?(usedrange_xoff+left_x)) ?
+                       usedrange.Cells(upper_y, left_x) : nil
+      upperright_cell = (sheet_yrange.include?(usedrange_yoff+upper_y) && sheet_xrange.include?(usedrange_xoff+right_x)) ?
+			usedrange.Cells(upper_y, right_x) : nil
+      lowerleft_cell = (sheet_yrange.include?(usedrange_yoff+lower_y) && sheet_xrange.include?(usedrange_xoff+left_x)) ?
+                       usedrange.Cells(lower_y, left_x) : nil
+      lowerright_cell = (sheet_yrange.include?(usedrange_yoff+lower_y) && sheet_xrange.include?(usedrange_xoff+right_x)) ?
+      			usedrange.Cells(lower_y, right_x) : nil
       upper_line = lower_line = left_line = right_line = false
       if (!upperleft_cell || !upperright_cell ||
           !upperleft_cell.MergeCells || !upperright_cell.MergeCells ||
@@ -147,10 +153,11 @@ def convert_horizontal_borders(usedrange, upper_y)
   ary
 end
 
-def convert_vertical_border(usedrange, y, left_x)
+def convert_vertical_border(sheet_xrange, sheet_yrange, usedrange, y, left_x)
+  usedrange_xoff = usedrange.Column-1
   right_x = left_x+1
-  left_cell = 0 < left_x ? usedrange.Cells(y, left_x) : nil
-  right_cell = 0 < right_x ? usedrange.Cells(y, right_x) : nil
+  left_cell = sheet_xrange.include?(usedrange_xoff+left_x) ? usedrange.Cells(y, left_x) : nil
+  right_cell = sheet_xrange.include?(usedrange_xoff+right_x) ? usedrange.Cells(y, right_x) : nil
   vborder = nil
   if (!left_cell || !right_cell ||
       !left_cell.MergeCells || !right_cell.MergeCells ||
@@ -166,25 +173,28 @@ end
 
 def convert_sheet(filename, sheet, csvgen)
   sheetname = sheet.Name
+  allrange = sheet.Cells
+  sheet_xrange = 1..(allrange.Columns.Count)
+  sheet_yrange = 1..(allrange.Rows.Count)
   usedrange = sheet.UsedRange
   sheet_header = []
   sheet_header << filename if $opt_prepend_filename
   sheet_header << sheetname if $opt_all_sheets
-  csvgen << (sheet_header + convert_horizontal_borders(usedrange, 0)) if $opt_border
+  csvgen << (sheet_header + convert_horizontal_borders(sheet_xrange, sheet_yrange, usedrange, 0)) if $opt_border
   y = 1
   usedrange.Rows.each do |row|
     record = []
-    record << convert_vertical_border(usedrange, y, 0) if $opt_border
+    record << convert_vertical_border(sheet_xrange, sheet_yrange, usedrange, y, 0) if $opt_border
     x = 1
     row.Columns.each do |cell|
       v = convert_cell(cell)
       record << v
       #record << ' '
-      record << convert_vertical_border(usedrange, y, x) if $opt_border
+      record << convert_vertical_border(sheet_xrange, sheet_yrange, usedrange, y, x) if $opt_border
       x += 1
     end
     csvgen << (sheet_header + record)
-    csvgen << (sheet_header + convert_horizontal_borders(usedrange, y)) if $opt_border
+    csvgen << (sheet_header + convert_horizontal_borders(sheet_xrange, sheet_yrange, usedrange, y)) if $opt_border
     y += 1
   end
 end
