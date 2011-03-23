@@ -171,6 +171,12 @@ def convert_vertical_border(sheet_xrange, sheet_yrange, usedrange, y, left_x)
   vborder
 end
 
+def generate_csv_row(csvgen, row)
+  row = row.dup
+  row.pop while !row.empty? && row.last.nil?
+  csvgen << row
+end
+
 def convert_sheet(filename, sheet, csvgen)
   sheetname = sheet.Name
   allrange = sheet.Cells
@@ -180,7 +186,7 @@ def convert_sheet(filename, sheet, csvgen)
   sheet_header = []
   sheet_header << filename if $opt_prepend_filename
   sheet_header << sheetname if $opt_all_sheets
-  csvgen << (sheet_header + convert_horizontal_borders(sheet_xrange, sheet_yrange, usedrange, 0)) if $opt_border
+  generate_csv_row(csvgen, sheet_header + convert_horizontal_borders(sheet_xrange, sheet_yrange, usedrange, 0)) if $opt_border
   y = 1
   usedrange.Rows.each do |row|
     record = []
@@ -193,8 +199,8 @@ def convert_sheet(filename, sheet, csvgen)
       record << convert_vertical_border(sheet_xrange, sheet_yrange, usedrange, y, x) if $opt_border
       x += 1
     end
-    csvgen << (sheet_header + record)
-    csvgen << (sheet_header + convert_horizontal_borders(sheet_xrange, sheet_yrange, usedrange, y)) if $opt_border
+    generate_csv_row(csvgen, sheet_header + record)
+    generate_csv_row(csvgen, sheet_header + convert_horizontal_borders(sheet_xrange, sheet_yrange, usedrange, y)) if $opt_border
     y += 1
   end
 end
