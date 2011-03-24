@@ -79,6 +79,7 @@ class Table::FieldSet
     }
     fs2 = []
     fs.each {|f|
+      f ||= ''
       if !h[f]
         f2 = f
       else
