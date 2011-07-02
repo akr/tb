@@ -902,6 +902,9 @@ def main_mheader(argv)
       }
     }
   }
+  if header
+    warn "no header found."
+  end
 end
 
 def main_crop(argv)
