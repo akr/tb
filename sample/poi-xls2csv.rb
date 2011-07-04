@@ -176,15 +176,19 @@ def convert_horizontal_borders(sheet, merged, upper_y, min_firstcol)
   min = 0
   max = 0
   if rownums.include? upper_y and
-     upper_row = sheet.getRow(upper_y)
-    upper_cellrange = upper_row.getFirstCellNum...upper_row.getLastCellNum
+     upper_row = sheet.getRow(upper_y) and
+     (upper_cellrange = upper_row.getFirstCellNum...upper_row.getLastCellNum) and
+     upper_cellrange.begin != -1 and
+     upper_cellrange.end != -1
     if max < (upper_cellrange.end-min_firstcol)*2
       max = (upper_cellrange.end-min_firstcol)*2
     end
   end
   if rownums.include? lower_y and
-     lower_row = sheet.getRow(lower_y)
-    lower_cellrange = lower_row.getFirstCellNum...lower_row.getLastCellNum
+     lower_row = sheet.getRow(lower_y) and
+     (lower_cellrange = lower_row.getFirstCellNum...lower_row.getLastCellNum) and
+     lower_cellrange.begin != -1 and
+     lower_cellrange.end != -1
     if max < (lower_cellrange.end-min_firstcol)*2
       max = (lower_cellrange.end-min_firstcol)*2
     end
@@ -301,6 +305,7 @@ def convert_vertical_border(sheet, merged, cell_y, left_x)
   row = sheet.getRow(cell_y)
   return nil if !row
   cellrange = row.getFirstCellNum...row.getLastCellNum
+  return nil if cellrange.begin == -1 || cellrange.end == -1
   vborder = nil
   if !merged[[left_x, cell_y]] || !merged[[right_x, cell_y]] ||
      merged[[left_x, cell_y]] != merged[[right_x, cell_y]]
@@ -326,8 +331,24 @@ def convert_sheet(filename, book, i, csvgen)
   sheetname = book.getSheetName(i)
   merged = get_merged_regions(sheet)
   rownums = sheet.getFirstRowNum..sheet.getLastRowNum
-  min_firstcol = rownums.map {|y| row = sheet.getRow(y); row ? row.getFirstCellNum : nil }.compact.min
-  max_lastcol = rownums.map {|y| row = sheet.getRow(y); row ? row.getLastCellNum-1 : nil }.compact.max
+  min_firstcol = rownums.map {|y|
+    if !(row = sheet.getRow(y))
+      nil
+    elsif (n = row.getFirstCellNum) == -1
+      nil
+    else
+      n
+    end
+  }.compact.min
+  max_lastcol = rownums.map {|y|
+    if !(row = sheet.getRow(y))
+      nil
+    elsif (n = row.getLastCellNum) == -1
+      nil
+    else
+      n-1
+    end
+  }.compact.max
   sheet_header = []
   if $opt_prepend_filename
     filename += ":filename" if $opt_type
@@ -343,13 +364,15 @@ def convert_sheet(filename, book, i, csvgen)
     row = sheet.getRow(y)
     if row
       row_cellrange = row.getFirstCellNum...row.getLastCellNum
-      record << convert_vertical_border(sheet, merged, y, min_firstcol-1) if $opt_border
-      min_firstcol.upto(row_cellrange.end-1) {|x|
-	val = row_cellrange.include?(x) ? convert_cell(sheet, merged, row, x, y) : nil
-	record << val
-	#record << ' '
-	record << convert_vertical_border(sheet, merged, y, x) if $opt_border
-      }
+      if row_cellrange.begin != -1 && row_cellrange.end != -1
+        record << convert_vertical_border(sheet, merged, y, min_firstcol-1) if $opt_border
+        min_firstcol.upto(row_cellrange.end-1) {|x|
+          val = row_cellrange.include?(x) ? convert_cell(sheet, merged, row, x, y) : nil
+          record << val
+          #record << ' '
+          record << convert_vertical_border(sheet, merged, y, x) if $opt_border
+        }
+      end
     end
     csvgen << (sheet_header + record)
     csvgen << (sheet_header + convert_horizontal_borders(sheet, merged, y, min_firstcol)) if $opt_border
