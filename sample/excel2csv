@@ -210,6 +210,9 @@ def convert_sheet(filename, sheet, csvgen)
   sheet_xrange = 1..(allrange.Columns.Count)
   sheet_yrange = 1..(allrange.Rows.Count)
   usedrange = sheet.UsedRange
+  cell_ul = sheet.Cells(1,1)
+  cell_br = sheet.Cells(usedrange.Row+usedrange.Rows.Count-1, usedrange.Column+usedrange.Columns.Count-1)
+  usedrange = sheet.Range(cell_ul, cell_br)
   sheet_header = []
   sheet_header << filename if $opt_prepend_filename
   sheet_header << sheetname if $opt_all_sheets
