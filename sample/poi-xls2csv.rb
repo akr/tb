@@ -330,16 +330,8 @@ def convert_sheet(filename, book, i, csvgen)
   sheet = book.getSheetAt(i)
   sheetname = book.getSheetName(i)
   merged = get_merged_regions(sheet)
-  rownums = sheet.getFirstRowNum..sheet.getLastRowNum
-  min_firstcol = rownums.map {|y|
-    if !(row = sheet.getRow(y))
-      nil
-    elsif (n = row.getFirstCellNum) == -1
-      nil
-    else
-      n
-    end
-  }.compact.min
+  rownums = 0..sheet.getLastRowNum
+  min_firstcol = 0
   max_lastcol = rownums.map {|y|
     if !(row = sheet.getRow(y))
       nil
