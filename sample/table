@@ -334,6 +334,34 @@ def err(msg)
   exit 1
 end
 
+def comparison_value(v)
+  case v
+  when nil
+    []
+  when Numeric
+    [0, v]
+  when String
+    case v
+    when /\A\s*-?\d+\s*\z/
+      [0, Integer(v)]
+    when /\A\s*-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\s*\z/
+      [0, Float(v)]
+    else
+      a = []
+      v.scan(/(\d+)|\D+/) {
+        if $1
+          a << 0 << $1.to_i
+        else
+          a << 1 << $&
+        end
+      }
+      a
+    end
+  else
+    raise ArgumentError, "unexpected: #{v.inspect}"
+  end
+end
+
 def conv_to_numeric(v)
   v = v.strip
   if /\A-?\d+\z/ =~ v
@@ -911,8 +939,8 @@ def main_cross(argv)
         }
       end
     }
-    vary = vset.keys.sort_by {|a| a.map {|v| v || '' } }
-    hary = hset.keys.sort_by {|a| a.map {|v| v || '' } }
+    vary = vset.keys.sort_by {|a| a.map {|v| comparison_value(v) } }
+    hary = hset.keys.sort_by {|a| a.map {|v| comparison_value(v) } }
     with_output {|out|
       Table.csv_stream_output(out) {|gen|
         hkfs.each_with_index {|hkf, i|
