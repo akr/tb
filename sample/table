@@ -292,7 +292,7 @@ end
 $opt_cross_fields = []
 def op_cross
   op = OptionParser.new
-  op.banner = 'Usage: table cross [OPTS] VKEY-FIELD1,... HKEY-FIELD1,... [TABLE]'
+  op.banner = 'Usage: table cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_cross_fields << arg }
@@ -904,8 +904,8 @@ end
 
 def main_cross(argv)
   op_cross.parse!(argv)
-  vkfs = split_field_list_argument(argv.shift)
   hkfs = split_field_list_argument(argv.shift)
+  vkfs = split_field_list_argument(argv.shift)
   if $opt_cross_fields.empty?
     opt_cross_fields = [['count', 'count']]
   else
