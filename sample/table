@@ -47,6 +47,7 @@ def main(argv)
   when 'count' then main_count(argv)
   when 'sum' then main_sum(argv)
   when 'group' then main_group(argv)
+  when 'cross' then main_cross(argv)
   when 'shape' then main_shape(argv)
   when 'mheader' then main_mheader(argv)
   when 'crop' then main_crop(argv)
@@ -75,6 +76,7 @@ Usage:
   table count [OPTS] [TABLE]
   table sum [OPTS] [TABLE]
   table group [OPTS] [TABLE]
+  table cross [OPTS] [TABLE]
   table shape [OPTS] [TABLE ...]
   table mheader [OPTS] [TABLE]
   table crop [OPTS] [TABLE]
@@ -100,6 +102,7 @@ def main_help(argv)
   when 'count' then puts op_count
   when 'sum' then puts op_sum
   when 'group' then puts op_group
+  when 'cross' then puts op_cross
   when 'shape' then puts op_shape
   when 'mheader' then puts op_mheader
   when 'crop' then puts op_crop
@@ -282,6 +285,17 @@ def op_group
   op.def_option('--min FIELD[,NEW-FIELD]', 'add a min field') {|arg| $opt_group_fields << [:min, arg]  }
   op.def_option('--max FIELD[,NEW-FIELD]', 'add a max field') {|arg| $opt_group_fields << [:max, arg]  }
   op.def_option('--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_group_fields << [:agg, arg] }
+  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op
+end
+
+$opt_cross_fields = []
+def op_cross
+  op = OptionParser.new
+  op.banner = 'Usage: table cross [OPTS] VKEY-FIELD1,... HKEY-FIELD1,... [TABLE]'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
+  op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
+                '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_cross_fields << arg }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -856,6 +870,72 @@ def main_group(argv)
     }
     with_output {|out|
       tbl_generate_csv(result, out)
+    }
+  }
+end
+
+def main_cross(argv)
+  op_cross.parse!(argv)
+  vkfs = split_field_list_argument(argv.shift)
+  hkfs = split_field_list_argument(argv.shift)
+  if $opt_cross_fields.empty?
+    opt_cross_fields = [['count', 'count']]
+  else
+    opt_cross_fields = $opt_cross_fields.map {|arg|
+      agg_spec, new_field = split_field_list_argument(arg)
+      new_field ||= agg_spec
+      [agg_spec, new_field]
+    }
+  end
+  filename = argv.shift || '-'
+  tablereader_open(filename) {|tblreader|
+    vkis = vkfs.map {|f| tblreader.index_from_field(f) }
+    hkis = hkfs.map {|f| tblreader.index_from_field(f) }
+    vset = {}
+    hset = {}
+    set = {}
+    tblreader.each {|ary|
+      vkvs = ary.values_at(*vkis)
+      hkvs = ary.values_at(*hkis)
+      vset[vkvs] = true if !vset.include?(vkvs)
+      hset[hkvs] = true if !hset.include?(hkvs)
+      if !set.include?([vkvs, hkvs])
+        set[[vkvs, hkvs]] = opt_cross_fields.map {|agg_spec, nf|
+          ag = make_aggregator(agg_spec, tblreader.header)
+          ag.update(ary)
+          ag
+        }
+      else
+        set[[vkvs, hkvs]].each {|ag|
+          ag.update(ary)
+        }
+      end
+    }
+    vary = vset.keys.sort_by {|a| a.map {|v| v || '' } }
+    hary = hset.keys.sort_by {|a| a.map {|v| v || '' } }
+    with_output {|out|
+      Table.csv_stream_output(out) {|gen|
+        hkfs.each_with_index {|hkf, i|
+          row = [nil] * (vkfs.length - 1) + [hkf]
+          hary.each {|hkvs| opt_cross_fields.length.times { row << hkvs[i] } }
+          gen << row
+        }
+        r = vkfs.dup
+        hary.each {|hkvs| r.concat opt_cross_fields.map {|agg_spec, new_field| new_field } }
+        gen << r
+        vary.each {|vkvs|
+          row = vkvs.dup
+          hary.each {|hkvs|
+            ags = set[[vkvs, hkvs]]
+            if !ags
+              opt_cross_fields.length.times { row << nil }
+            else
+              ags.each {|ag| row << ag.finish }
+            end
+          }
+          gen << row
+        }
+      }
     }
   }
 end
