@@ -893,7 +893,8 @@ def main_group(argv)
       end
     }
     result = Table.new(result_fields)
-    h.each {|k, a|
+    h.keys.sort_by {|k| k.map {|v| comparison_value(v) } }.each {|k|
+      a = h[k]
       result.insert_values result_fields, k + a.map {|ag| ag.finish }
     }
     with_output {|out|
