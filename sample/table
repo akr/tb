@@ -31,7 +31,7 @@ require 'enumerator'
 def main(argv)
   subcommand = argv.shift
   case subcommand
-  when 'help' then main_help(argv)
+  when 'help', '-h' then main_help(argv)
   when 'csv' then main_csv(argv)
   when 'tsv' then main_tsv(argv)
   when 'json' then main_json(argv)
