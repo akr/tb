@@ -270,7 +270,7 @@ end
 $opt_group_fields = []
 def op_group
   op = OptionParser.new
-  op.banner = 'Usage: table sum [OPTS] KEY-FIELD1,... [TABLE]'
+  op.banner = 'Usage: table group [OPTS] KEY-FIELD1,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-c NEW-FIELD',
                 '--count NEW-FIELD', 'add a count field') {|arg| $opt_group_fields << [:count, arg]  }
@@ -281,6 +281,7 @@ def op_group
                 '--average FIELD[,NEW-FIELD]', 'add a average field') {|arg| $opt_group_fields << [:avg, arg]  }
   op.def_option('--min FIELD[,NEW-FIELD]', 'add a min field') {|arg| $opt_group_fields << [:min, arg]  }
   op.def_option('--max FIELD[,NEW-FIELD]', 'add a max field') {|arg| $opt_group_fields << [:max, arg]  }
+  op.def_option('--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_group_fields << [:agg, arg] }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -317,6 +318,114 @@ end
 def err(msg)
   STDERR.puts msg
   exit 1
+end
+
+def conv_to_numeric(v)
+  v = v.strip
+  if /\A-?\d+\z/ =~ v
+    v = v.to_i
+  elsif /\A-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\z/ =~ v
+    v = v.to_f
+  else
+    raise "numeric value expected: #{v.inspect}"
+  end
+  v
+end
+
+class CountAggregator
+  def initialize() @result = 0 end
+  def update(ary) @result += 1 end
+  def finish() @result end
+end
+
+class SumAggregator
+  def initialize(i) @i = i; @result = 0 end 
+  def update(ary) v = ary[@i]; @result += conv_to_numeric(v) if !(v.nil? || v == '') end
+  def finish() @result end
+end
+
+class AvgAggregator
+  def initialize(i) @i = i; @sum = 0; @count = 0 end 
+  def update(ary) @count += 1; v = ary[@i]; @sum += conv_to_numeric(v) if !(v.nil? || v == '') end
+  def finish() @sum / @count.to_f end
+end
+
+class MaxAggregator
+  def initialize(i) @i = i; @result = nil end 
+  def update(ary)
+    v = ary[@i]
+    return if v.nil? || v == ''
+    v = conv_to_numeric(v)
+    if !@result
+      @result = v
+    else
+      @result = v if @result < v
+    end
+  end
+  def finish() @result end
+end
+
+class MinAggregator
+  def initialize(i) @i = i; @result = nil end 
+  def update(ary)
+    v = ary[@i]
+    return if v.nil? || v == ''
+    v = conv_to_numeric(v)
+    if !@result
+      @result = v
+    else
+      @result = v if v < @result
+    end
+  end
+  def finish() @result end
+end
+
+class ValuesAggregator
+  def initialize(i) @i = i; @result = [] end 
+  def update(ary) v = ary[@i]; @result << v if v end
+  def finish() @result.join(",") end
+end
+
+def make_aggregator(spec, fs)
+  case spec
+  when 'count'
+    CountAggregator.new
+  when /\Asum\((.*)\)\z/
+    field = $1
+    i = fs.index(field)
+    raise ArgumentError, "field not found: #{field.inspect}" if !i
+    SumAggregator.new(i)
+  when /\Aavg\((.*)\)\z/
+    field = $1
+    i = fs.index(field)
+    raise ArgumentError, "field not found: #{field.inspect}" if !i
+    AvgAggregator.new(i)
+  when /\Amax\((.*)\)\z/
+    field = $1
+    i = fs.index(field)
+    raise ArgumentError, "field not found: #{field.inspect}" if !i
+    MaxAggregator.new(i)
+  when /\Amin\((.*)\)\z/
+    field = $1
+    i = fs.index(field)
+    raise ArgumentError, "field not found: #{field.inspect}" if !i
+    MinAggregator.new(i)
+  when /\Avalues\((.*)\)\z/
+    field = $1
+    i = fs.index(field)
+    raise ArgumentError, "field not found: #{field.inspect}" if !i
+    ValuesAggregator.new(i)
+  else
+    raise ArgumentError, "unexpected aggregation spec: #{spec.inspect}"
+  end
+end
+
+def aggregate(spec, table)
+  update, finish = make_aggregator(spec, table.list_fields)
+  table.each {|rec|
+    update.call(rec.values_at(*fs))
+  }
+  finish.call
 end
 
 def main_csv(argv)
@@ -697,107 +806,31 @@ end
 def main_group(argv)
   op_group.parse!(argv)
   kfs = split_field_list_argument(argv.shift)
-  conv_to_numeric = lambda {|v|
-    v = v.strip
-    if /\A-?\d+\z/ =~ v
-      v = v.to_i
-    elsif /\A-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\z/ =~ v
-      v = v.to_f
-    else
-      raise "numeric value expected: #{v.inspect}"
-    end
-    v
-  }
   opt_group_fields = $opt_group_fields.map {|agr, arg|
     case agr
     when :count
       new_field, = split_field_list_argument(arg)
-      [:count, new_field,
-        lambda {|tblreader| 
-          [lambda {|ary| 1 },
-           lambda {|count, ary| count + 1 },
-           lambda {|count| count }
-          ]
-        }
-      ]
+      [new_field, lambda {|fields| make_aggregator('count', fields) } ]
     when :sum
       field, new_field = split_field_list_argument(arg)
       new_field ||= "sum #{field}"
-      [:sum, new_field,
-        lambda {|tblreader| 
-          i = tblreader.index_from_field(field)
-          [lambda {|ary|
-             v = ary[i]
-             (v.nil? || v == '') ? 0 : conv_to_numeric.call(v)
-           },
-           lambda {|sum, ary|
-             v = ary[i]
-             (v.nil? || v == '') ? sum : sum + conv_to_numeric.call(v)
-           },
-           lambda {|sum| sum }
-          ]
-        }
-      ]
+      [new_field, lambda {|fields| make_aggregator("sum(#{field})", fields) } ]
     when :avg
       field, new_field = split_field_list_argument(arg)
       new_field ||= "avg #{field}"
-      [:avg, new_field,
-        lambda {|tblreader| 
-          i = tblreader.index_from_field(field)
-          [lambda {|ary|
-             v = ary[i]
-             v = (v.nil? || v == '') ? 0 : conv_to_numeric.call(v)
-             [v, 1]
-           },
-           lambda {|state, ary|
-             v = ary[i]
-             v = (v.nil? || v == '') ? 0 : conv_to_numeric.call(v)
-             state[0] += v
-             state[1] += 1
-             state
-           },
-           lambda {|state| state[0] / state[1].to_f }
-          ]
-        }
-      ]
+      [new_field, lambda {|fields| make_aggregator("avg(#{field})", fields) } ]
     when :min
       field, new_field = split_field_list_argument(arg)
       new_field ||= "min #{field}"
-      [:min, new_field,
-        lambda {|tblreader| 
-          i = tblreader.index_from_field(field)
-          [lambda {|ary|
-             v = ary[i]
-             (v.nil? || v == '') ? nil : conv_to_numeric.call(v)
-           },
-           lambda {|min, ary|
-             v = ary[i]
-             v = (v.nil? || v == '') ? nil : conv_to_numeric.call(v)
-             (min && v) ? (min <= v ? min : v) : (min || v)
-           },
-           lambda {|min| min }
-          ]
-        }
-      ]
+      [new_field, lambda {|fields| make_aggregator("min(#{field})", fields) } ]
     when :max
       field, new_field = split_field_list_argument(arg)
       new_field ||= "max #{field}"
-      [:max, new_field,
-        lambda {|tblreader| 
-          i = tblreader.index_from_field(field)
-          [lambda {|ary|
-             v = ary[i]
-             (v.nil? || v == '') ? nil : conv_to_numeric.call(v)
-           },
-           lambda {|max, ary|
-             v = ary[i]
-             v = (v.nil? || v == '') ? nil : conv_to_numeric.call(v)
-             (max && v) ? (v <= max ? max : v) : (max || v)
-           },
-           lambda {|max| max }
-          ]
-        }
-      ]
+      [new_field, lambda {|fields| make_aggregator("max(#{field})", fields) } ]
+    when :agg
+      aggregation_spec, new_field = split_field_list_argument(arg)
+      new_field ||= aggregation_spec
+      [new_field, lambda {|fields| make_aggregator(aggregation_spec, fields) } ]
     else
       raise "unexpected aggregate tag: #{agr}"
     end
@@ -806,27 +839,20 @@ def main_group(argv)
   h = {}
   tablereader_open(filename) {|tblreader|
     kis = kfs.map {|f| tblreader.index_from_field(f) }
-    state_list = opt_group_fields.map {|tag, f, ops| [f, *ops.call(tblreader)] }
-    result_fields = kfs + state_list.map {|f, ini, upd, fin| f }
+    result_fields = kfs + opt_group_fields.map {|nf, maker| nf }
     tblreader.each {|ary|
       kvs = ary.values_at(*kis)
       if !h.include?(kvs)
-        h[kvs] = state_list.map {|f, ini, upd, fin| ini.call(ary) }
+        h[kvs] = opt_group_fields.map {|nf, maker| ag = maker.call(tblreader.header); ag.update(ary); ag }
       else
-        a = h[kvs]
-        a.each_with_index {|state, i|
-          f, ini, upd, fin = state_list[i]
-          a[i] = upd.call(state, ary)
+        h[kvs].each {|ag|
+          ag.update(ary)
         }
       end
     }
     result = Table.new(result_fields)
     h.each {|k, a|
-      a.each_with_index {|state, i|
-        f, ini, upd, fin = state_list[i]
-        a[i] = fin.call(state)
-      }
-      result.insert_values result_fields, k+a
+      result.insert_values result_fields, k + a.map {|ag| ag.finish }
     }
     with_output {|out|
       tbl_generate_csv(result, out)
