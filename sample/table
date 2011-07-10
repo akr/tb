@@ -393,31 +393,37 @@ class AvgAggregator
 end
 
 class MaxAggregator
-  def initialize() @result = nil end 
+  def initialize() @v = nil; @cmp = nil end 
   def update(v)
-    return if v.nil? || v == ''
-    v = conv_to_numeric(v)
-    if !@result
-      @result = v
+    if @cmp == nil
+      @v = v
+      @cmp = comparison_value(v)
     else
-      @result = v if @result < v
+      cmp = comparison_value(v)
+      if (@cmp <=> cmp) < 0
+        @v = v
+        @cmp = cmp
+      end
     end
   end
-  def finish() @result end
+  def finish() @v end
 end
 
 class MinAggregator
-  def initialize() @result = nil end 
+  def initialize() @v = nil; @cmp = nil end 
   def update(v)
-    return if v.nil? || v == ''
-    v = conv_to_numeric(v)
-    if !@result
-      @result = v
+    if @cmp == nil
+      @v = v
+      @cmp = comparison_value(v)
     else
-      @result = v if v < @result
+      cmp = comparison_value(v)
+      if (@cmp <=> cmp) > 0
+        @v = v
+        @cmp = cmp
+      end
     end
   end
-  def finish() @result end
+  def finish() @v end
 end
 
 class ValuesAggregator
