@@ -376,26 +376,25 @@ end
 
 class CountAggregator
   def initialize() @result = 0 end
-  def update(ary) @result += 1 end
+  def update(v) @result += 1 end
   def finish() @result end
 end
 
 class SumAggregator
-  def initialize(i) @i = i; @result = 0 end 
-  def update(ary) v = ary[@i]; @result += conv_to_numeric(v) if !(v.nil? || v == '') end
+  def initialize() @result = 0 end 
+  def update(v) @result += conv_to_numeric(v) if !(v.nil? || v == '') end
   def finish() @result end
 end
 
 class AvgAggregator
-  def initialize(i) @i = i; @sum = 0; @count = 0 end 
-  def update(ary) @count += 1; v = ary[@i]; @sum += conv_to_numeric(v) if !(v.nil? || v == '') end
+  def initialize() @sum = 0; @count = 0 end 
+  def update(v) @count += 1; @sum += conv_to_numeric(v) if !(v.nil? || v == '') end
   def finish() @sum / @count.to_f end
 end
 
 class MaxAggregator
-  def initialize(i) @i = i; @result = nil end 
-  def update(ary)
-    v = ary[@i]
+  def initialize() @result = nil end 
+  def update(v)
     return if v.nil? || v == ''
     v = conv_to_numeric(v)
     if !@result
@@ -408,9 +407,8 @@ class MaxAggregator
 end
 
 class MinAggregator
-  def initialize(i) @i = i; @result = nil end 
-  def update(ary)
-    v = ary[@i]
+  def initialize() @result = nil end 
+  def update(v)
     return if v.nil? || v == ''
     v = conv_to_numeric(v)
     if !@result
@@ -423,9 +421,15 @@ class MinAggregator
 end
 
 class ValuesAggregator
-  def initialize(i) @i = i; @result = [] end 
-  def update(ary) v = ary[@i]; @result << v if v end
+  def initialize() @result = [] end 
+  def update(v) @result << v if v end
   def finish() @result.join(",") end
+end
+
+class Selector
+  def initialize(i, aggregator) @i = i; @agg = aggregator end
+  def update(ary) @agg.update(ary[@i]) end
+  def finish() @agg.finish end
 end
 
 def make_aggregator(spec, fs)
@@ -436,27 +440,27 @@ def make_aggregator(spec, fs)
     field = $1
     i = fs.index(field)
     raise ArgumentError, "field not found: #{field.inspect}" if !i
-    SumAggregator.new(i)
+    Selector.new(i, SumAggregator.new)
   when /\Aavg\((.*)\)\z/
     field = $1
     i = fs.index(field)
     raise ArgumentError, "field not found: #{field.inspect}" if !i
-    AvgAggregator.new(i)
+    Selector.new(i, AvgAggregator.new)
   when /\Amax\((.*)\)\z/
     field = $1
     i = fs.index(field)
     raise ArgumentError, "field not found: #{field.inspect}" if !i
-    MaxAggregator.new(i)
+    Selector.new(i, MaxAggregator.new)
   when /\Amin\((.*)\)\z/
     field = $1
     i = fs.index(field)
     raise ArgumentError, "field not found: #{field.inspect}" if !i
-    MinAggregator.new(i)
+    Selector.new(i, MinAggregator.new)
   when /\Avalues\((.*)\)\z/
     field = $1
     i = fs.index(field)
     raise ArgumentError, "field not found: #{field.inspect}" if !i
-    ValuesAggregator.new(i)
+    Selector.new(i, ValuesAggregator.new)
   else
     raise ArgumentError, "unexpected aggregation spec: #{spec.inspect}"
   end
