@@ -44,8 +44,6 @@ def main(argv)
   when 'rename' then main_rename(argv)
   when 'cat' then main_cat(argv)
   when 'join' then main_join(argv)
-  when 'count' then main_count(argv)
-  when 'sum' then main_sum(argv)
   when 'group' then main_group(argv)
   when 'cross' then main_cross(argv)
   when 'shape' then main_shape(argv)
@@ -73,8 +71,6 @@ Usage:
   table rename [OPTS] SRC,DST,... [TABLE]
   table cat [OPTS] [TABLE ...]
   table join [OPTS] [TABLE ...]
-  table count [OPTS] [TABLE]
-  table sum [OPTS] [TABLE]
   table group [OPTS] [TABLE]
   table cross [OPTS] [TABLE]
   table shape [OPTS] [TABLE ...]
@@ -99,8 +95,6 @@ def main_help(argv)
   when 'rename' then puts op_rename
   when 'cat' then puts op_cat
   when 'join' then puts op_join
-  when 'count' then puts op_count
-  when 'sum' then puts op_sum
   when 'group' then puts op_group
   when 'cross' then puts op_cross
   when 'shape' then puts op_shape
@@ -246,26 +240,6 @@ def op_join
     $opt_join_outer ||= :full
     $opt_join_outer_missing = missing
   }
-  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
-  op
-end
-
-$opt_count_f
-def op_count
-  op = OptionParser.new
-  op.banner = 'Usage: table count [OPTS] [TABLE]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
-  op.def_option('-f KEY-FIELD1,...,COUNT-FIELD', 'zero or more key fields and one count field') {|arg| $opt_count_f = arg }
-  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
-  op
-end
-
-def op_sum
-  op = OptionParser.new
-  op.banner = 'Usage: table sum [OPTS] KEY-FIELD1,...,SUM-FIELD [TABLE]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -765,75 +739,6 @@ def main_join(argv)
       result = result.natjoin2(tbl)
     }
   end
-  with_output {|out|
-    tbl_generate_csv(result, out)
-  }
-end
-
-def main_count(argv)
-  op_count.parse!(argv)
-  if $opt_count_f
-    fs = split_field_list_argument($opt_count_f)
-    count_field = fs.pop
-  else
-    fs = []
-    count_field = 'count'
-  end
-  filename = argv.shift || '-'
-  result_fields = fs + [count_field]
-  if fs.empty?
-    n = 0
-    tablereader_open(filename) {|tblreader|
-      tblreader.each {|ary| n += 1 }
-    }
-    result = Table.new([count_field], [n])
-  else
-    is = nil
-    h = Hash.new(0)
-    tablereader_open(filename) {|tblreader|
-      is = fs.map {|f| tblreader.index_from_field(f) }
-      tblreader.each {|ary| h[ary.values_at(*is)] += 1 }
-      result = Table.new(result_fields)
-      h.each {|k, v|
-        result.insert_values result_fields, k+[v]
-      }
-    }
-  end
-  with_output {|out|
-    tbl_generate_csv(result, out)
-  }
-end
-
-def main_sum(argv)
-  op_sum.parse!(argv)
-  fs = split_field_list_argument(argv.shift)
-  sum_field = fs.pop
-  filename = argv.shift || '-'
-  result_fields = fs + [sum_field]
-  is = nil
-  h = Hash.new(0)
-  tablereader_open(filename) {|tblreader|
-    is = fs.map {|f| tblreader.index_from_field(f) }
-    sum_index = tblreader.index_from_field(sum_field)
-    tblreader.each {|ary|
-      v = ary[sum_index]
-      if !v.nil? && v != ''
-        v = v.strip
-	if /\A-?\d+\z/ =~ v
-	  v = v.to_i
-	elsif /\A-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\z/ =~ v
-	  v = v.to_f
-	else
-	  raise "numeric value expected: #{v.inspect}"
-	end
-	h[ary.values_at(*is)] += v
-      end
-    }
-  }
-  result = Table.new(result_fields)
-  h.each {|k, v|
-    result.insert_values result_fields, k+[v]
-  }
   with_output {|out|
     tbl_generate_csv(result, out)
   }
