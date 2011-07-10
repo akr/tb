@@ -395,32 +395,24 @@ end
 class MaxAggregator
   def initialize() @v = nil; @cmp = nil end 
   def update(v)
+    cmp = comparison_value(v)
     if @cmp == nil
-      @v = v
-      @cmp = comparison_value(v)
+      @v, @cmp = v, cmp
     else
-      cmp = comparison_value(v)
-      if (@cmp <=> cmp) < 0
-        @v = v
-        @cmp = cmp
-      end
+      @v, @cmp = v, cmp if (@cmp <=> cmp) < 0
     end
   end
   def finish() @v end
 end
 
 class MinAggregator
-  def initialize() @v = nil; @cmp = nil end 
+  def initialize() @v = @cmp = nil end 
   def update(v)
+    cmp = comparison_value(v)
     if @cmp == nil
-      @v = v
-      @cmp = comparison_value(v)
+      @v, @cmp = v, cmp
     else
-      cmp = comparison_value(v)
-      if (@cmp <=> cmp) > 0
-        @v = v
-        @cmp = cmp
-      end
+      @v, @cmp = v, cmp if (@cmp <=> cmp) > 0
     end
   end
   def finish() @v end
