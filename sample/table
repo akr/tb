@@ -275,16 +275,8 @@ def op_group
   op = OptionParser.new
   op.banner = 'Usage: table group [OPTS] KEY-FIELD1,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-c NEW-FIELD',
-                '--count NEW-FIELD', 'add a count field') {|arg| $opt_group_fields << [:count, arg]  }
-  op.def_option('-s FIELD[,NEW-FIELD]',
-                '--sum FIELD[,NEW-FIELD]', 'add a sum field') {|arg| $opt_group_fields << [:sum, arg]  }
-  op.def_option('-a FIELD[,NEW-FIELD]',
-                '--avg FIELD[,NEW-FIELD]',
-                '--average FIELD[,NEW-FIELD]', 'add a average field') {|arg| $opt_group_fields << [:avg, arg]  }
-  op.def_option('--min FIELD[,NEW-FIELD]', 'add a min field') {|arg| $opt_group_fields << [:min, arg]  }
-  op.def_option('--max FIELD[,NEW-FIELD]', 'add a max field') {|arg| $opt_group_fields << [:max, arg]  }
-  op.def_option('--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_group_fields << [:agg, arg] }
+  op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
+                '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_group_fields << arg }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -850,34 +842,10 @@ end
 def main_group(argv)
   op_group.parse!(argv)
   kfs = split_field_list_argument(argv.shift)
-  opt_group_fields = $opt_group_fields.map {|agr, arg|
-    case agr
-    when :count
-      new_field, = split_field_list_argument(arg)
-      [new_field, lambda {|fields| make_aggregator('count', fields) } ]
-    when :sum
-      field, new_field = split_field_list_argument(arg)
-      new_field ||= "sum #{field}"
-      [new_field, lambda {|fields| make_aggregator("sum(#{field})", fields) } ]
-    when :avg
-      field, new_field = split_field_list_argument(arg)
-      new_field ||= "avg #{field}"
-      [new_field, lambda {|fields| make_aggregator("avg(#{field})", fields) } ]
-    when :min
-      field, new_field = split_field_list_argument(arg)
-      new_field ||= "min #{field}"
-      [new_field, lambda {|fields| make_aggregator("min(#{field})", fields) } ]
-    when :max
-      field, new_field = split_field_list_argument(arg)
-      new_field ||= "max #{field}"
-      [new_field, lambda {|fields| make_aggregator("max(#{field})", fields) } ]
-    when :agg
-      aggregation_spec, new_field = split_field_list_argument(arg)
-      new_field ||= aggregation_spec
-      [new_field, lambda {|fields| make_aggregator(aggregation_spec, fields) } ]
-    else
-      raise "unexpected aggregate tag: #{agr}"
-    end
+  opt_group_fields = $opt_group_fields.map {|arg|
+    aggregation_spec, new_field = split_field_list_argument(arg)
+    new_field ||= aggregation_spec
+    [new_field, lambda {|fields| make_aggregator(aggregation_spec, fields) } ]
   }
   filename = argv.shift || '-'
   h = {}
