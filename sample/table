@@ -256,12 +256,14 @@ def op_group
 end
 
 $opt_cross_fields = []
+$opt_cross_compact = false
 def op_cross
   op = OptionParser.new
   op.banner = 'Usage: table cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_cross_fields << arg }
+  op.def_option('-c', '--compact', 'compact format') { $opt_cross_compact = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -826,13 +828,20 @@ def main_cross(argv)
     with_output {|out|
       Table.csv_stream_output(out) {|gen|
         hkfs.each_with_index {|hkf, i|
+          next if $opt_cross_compact && i == hkfs.length - 1
           row = [nil] * (vkfs.length - 1) + [hkf]
           hary.each {|hkvs| opt_cross_fields.length.times { row << hkvs[i] } }
           gen << row
         }
-        r = vkfs.dup
-        hary.each {|hkvs| r.concat opt_cross_fields.map {|agg_spec, new_field| new_field } }
-        gen << r
+        if $opt_cross_compact
+          r = vkfs.dup
+          hary.each {|hkvs| r.concat([hkvs[-1]] * opt_cross_fields.length) }
+          gen << r
+        else
+          r = vkfs.dup
+          hary.each {|hkvs| r.concat opt_cross_fields.map {|agg_spec, new_field| new_field } }
+          gen << r
+        end
         vary.each {|vkvs|
           row = vkvs.dup
           hary.each {|hkvs|
