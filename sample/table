@@ -392,6 +392,12 @@ class ValuesAggregator
   def finish() @result.join(",") end
 end
 
+class UniqueValuesAggregator
+  def initialize() @result = [] end 
+  def update(v) @result << v if v end
+  def finish() @result.uniq.join(",") end
+end
+
 class Selector
   def initialize(i, aggregator) @i = i; @agg = aggregator end
   def update(ary) @agg.update(ary[@i]) end
@@ -427,6 +433,11 @@ def make_aggregator(spec, fs)
     i = fs.index(field)
     raise ArgumentError, "field not found: #{field.inspect}" if !i
     Selector.new(i, ValuesAggregator.new)
+  when /\Auniquevalues\((.*)\)\z/
+    field = $1
+    i = fs.index(field)
+    raise ArgumentError, "field not found: #{field.inspect}" if !i
+    Selector.new(i, UniqueValuesAggregator.new)
   else
     raise ArgumentError, "unexpected aggregation spec: #{spec.inspect}"
   end
