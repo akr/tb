@@ -42,6 +42,7 @@ def main(argv)
   when 'sort' then main_sort(argv)
   when 'select' then main_select(argv)
   when 'rename' then main_rename(argv)
+  when 'newfield' then main_newfield(argv)
   when 'cat' then main_cat(argv)
   when 'join' then main_join(argv)
   when 'group' then main_group(argv)
@@ -69,6 +70,7 @@ Usage:
   table sort [OPTS] [TABLE]
   table select [OPTS] FIELD,... [TABLE]
   table rename [OPTS] SRC,DST,... [TABLE]
+  table newfield [OPTS] FIELD RUBY-EXP [TABLE]
   table cat [OPTS] [TABLE ...]
   table join [OPTS] [TABLE ...]
   table group [OPTS] [TABLE]
@@ -93,6 +95,7 @@ def main_help(argv)
   when 'sort' then puts op_sort
   when 'select' then puts op_select
   when 'rename' then puts op_rename
+  when 'newfield' then puts op_newfield
   when 'cat' then puts op_cat
   when 'join' then puts op_join
   when 'group' then puts op_group
@@ -211,6 +214,14 @@ end
 def op_rename
   op = OptionParser.new
   op.banner = 'Usage: table rename [OPTS] SRC,DST,... [TABLE]'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
+  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op
+end
+
+def op_newfield
+  op = OptionParser.new
+  op.banner = 'Usage: table newfield [OPTS] FIELD RUBY-EXP [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
@@ -677,6 +688,29 @@ def main_rename(argv)
       gen.output_header(renamed_header)
       tblreader.each {|ary|
         gen << ary
+      }
+    }
+  }
+end
+
+def main_newfield(argv)
+  op_rename.parse!(argv)
+  field = argv.shift
+  rubyexp = argv.shift
+  pr = eval("lambda {|_| #{rubyexp} }")
+  filename = argv.shift || '-'
+  warn "extra arguments: #{argv.join(" ")}" if !argv.empty?
+  tablereader_open(filename) {|tblreader|
+    renamed_header = [field] + tblreader.header
+    with_table_stream_output {|gen|
+      gen.output_header(renamed_header)
+      tblreader.each {|ary|
+        h = {}
+        ary.each_with_index {|str, i|
+          f = tblreader.field_from_index_ex(i)
+          h[f] = str
+        }
+        gen << [pr.call(h), *ary]
       }
     }
   }
