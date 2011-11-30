@@ -110,7 +110,7 @@ def main_help(argv)
   end
 end
 
-$opt_n = nil
+$opt_N = nil
 $opt_debug = 0
 $opt_no_pager = nil
 
@@ -118,7 +118,7 @@ def op_csv
   op = OptionParser.new
   op.banner = 'Usage: table csv [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -127,7 +127,7 @@ def op_tsv
   op = OptionParser.new
   op.banner = 'Usage: table tsv [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -136,7 +136,7 @@ def op_json
   op = OptionParser.new
   op.banner = 'Usage: table json [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -145,7 +145,7 @@ def op_yaml
   op = OptionParser.new
   op.banner = 'Usage: table yaml [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -154,7 +154,7 @@ def op_pp
   op = OptionParser.new
   op.banner = 'Usage: table pp [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -167,7 +167,7 @@ def op_grep
   op = OptionParser.new
   op.banner = 'Usage: table grep [OPTS] REGEXP [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('-f FIELD', 'search field') {|field| $opt_grep_f = field }
   op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| $opt_grep_e = pattern }
   op.def_option('--ruby RUBY-EXP', 'specify a regexp.  no usual regexp argument.') {|ruby_exp| $opt_grep_ruby = ruby_exp }
@@ -182,7 +182,7 @@ def op_gsub
   op = OptionParser.new
   op.banner = 'Usage: table gsub [OPTS] REGEXP STRING [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('-f FIELD', 'search field') {|field| $opt_gsub_f = field }
   op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| $opt_gsub_e = pattern }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -194,7 +194,7 @@ def op_sort
   op = OptionParser.new
   op.banner = 'Usage: table sort [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('-f FIELD,...', 'specify sort keys') {|fs| $opt_sort_f = fs }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
@@ -205,7 +205,7 @@ def op_select
   op = OptionParser.new
   op.banner = 'Usage: table select [OPTS] FIELD,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('-v', 'invert match') { $opt_select_v = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
@@ -231,7 +231,7 @@ def op_cat
   op = OptionParser.new
   op.banner = 'Usage: table cat [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -243,7 +243,7 @@ def op_join
   op.banner = 'Usage: table join [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-d', '--debug', 'show debug message') { $opt_debug += 1 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--outer', 'outer join') { $opt_join_outer = :full }
   op.def_option('--left', 'left outer join') { $opt_join_outer = :left }
   op.def_option('--right', 'right outer join') { $opt_join_outer = :right }
@@ -283,7 +283,7 @@ def op_shape
   op = OptionParser.new
   op.banner = 'Usage: table shape [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-n', 'use numeric field name') { $opt_n = true }
+  op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
 end
@@ -639,7 +639,7 @@ def main_select(argv)
       h = {}
       fs.each {|f| h[tblreader.index_from_field(f)] = true }
       header = nil
-      if !$opt_n
+      if !$opt_N
         header = []
         tblreader.header.each_with_index {|f, i|
           header << f if !h[i]
@@ -719,7 +719,7 @@ end
 def main_cat(argv)
   op_cat.parse!(argv)
   argv = ['-'] if argv.empty?
-  if $opt_n
+  if $opt_N
     argv.each {|filename|
       with_table_stream_output {|gen|
         tablereader_open(filename) {|tblreader|
@@ -1084,14 +1084,14 @@ def load_table(filename)
 end
 
 def tablereader_open(filename, &b)
-  Table::Reader.open(filename, {:numeric=>$opt_n}, &b)
+  Table::Reader.open(filename, {:numeric=>$opt_N}, &b)
 end
 
 def with_table_stream_output
   with_output {|out|
     Table.csv_stream_output(out) {|gen|
       def gen.output_header(header)
-        self << header if !$opt_n
+        self << header if !$opt_N
       end
       yield gen
     }
@@ -1099,7 +1099,7 @@ def with_table_stream_output
 end
 
 def tbl_generate_csv(tbl, out)
-  if $opt_n
+  if $opt_N
     header = tbl.list_fields
     Table.csv_stream_output(out) {|gen|
       tbl.each {|rec|
@@ -1112,7 +1112,7 @@ def tbl_generate_csv(tbl, out)
 end
 
 def tbl_generate_tsv(tbl, out)
-  if $opt_n
+  if $opt_N
     header = tbl.list_fields
     Table.tsv_stream_output(out) {|gen|
       tbl.each {|rec|
