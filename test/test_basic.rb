@@ -119,19 +119,19 @@ class TestTbBasic < Test::Unit::TestCase
 
   def test_categorize
     t = Tb.new %w[a b c], [1,2,3], [2,4,3]
-    assert_raise(ArgumentError) { t.categorize('a') }
-    assert_equal({1=>[2], 2=>[4]}, t.categorize('a', 'b'))
-    assert_equal({1=>{2=>[3]}, 2=>{4=>[3]}}, t.categorize('a', 'b', 'c'))
-    assert_equal({1=>[[2,3]], 2=>[[4,3]]}, t.categorize('a', ['b', 'c']))
-    assert_equal({[1,2]=>[3], [2,4]=>[3]}, t.categorize(['a', 'b'], 'c'))
-    assert_equal({3=>[2,4]}, t.categorize('c', 'b'))
-    assert_equal({3=>[true,true]}, t.categorize('c', lambda {|e| true }))
-    assert_equal({3=>2}, t.categorize('c', 'b') {|ks, vs| vs.length } )
-    assert_equal({3=>2}, t.categorize('c', 'b',
+    assert_raise(ArgumentError) { t.tb_categorize('a') }
+    assert_equal({1=>[2], 2=>[4]}, t.tb_categorize('a', 'b'))
+    assert_equal({1=>{2=>[3]}, 2=>{4=>[3]}}, t.tb_categorize('a', 'b', 'c'))
+    assert_equal({1=>[[2,3]], 2=>[[4,3]]}, t.tb_categorize('a', ['b', 'c']))
+    assert_equal({[1,2]=>[3], [2,4]=>[3]}, t.tb_categorize(['a', 'b'], 'c'))
+    assert_equal({3=>[2,4]}, t.tb_categorize('c', 'b'))
+    assert_equal({3=>[true,true]}, t.tb_categorize('c', lambda {|e| true }))
+    assert_equal({3=>2}, t.tb_categorize('c', 'b') {|ks, vs| vs.length } )
+    assert_equal({3=>2}, t.tb_categorize('c', 'b',
                                       :seed=>0,
                                       :update=> lambda {|ks, s, v| s + 1 }))
-    assert_equal({true => [1,2]}, t.categorize(lambda {|e| true }, 'a'))
-    h = t.categorize('a', lambda {|e| e })
+    assert_equal({true => [1,2]}, t.tb_categorize(lambda {|e| true }, 'a'))
+    h = t.tb_categorize('a', lambda {|e| e })
     assert_equal(2, h.size)
     assert_equal([1, 2], h.keys.sort)
     assert_instance_of(Array, h[1])
@@ -146,38 +146,38 @@ class TestTbBasic < Test::Unit::TestCase
     assert_equal(1, h[2][0].record_id)
     assert_same(t, h[2][0].table)
 
-    assert_raise(ArgumentError) { t.categorize(:_foo, lambda {|e| true }) }
-    assert_equal({3=>[2], 6=>[4]}, t.categorize(lambda {|rec| rec['a'] * 3 }, 'b'))
-    assert_equal({[1,2]=>[[2,3]], [2,4]=>[[4,3]]}, t.categorize(['a', 'b'], ['b', 'c']))
-    assert_equal({1=>2, 2=>4}, t.categorize('a', 'b', :seed=>0, :op=>:+))
-    assert_raise(ArgumentError) { t.categorize('a', 'b', :op=>:+, :update=>lambda {|ks, s, v| v }) }
+    assert_raise(ArgumentError) { t.tb_categorize(:_foo, lambda {|e| true }) }
+    assert_equal({3=>[2], 6=>[4]}, t.tb_categorize(lambda {|rec| rec['a'] * 3 }, 'b'))
+    assert_equal({[1,2]=>[[2,3]], [2,4]=>[[4,3]]}, t.tb_categorize(['a', 'b'], ['b', 'c']))
+    assert_equal({1=>2, 2=>4}, t.tb_categorize('a', 'b', :seed=>0, :op=>:+))
+    assert_raise(ArgumentError) { t.tb_categorize('a', 'b', :op=>:+, :update=>lambda {|ks, s, v| v }) }
     i = -1
-    assert_equal({3=>[0, 1]}, t.categorize('c', lambda {|e| i += 1 }))
+    assert_equal({3=>[0, 1]}, t.tb_categorize('c', lambda {|e| i += 1 }))
   end
 
   def test_unique_categorize
     t = Tb.new %w[a b c], [1,2,3], [2,4,4]
-    assert_equal({1=>3, 2=>4}, t.unique_categorize("a", "c"))
-    assert_equal({1=>[3], 2=>[4]}, t.unique_categorize("a", "c", :seed=>nil) {|seed, v| !seed ? [v] : (seed << v) })
-    assert_equal({1=>1, 2=>1}, t.unique_categorize("a", "c", :seed=>nil) {|seed, v| !seed ? 1 : seed + 1 })
-    assert_equal({1=>{2=>3}, 2=>{4=>4}}, t.unique_categorize("a", "b", "c"))
+    assert_equal({1=>3, 2=>4}, t.tb_unique_categorize("a", "c"))
+    assert_equal({1=>[3], 2=>[4]}, t.tb_unique_categorize("a", "c", :seed=>nil) {|seed, v| !seed ? [v] : (seed << v) })
+    assert_equal({1=>1, 2=>1}, t.tb_unique_categorize("a", "c", :seed=>nil) {|seed, v| !seed ? 1 : seed + 1 })
+    assert_equal({1=>{2=>3}, 2=>{4=>4}}, t.tb_unique_categorize("a", "b", "c"))
     t.insert({"a"=>2, "b"=>7, "c"=>8})
-    assert_equal({1=>{2=>3}, 2=>{4=>4, 7=>8}}, t.unique_categorize("a", "b", "c"))
+    assert_equal({1=>{2=>3}, 2=>{4=>4, 7=>8}}, t.tb_unique_categorize("a", "b", "c"))
   end
 
   def test_unique_categorize_ambiguous
     t = Tb.new %w[a b c], [1,2,3], [1,4,4]
-    assert_raise(ArgumentError) { t.unique_categorize("a", "c") }
-    assert_equal({1=>[3,4]}, t.unique_categorize("a", "c", :seed=>nil) {|seed, v| !seed ? [v] : (seed << v) })
-    assert_equal({1=>2}, t.unique_categorize("a", "c", :seed=>nil) {|seed, v| !seed ? 1 : seed + 1 })
+    assert_raise(ArgumentError) { t.tb_unique_categorize("a", "c") }
+    assert_equal({1=>[3,4]}, t.tb_unique_categorize("a", "c", :seed=>nil) {|seed, v| !seed ? [v] : (seed << v) })
+    assert_equal({1=>2}, t.tb_unique_categorize("a", "c", :seed=>nil) {|seed, v| !seed ? 1 : seed + 1 })
   end
 
   def test_category_count
     t = Tb.new %w[a b c], [1,2,3], [2,4,3]
-    assert_equal({1=>1, 2=>1}, t.category_count("a"))
-    assert_equal({2=>1, 4=>1}, t.category_count("b"))
-    assert_equal({3=>2}, t.category_count("c"))
-    assert_equal({3=>{1=>1, 2=>1}}, t.category_count("c", "a"))
+    assert_equal({1=>1, 2=>1}, t.tb_category_count("a"))
+    assert_equal({2=>1, 4=>1}, t.tb_category_count("b"))
+    assert_equal({3=>2}, t.tb_category_count("c"))
+    assert_equal({3=>{1=>1, 2=>1}}, t.tb_category_count("c", "a"))
   end
 
   def test_natjoin2

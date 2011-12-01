@@ -26,13 +26,13 @@
 
 module Enumerable
   # :call-seq:
-  #   enum.categorize(ksel1, ksel2, ..., vsel, [opts])
-  #   enum.categorize(ksel1, ksel2, ..., vsel, [opts]) {|ks, vs| ... }
+  #   enum.tb_categorize(ksel1, ksel2, ..., vsel, [opts])
+  #   enum.tb_categorize(ksel1, ksel2, ..., vsel, [opts]) {|ks, vs| ... }
   #
   # categorizes the elements in _enum_ and returns a hash.
   # This method assumes multiple elements for a category.
   #
-  # +categorize+ takes one or more key selectors,
+  # +tb_categorize+ takes one or more key selectors,
   # one value selector and
   # an optional option hash.
   # It also takes an optional block.
@@ -51,13 +51,13 @@ module Enumerable
   #   a = [{:fruit => "banana", :color => "yellow", :taste => "sweet", :price => 100},
   #        {:fruit => "melon", :color => "green", :taste => "sweet", :price => 300},
   #        {:fruit => "grapefruit", :color => "yellow", :taste => "tart", :price => 200}]
-  #   p a.categorize(:color, :fruit)
+  #   p a.tb_categorize(:color, :fruit)
   #   #=> {"yellow"=>["banana", "grapefruit"], "green"=>["melon"]}
-  #   p a.categorize(:taste, :fruit)
+  #   p a.tb_categorize(:taste, :fruit)
   #   #=> {"sweet"=>["banana", "melon"], "tart"=>["grapefruit"]}
-  #   p a.categorize(:taste, :color, :fruit)
+  #   p a.tb_categorize(:taste, :color, :fruit)
   #   #=> {"sweet"=>{"yellow"=>["banana"], "green"=>["melon"]}, "tart"=>{"yellow"=>["grapefruit"]}}
-  #   p a.categorize(:taste, :color)
+  #   p a.tb_categorize(:taste, :color)
   #   #=> {"sweet"=>["yellow", "green"], "tart"=>["yellow"]}
   #
   # In the above example, :fruit, :color and :taste is specified as selectors.
@@ -71,7 +71,7 @@ module Enumerable
   # {:fruit => "banana", :color => "yellow", :taste => "sweet", :price => 100}
   # as {...}[:fruit].
   #
-  #   p a.categorize(lambda {|elt| elt[:fruit][4] }, :fruit)
+  #   p a.tb_categorize(lambda {|elt| elt[:fruit][4] }, :fruit)
   #   #=> {"n"=>["banana", "melon"], "e"=>["grapefruit"]}
   #
   # When the key selectors returns same key for two or or more elements,
@@ -88,10 +88,10 @@ module Enumerable
   # So a symbol can be used for them.
   #
   #   # count categorized elements.
-  #   p a.categorize(:color, lambda {|e| 1 }, :op=>:+)
+  #   p a.tb_categorize(:color, lambda {|e| 1 }, :op=>:+)
   #   #=> {"yellow"=>2, "green"=>1}
   #
-  #   p a.categorize(:color, :fruit, :seed=>"", :op=>:+)
+  #   p a.tb_categorize(:color, :fruit, :seed=>"", :op=>:+)
   #   #=> {"yellow"=>"bananagrapefruit", "green"=>"melon"}
   #
   # The default behavior, collecting all values as an array, is implemented as follows.
@@ -101,22 +101,22 @@ module Enumerable
   # :op and :update option are disjoint.
   # ArgumentError is raised if both are specified.
   #
-  # The block for +categorize+ method converts combined values to final innermost hash values.
+  # The block for +tb_categorize+ method converts combined values to final innermost hash values.
   #
-  #   p a.categorize(:color, :fruit) {|ks, vs| vs.join(",") }
+  #   p a.tb_categorize(:color, :fruit) {|ks, vs| vs.join(",") }
   #   #=> {"yellow"=>"banana,grapefruit", "green"=>"melon"}
   #
   #   # calculates the average price for fruits of each color.
-  #   p a.categorize(:color, :price) {|ks, vs| vs.inject(0.0, &:+) / vs.length }
+  #   p a.tb_categorize(:color, :price) {|ks, vs| vs.inject(0.0, &:+) / vs.length }
   #   #=> {"yellow"=>150.0, "green"=>300.0}
   #
-  def categorize(*args, &reduce_proc)
+  def tb_categorize(*args, &reduce_proc)
     opts = args.last.kind_of?(Hash) ? args.pop : {}
     if args.length < 2
       raise ArgumentError, "needs 2 or more arguments without option hash (but #{args.length})"
     end
-    value_selector = cat_selector_proc(args.pop)
-    key_selectors = args.map {|a| cat_selector_proc(a) }
+    value_selector = tb_cat_selector_proc(args.pop)
+    key_selectors = args.map {|a| tb_cat_selector_proc(a) }
     has_seed = opts.include? :seed
     seed_value = opts[:seed]
     if opts.include?(:update) && opts.include?(:op)
@@ -154,24 +154,24 @@ module Enumerable
       end
     }
     if reduce_proc
-      cat_reduce(result, [], key_selectors.length-1, reduce_proc)
+      tb_cat_reduce(result, [], key_selectors.length-1, reduce_proc)
     end
     result
   end
 
-  def cat_selector_proc(selector)
+  def tb_cat_selector_proc(selector)
     if selector.respond_to?(:call)
       selector
     elsif selector.respond_to? :to_ary
-      selector_procs = selector.to_ary.map {|sel| cat_selector_proc(sel) }
+      selector_procs = selector.to_ary.map {|sel| tb_cat_selector_proc(sel) }
       lambda {|elt| selector_procs.map {|selproc| selproc.call(elt) } }
     else
       lambda {|elt| elt[selector] }
     end
   end
-  private :cat_selector_proc
+  private :tb_cat_selector_proc
 
-  def cat_reduce(hash, ks, nestlevel, reduce_proc)
+  def tb_cat_reduce(hash, ks, nestlevel, reduce_proc)
     if nestlevel.zero?
       hash.each {|k, v|
         ks << k
@@ -185,29 +185,29 @@ module Enumerable
       hash.each {|k, h|
         ks << k
         begin
-          cat_reduce(h, ks, nestlevel-1, reduce_proc)
+          tb_cat_reduce(h, ks, nestlevel-1, reduce_proc)
         ensure
           ks.pop
         end
       }
     end
   end
-  private :cat_reduce
+  private :tb_cat_reduce
 
   # :call-seq:
-  #   enum.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) -> hash
-  #   enum.unique_categorize(ksel1, ksel2, ..., vsel, [opts]) {|s, v| ... } -> hash
+  #   enum.tb_unique_categorize(ksel1, ksel2, ..., vsel, [opts]) -> hash
+  #   enum.tb_unique_categorize(ksel1, ksel2, ..., vsel, [opts]) {|s, v| ... } -> hash
   #
   # categorizes the elements in _enum_ and returns a hash.
   # This method assumes one element for a category by default.
   #
-  # +unique_categorize+ takes one or more key selectors,
+  # +tb_unique_categorize+ takes one or more key selectors,
   # one value selector and
   # an optional option hash.
   # It also takes an optional block.
   #
   # The selectors specify how to extract a value from an element in _enum_.
-  # See Enumerable#categorize for details of selectors.
+  # See Enumerable#tb_categorize for details of selectors.
   #
   # The key selectors, _kselN_, are used to extract hash keys from an element.
   # If two or more key selectors are specified, the result hash will be nested.
@@ -220,10 +220,10 @@ module Enumerable
   #   a = [{:fruit => "banana", :color => "yellow", :taste => "sweet", :price => 100},
   #        {:fruit => "melon", :color => "green", :taste => "sweet", :price => 300},
   #        {:fruit => "grapefruit", :color => "yellow", :taste => "tart", :price => 200}]
-  #   p a.unique_categorize(:fruit, :price)
+  #   p a.tb_unique_categorize(:fruit, :price)
   #   #=> {"banana"=>100, "melon"=>300, "grapefruit"=>200}
   #
-  #   p a.unique_categorize(:color, :price)
+  #   p a.tb_unique_categorize(:color, :price)
   #   # ArgumentError
   #
   # If the block is given, it is used for combining values in a category.
@@ -232,13 +232,13 @@ module Enumerable
   # :seed option specifies the initial seed.
   # If :seed is not given, the first value for each category is used for the seed.
   #
-  #   p a.unique_categorize(:taste, :price) {|s, v| s + v }
+  #   p a.tb_unique_categorize(:taste, :price) {|s, v| s + v }
   #   #=> {"sweet"=>400, "tart"=>200}
   #
-  #   p a.unique_categorize(:color, :price) {|s, v| s + v }
+  #   p a.tb_unique_categorize(:color, :price) {|s, v| s + v }
   #   #=> {"yellow"=>300, "green"=>300}
   #
-  def unique_categorize(*args, &update_proc)
+  def tb_unique_categorize(*args, &update_proc)
     opts = args.last.kind_of?(Hash) ? args.pop.dup : {}
     if update_proc
       opts[:update] = lambda {|ks, s, v| update_proc.call(s, v) }
@@ -253,11 +253,11 @@ module Enumerable
         end
       }
     end
-    categorize(*(args + [opts]))
+    tb_categorize(*(args + [opts]))
   end
 
   # :call-seq:
-  #   enum.category_count(ksel1, ksel2, ...)
+  #   enum.tb_category_count(ksel1, ksel2, ...)
   #
   # counts elements in _enum_ for each category defined by the key selectors.
   #
@@ -265,20 +265,20 @@ module Enumerable
   #        {:fruit => "melon", :color => "green", :taste => "sweet", :price => 300},
   #        {:fruit => "grapefruit", :color => "yellow", :taste => "tart", :price => 200}]
   #
-  #   p a.category_count(:color)
+  #   p a.tb_category_count(:color)
   #   #=> {"yellow"=>2, "green"=>1}
   #
-  #   p a.category_count(:taste)
+  #   p a.tb_category_count(:taste)
   #   #=> {"sweet"=>2, "tart"=>1}
   #
-  #   p a.category_count(:taste, :color)
+  #   p a.tb_category_count(:taste, :color)
   #   #=> {"sweet"=>{"yellow"=>1, "green"=>1}, "tart"=>{"yellow"=>1}}
   #
   # The selectors specify how to extract a value from an element in _enum_.
-  # See Enumerable#categorize for details of selectors.
+  # See Enumerable#tb_categorize for details of selectors.
   #
-  def category_count(*args)
-    categorize(*(args + [lambda {|e| 1 }, {:update => lambda {|ks, s, v| s + v }}]))
+  def tb_category_count(*args)
+    tb_categorize(*(args + [lambda {|e| 1 }, {:update => lambda {|ks, s, v| s + v }}]))
   end
 
 end
