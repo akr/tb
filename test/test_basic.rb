@@ -1,14 +1,14 @@
-require 'table'
+require 'tb'
 require 'test/unit'
 
-class TestTableBasic < Test::Unit::TestCase
+class TestTbBasic < Test::Unit::TestCase
   def test_initialize
-    t = Table.new
+    t = Tb.new
     assert_equal([], t.list_fields)
-    t = Table.new %w[fruit color],
-                  %w[apple red],
-                  %w[banana yellow],
-                  %w[orange orange]
+    t = Tb.new %w[fruit color],
+               %w[apple red],
+               %w[banana yellow],
+               %w[orange orange]
     assert_equal(%w[fruit color].sort, t.list_fields.sort)
     a = t.to_a.map {|r| r.to_h_with_reserved }
     assert_operator(a, :include?, {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"})
@@ -18,13 +18,13 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_replace
-    t1 = Table.new %w[fruit color],
-                   %w[apple red],
-                   %w[banana yellow],
-                   %w[orange orange]
-    t2 = Table.new %w[grain color],
-                   %w[rice white],
-                   %w[wheat light-brown]
+    t1 = Tb.new %w[fruit color],
+                %w[apple red],
+                %w[banana yellow],
+                %w[orange orange]
+    t2 = Tb.new %w[grain color],
+                %w[rice white],
+                %w[wheat light-brown]
     t1.replace t2
     assert_equal([{"grain"=>"rice", "color"=>"white"},
                   {"grain"=>"wheat", "color"=>"light-brown"}],
@@ -32,15 +32,15 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_enumerable
-    t = Table.new
+    t = Tb.new
     assert_kind_of(Enumerable, t)
   end
 
   def test_define_field
-    t = Table.new %w[fruit color],
-                  %w[apple red],
-                  %w[banana yellow],
-                  %w[orange orange]
+    t = Tb.new %w[fruit color],
+               %w[apple red],
+               %w[banana yellow],
+               %w[orange orange]
     t.define_field("namelen") {|record| record["fruit"].length }
     t.each {|rec|
       case rec['fruit']
@@ -53,21 +53,21 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_list_fields
-    t = Table.new
+    t = Tb.new
     assert_equal([], t.list_fields)
     assert_equal([], t.list_fields)
     assert_equal(["_recordid"], t.list_fields_all)
-    t = Table.new %w[fruit color],
-                  %w[apple red],
-                  %w[banana yellow],
-                  %w[orange orange]
+    t = Tb.new %w[fruit color],
+               %w[apple red],
+               %w[banana yellow],
+               %w[orange orange]
     assert_equal(%w[fruit color], t.list_fields)
     assert_equal(%w[fruit color], t.list_fields)
     assert_equal(%w[_recordid fruit color], t.list_fields_all)
   end
 
   def test_list_recordids
-    t = Table.new
+    t = Tb.new
     assert_equal([], t.list_recordids)
     recordid1 = t.allocate_recordid
     assert_equal([recordid1], t.list_recordids)
@@ -78,7 +78,7 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_cell
-    t = Table.new %w[f g]
+    t = Tb.new %w[f g]
     recordid = t.allocate_recordid
     assert_equal(nil, t.get_cell(recordid, :f))
     t.set_cell(recordid, :f, 1)
@@ -101,7 +101,7 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_each_field
-    t = Table.new %w[a b z]
+    t = Tb.new %w[a b z]
     a = []
     t.each_field_with_reserved {|f| a << f }
     assert_equal(%w[_recordid a b z], a)
@@ -111,14 +111,14 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_each_record
-    t = Table.new %w[a], [1], [2]
+    t = Tb.new %w[a], [1], [2]
     records = []
     t.each {|record| records << record.to_h_with_reserved }
     assert_equal([{"_recordid"=>0, "a"=>1}, {"_recordid"=>1, "a"=>2}], records)
   end
 
   def test_categorize
-    t = Table.new %w[a b c], [1,2,3], [2,4,3]
+    t = Tb.new %w[a b c], [1,2,3], [2,4,3]
     assert_raise(ArgumentError) { t.categorize('a') }
     assert_equal({1=>[2], 2=>[4]}, t.categorize('a', 'b'))
     assert_equal({1=>{2=>[3]}, 2=>{4=>[3]}}, t.categorize('a', 'b', 'c'))
@@ -138,8 +138,8 @@ class TestTableBasic < Test::Unit::TestCase
     assert_instance_of(Array, h[2])
     assert_equal(1, h[1].length)
     assert_equal(1, h[2].length)
-    assert_instance_of(Table::Record, h[1][0])
-    assert_instance_of(Table::Record, h[2][0])
+    assert_instance_of(Tb::Record, h[1][0])
+    assert_instance_of(Tb::Record, h[2][0])
     assert_same(t, h[1][0].table)
     assert_same(t, h[2][0].table)
     assert_equal(0, h[1][0].record_id)
@@ -156,7 +156,7 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_unique_categorize
-    t = Table.new %w[a b c], [1,2,3], [2,4,4]
+    t = Tb.new %w[a b c], [1,2,3], [2,4,4]
     assert_equal({1=>3, 2=>4}, t.unique_categorize("a", "c"))
     assert_equal({1=>[3], 2=>[4]}, t.unique_categorize("a", "c", :seed=>nil) {|seed, v| !seed ? [v] : (seed << v) })
     assert_equal({1=>1, 2=>1}, t.unique_categorize("a", "c", :seed=>nil) {|seed, v| !seed ? 1 : seed + 1 })
@@ -166,14 +166,14 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_unique_categorize_ambiguous
-    t = Table.new %w[a b c], [1,2,3], [1,4,4]
+    t = Tb.new %w[a b c], [1,2,3], [1,4,4]
     assert_raise(ArgumentError) { t.unique_categorize("a", "c") }
     assert_equal({1=>[3,4]}, t.unique_categorize("a", "c", :seed=>nil) {|seed, v| !seed ? [v] : (seed << v) })
     assert_equal({1=>2}, t.unique_categorize("a", "c", :seed=>nil) {|seed, v| !seed ? 1 : seed + 1 })
   end
 
   def test_category_count
-    t = Table.new %w[a b c], [1,2,3], [2,4,3]
+    t = Tb.new %w[a b c], [1,2,3], [2,4,3]
     assert_equal({1=>1, 2=>1}, t.category_count("a"))
     assert_equal({2=>1, 4=>1}, t.category_count("b"))
     assert_equal({3=>2}, t.category_count("c"))
@@ -181,8 +181,8 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_natjoin2
-    t1 = Table.new %w[a b], %w[1 2], %w[3 4], %w[0 4]
-    t2 = Table.new %w[b c], %w[2 3], %w[4 5]
+    t1 = Tb.new %w[a b], %w[1 2], %w[3 4], %w[0 4]
+    t2 = Tb.new %w[b c], %w[2 3], %w[4 5]
     t3 = t1.natjoin2(t2)
     assert_equal([{"_recordid"=>0, "a"=>"1", "b"=>"2", "c"=>"3"},
                   {"_recordid"=>1, "a"=>"3", "b"=>"4", "c"=>"5"},
@@ -190,8 +190,8 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_natjoin2_nocommon
-    t1 = Table.new %w[a b], %w[1 2], %w[3 4]
-    t2 = Table.new %w[c d], %w[5 6], %w[7 8]
+    t1 = Tb.new %w[a b], %w[1 2], %w[3 4]
+    t2 = Tb.new %w[c d], %w[5 6], %w[7 8]
     t3 = t1.natjoin2(t2)
     assert_equal([{"a"=>"1", "b"=>"2", "c"=>"5", "d"=>"6"},
                   {"a"=>"1", "b"=>"2", "c"=>"7", "d"=>"8"},
@@ -201,21 +201,21 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_fmap!
-    t = Table.new %w[a b], %w[1 2], %w[3 4]
+    t = Tb.new %w[a b], %w[1 2], %w[3 4]
     t.fmap!("a") {|record, v| "foo" + v }
     assert_equal([{"_recordid"=>0, "a"=>"foo1", "b"=>"2"},
                   {"_recordid"=>1, "a"=>"foo3", "b"=>"4"}], t.to_a.map {|r| r.to_h_with_reserved })
   end
 
   def test_delete_field
-    t = Table.new(%w[a b], %w[1 2], %w[3 4])
+    t = Tb.new(%w[a b], %w[1 2], %w[3 4])
     t.delete_field("a")
     assert_equal([{"_recordid"=>0, "b"=>"2"},
                   {"_recordid"=>1, "b"=>"4"}], t.to_a.map {|r| r.to_h_with_reserved })
   end
 
   def test_delete_recordid
-    t = Table.new %w[a]
+    t = Tb.new %w[a]
     recordid = t.insert({"a"=>"foo"})
     t.insert({"a"=>"bar"})
     t.delete_recordid(recordid)
@@ -231,7 +231,7 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_rename_field
-    t1 = Table.new %w[a b], [1, 2]
+    t1 = Tb.new %w[a b], [1, 2]
     assert_equal([{"_recordid"=>0, "a"=>1, "b"=>2}], t1.to_a.map {|r| r.to_h_with_reserved })
     t2 = t1.rename_field("a" => "c", "b" => "d")
     assert_equal([{"_recordid"=>0, "a"=>1, "b"=>2}], t1.to_a.map {|r| r.to_h_with_reserved })
@@ -239,7 +239,7 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_allocate_recordid
-    t = Table.new
+    t = Tb.new
     recordid1 = t.allocate_recordid(100)
     assert_equal(100, recordid1)
     recordid2 = t.allocate_recordid(200)
@@ -250,10 +250,10 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_reorder_fields!
-    t = Table.new %w[fruit color],
-                  %w[apple red],
-                  %w[banana yellow],
-                  %w[orange orange]
+    t = Tb.new %w[fruit color],
+               %w[apple red],
+               %w[banana yellow],
+               %w[orange orange]
     assert_equal(%w[fruit color], t.list_fields)
     t.reorder_fields! %w[color fruit]
     assert_equal(%w[_recordid color fruit], t.list_fields_all)
@@ -262,28 +262,28 @@ class TestTableBasic < Test::Unit::TestCase
   end
 
   def test_has_field?
-    t = Table.new %w[fruit color], 
-                  %w[apple red], 
-                  %w[banana yellow], 
-                  %w[orange orange] 
+    t = Tb.new %w[fruit color], 
+               %w[apple red], 
+               %w[banana yellow], 
+               %w[orange orange] 
     assert_equal(true, t.has_field?("fruit"))
     assert_equal(false, t.has_field?("foo"))
   end
 
   def test_filter
-    t = Table.new %w[fruit color],
-                  %w[apple red],
-                  %w[banana yellow],
-                  %w[orange orange]
+    t = Tb.new %w[fruit color],
+               %w[apple red],
+               %w[banana yellow],
+               %w[orange orange]
     t2 = t.filter {|rec| rec["fruit"] == "banana" }
     assert_equal(1, t2.size)
   end
 
   def test_reorder_records_by
-    t = Table.new %w[fruit color],
-                  %w[apple red],
-                  %w[banana yellow],
-                  %w[orange orange]
+    t = Tb.new %w[fruit color],
+               %w[apple red],
+               %w[banana yellow],
+               %w[orange orange]
     t2 = t.reorder_records_by {|rec| rec["color"] }
     assert_equal(t.map {|rec| rec["color"] }.sort, t2.map {|rec| rec["color"] })
   end

@@ -1,4 +1,4 @@
-# lib/table.rb - entry file for table library
+# lib/tb.rb - entry file for table library
 #
 # Copyright (C) 2010-2011 Tanaka Akira  <akr@fsij.org>
 # 
@@ -24,12 +24,12 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-require 'table/basic'
-require 'table/record'
-require 'table/csv'
-require 'table/tsv'
-require 'table/qtsv'
-require 'table/reader'
-require 'table/fieldset'
-require 'table/pathfinder'
-require 'table/enumerable'
+require 'tb/basic'
+require 'tb/record'
+require 'tb/csv'
+require 'tb/tsv'
+require 'tb/qtsv'
+require 'tb/reader'
+require 'tb/fieldset'
+require 'tb/pathfinder'
+require 'tb/enumerable'

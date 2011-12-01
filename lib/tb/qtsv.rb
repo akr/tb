@@ -1,4 +1,4 @@
-# lib/table/qtsv.rb - quoted TSV related fetures for table library
+# lib/tb/qtsv.rb - quoted TSV related fetures for table library
 #
 # Copyright (C) 2010 Tanaka Akira  <akr@fsij.org>
 # 
@@ -24,17 +24,17 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-class Table
+class Tb
 
   # quoted TSV is a variant of TSV (tab separated value)
   #
   # All non-empty values are quoted by double-quotes.
 
-  def Table.load_qtsv(filename, *header_fields, &block)
-    Table.parse_qtsv(File.read(filename), *header_fields, &block)
+  def Tb.load_qtsv(filename, *header_fields, &block)
+    Tb.parse_qtsv(File.read(filename), *header_fields, &block)
   end
 
-  def Table.qtsv_stream_input(qtsv)
+  def Tb.qtsv_stream_input(qtsv)
     qtsv = qtsv.read unless String === qtsv
     qtsv = qtsv.dup
     cells = []
@@ -62,7 +62,7 @@ class Table
     nil
   end
 
-  def Table.parse_qtsv(qtsv, *header_fields)
+  def Tb.parse_qtsv(qtsv, *header_fields)
     aa = []
     qtsv_stream_input(qtsv) {|ary|
       aa << ary
@@ -79,7 +79,7 @@ class Table
         h[f] = i
       }
     end
-    t = Table.new(header_fields)
+    t = Tb.new(header_fields)
     aa.each {|ary|
       h = {}
       header_fields.each_with_index {|f, i|

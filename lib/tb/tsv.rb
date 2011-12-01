@@ -1,4 +1,4 @@
-# lib/table/csv.rb - CSV related fetures for table library
+# lib/tb/tsv.rb - TSV related fetures for table library
 #
 # Copyright (C) 2010-2011 Tanaka Akira  <akr@fsij.org>
 # 
@@ -24,102 +24,70 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-require 'csv'
+require 'stringio'
 
-class Table
-  def Table.csv_stream_input(csv, &b)
-    csvreader = CSVReader.new(csv)
-    begin
-      csvreader.each(&b)
-    ensure
-      csvreader.close
+class Tb
+  def Tb.tsv_stream_input(tsv)
+    tsvreader = TSVReader.new(tsv)
+    while ary = tsvreader.shift
+      yield ary
     end
     nil
   end
 
-  class CSVReader
-    if defined? CSV::Reader
-      # Ruby 1.8
-      def initialize(input)
-        if input.respond_to? :to_str
-          @csv = CSV::StringReader.new(input)
-        else
-          @csv = CSV::IOReader.new(input)
-        end
-        @eof = false
-      end
-
-      def shift
-        return nil if @eof
-        ary = @csv.shift
-        if ary.empty?
-          ary = nil
-          @eof = true
-        elsif ary == [nil]
-          ary = []
-        end
-        ary
-      end
-    else
-      # Ruby 1.9
-      def initialize(input)
-        @csv = CSV.new(input)
-      end
-
-      def shift
-        @csv.shift
+  class TSVReader
+    def initialize(input)
+      if input.respond_to? :to_str
+        @input = StringIO.new(input)
+      else
+        @input = input
       end
     end
 
-    def each
-      while ary = self.shift
-        yield ary
-      end
-      nil
+    def shift
+      line = @input.gets
+      return nil if !line
+      line = line.chomp("\n")
+      line = line.chomp("\r")
+      line.split(/\t/, -1)
     end
 
     def close
-      @csv.close
+      @input.close
     end
   end
 
-  def Table.csv_stream_output(out)
-    require 'csv'
-    if defined? CSV::Writer
-      # Ruby 1.8
-      CSV::Writer.generate(out) {|csvgen|
-        yield csvgen
-      }
-    else
-      # Ruby 1.9
-      gen = Object.new
-      gen.instance_variable_set(:@out, out)
-      def gen.<<(ary)
-        @out << ary.to_csv
-      end
-      yield gen
+  def Tb.tsv_stream_output(out)
+    gen = Object.new
+    gen.instance_variable_set(:@out, out)
+    def gen.<<(ary)
+      @out << Tb.tsv_fields_join(ary) << "\n"
     end
+    yield gen
   end
 
   # :call-seq:
-  #   generate_csv(out='', fields=nil) {|recordids| modified_recordids }
-  #   generate_csv(out='', fields=nil)
+  #   generate_tsv(out='', fields=nil) {|recordids| modified_recordids }
+  #   generate_tsv(out='', fields=nil)
   #
-  def generate_csv(out='', fields=nil, &block)
+  def generate_tsv(out='', fields=nil, &block)
     if fields.nil?
       fields = list_fields
     end
-    require 'csv'
     recordids = list_recordids
     if block_given?
       recordids = yield(recordids)
     end
-    Table.csv_stream_output(out) {|gen|
+    Tb.tsv_stream_output(out) {|gen|
       gen << fields
       recordids.each {|recordid|
         gen << get_values(recordid, *fields)
       }
     }
     out
+  end
+
+  def Tb.tsv_fields_join(values)
+    values.map {|v| v.to_s.gsub(/[\t\r\n]/, ' ') }.join("\t")
   end
 end

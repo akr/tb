@@ -1,7 +1,7 @@
-require 'table/enumerable'
+require 'tb/enumerable'
 require 'test/unit'
 
-class TestTableEnumerable < Test::Unit::TestCase
+class TestTbEnumerable < Test::Unit::TestCase
   def test_categorize
     a = [{:fruit => "banana", :color => "yellow", :taste => "sweet", :price => 100},
          {:fruit => "melon", :color => "green", :taste => "sweet", :price => 300},

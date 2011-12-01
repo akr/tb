@@ -1,4 +1,4 @@
-# lib/table/record.rb - record class for table library
+# lib/tb/record.rb - record class for table library
 #
 # Copyright (C) 2010-2011 Tanaka Akira  <akr@fsij.org>
 # 
@@ -24,7 +24,7 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-class Table::Record
+class Tb::Record
   include Enumerable
 
   def initialize(table, recordid)

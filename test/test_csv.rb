@@ -1,14 +1,14 @@
-require 'table'
+require 'tb'
 require 'test/unit'
 
-class TestTableCSV < Test::Unit::TestCase
+class TestTbCSV < Test::Unit::TestCase
   def test_parse
     csv = <<-'End'.gsub(/^\s+/, '')
     a,b
     1,2
     3,4
     End
-    t = Table.parse_csv(csv)
+    t = Tb.parse_csv(csv)
     records = []
     t.each_record {|record|
       records << record.to_h_with_reserved
@@ -25,7 +25,7 @@ class TestTableCSV < Test::Unit::TestCase
     1,,2
     3,"",4
     End
-    t = Table.parse_csv(csv)
+    t = Tb.parse_csv(csv)
     records = []
     t.each_record {|record|
       records << record.to_h_with_reserved
@@ -38,7 +38,7 @@ class TestTableCSV < Test::Unit::TestCase
 
   def test_parse_conv
     csv = "foo\na,b\n1,2\n"
-    t = Table.parse_csv(csv) {|aa|
+    t = Tb.parse_csv(csv) {|aa|
       assert_equal([%w[foo],
                    %w[a b],
                    %w[1 2]],
@@ -56,7 +56,7 @@ class TestTableCSV < Test::Unit::TestCase
   end
 
   def test_generate
-    t = Table.new %w[a b], [1, 2], [3, 4]
+    t = Tb.new %w[a b], [1, 2], [3, 4]
     out = t.generate_csv('', ['a', 'b'])
     assert_equal(<<-'End'.gsub(/^\s+/, ''), out)
     a,b
@@ -66,7 +66,7 @@ class TestTableCSV < Test::Unit::TestCase
   end
 
   def test_generate_empty
-    t = Table.new %w[a b c], [1, nil, 2], [3, '', 4]
+    t = Tb.new %w[a b c], [1, nil, 2], [3, '', 4]
     out = t.generate_csv('', ['a', 'b', 'c'])
     assert_equal(<<-'End'.gsub(/^\s+/, ''), out)
     a,b,c

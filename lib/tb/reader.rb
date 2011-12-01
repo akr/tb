@@ -1,4 +1,4 @@
-# lib/table/reader.rb - Table::Reader class
+# lib/tb/reader.rb - Tb::Reader class
 #
 # Copyright (C) 2011 Tanaka Akira  <akr@fsij.org>
 # 
@@ -24,19 +24,19 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-class Table
-  def Table.load_csv(filename, *header_fields, &block)
-    Table.parse_csv(File.read(filename), *header_fields, &block)
+class Tb
+  def Tb.load_csv(filename, *header_fields, &block)
+    Tb.parse_csv(File.read(filename), *header_fields, &block)
   end
 
-  def Table.parse_csv(csv, *header_fields)
+  def Tb.parse_csv(csv, *header_fields)
     aa = []
     csv_stream_input(csv) {|ary|
       aa << ary
     }
     aa = yield aa if block_given?
     if header_fields.empty?
-      reader = Table::Reader.new(aa)
+      reader = Tb::Reader.new(aa)
       arys = []
       reader.each {|ary|
         arys << ary
@@ -46,7 +46,7 @@ class Table
       header = header_fields
       arys = aa
     end
-    t = Table.new(header)
+    t = Tb.new(header)
     arys.each {|ary|
       ary << nil while ary.length < header.length
       t.insert_values header, ary
@@ -54,18 +54,18 @@ class Table
     t
   end
 
-  def Table.load_tsv(filename, *header_fields, &block)
-    Table.parse_tsv(File.read(filename), *header_fields, &block)
+  def Tb.load_tsv(filename, *header_fields, &block)
+    Tb.parse_tsv(File.read(filename), *header_fields, &block)
   end
 
-  def Table.parse_tsv(tsv, *header_fields)
+  def Tb.parse_tsv(tsv, *header_fields)
     aa = []
     tsv_stream_input(tsv) {|ary|
       aa << ary 
     }
     aa = yield aa if block_given?
     if header_fields.empty?
-      reader = Table::Reader.new(aa)
+      reader = Tb::Reader.new(aa)
       arys = []
       reader.each {|ary|
         arys << ary
@@ -75,7 +75,7 @@ class Table
       header = header_fields
       arys = aa
     end
-    t = Table.new(header)
+    t = Tb.new(header)
     arys.each {|ary|
       ary << nil while ary.length < header.length
       t.insert_values header, ary
@@ -84,29 +84,29 @@ class Table
   end
 end
 
-class Table::Reader
+class Tb::Reader
   def self.open(filename, opts={})
     io = nil
     case filename
     when /\.csv\z/
       io = File.open(filename)
-      rawreader = Table::CSVReader.new(io)
+      rawreader = Tb::CSVReader.new(io)
     when /\.tsv\z/
       io = File.open(filename)
-      rawreader = Table::TSVReader.new(io)
+      rawreader = Tb::TSVReader.new(io)
     when /\Acsv:/
       io = File.open($')
-      rawreader = Table::CSVReader.new(io)
+      rawreader = Tb::CSVReader.new(io)
     when /\Atsv:/
       io = File.open($')
-      rawreader = Table::TSVReader.new(io)
+      rawreader = Tb::TSVReader.new(io)
     else
       if filename == '-'
-        rawreader = Table::CSVReader.new(STDIN)
+        rawreader = Tb::CSVReader.new(STDIN)
       else
         # guess table format?
         io = File.open(filename)
-        rawreader = Table::CSVReader.new(io)
+        rawreader = Tb::CSVReader.new(io)
       end
     end
     reader = self.new(rawreader, opts)
@@ -131,17 +131,17 @@ class Table::Reader
   def header
     return @fieldset.header if @fieldset
     if @opt_n
-      @fieldset = Table::FieldSet.new
+      @fieldset = Tb::FieldSet.new
     else
       while ary = @reader.shift
         if ary.all? {|elt| elt.nil? || elt == '' }
           next
         else
-          @fieldset = Table::FieldSet.new(*ary)
+          @fieldset = Tb::FieldSet.new(*ary)
           return @fieldset.header
         end
       end
-      @fieldset = Table::FieldSet.new
+      @fieldset = Tb::FieldSet.new
     end
     return @fieldset.header
   end

@@ -1,4 +1,4 @@
-# lib/table/fieldset.rb - Table::FieldSet class
+# lib/tb/fieldset.rb - Tb::FieldSet class
 #
 # Copyright (C) 2011 Tanaka Akira  <akr@fsij.org>
 # 
@@ -24,7 +24,7 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-class Table::FieldSet
+class Tb::FieldSet
   def initialize(*fs)
     @header = []
     add_fields(*fs) if !fs.empty?

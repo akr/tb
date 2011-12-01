@@ -1,4 +1,4 @@
-# lib/table/enumerable.rb - extensions for Enumerable
+# lib/tb/enumerable.rb - extensions for Enumerable
 #
 # Copyright (C) 2010 Tanaka Akira  <akr@fsij.org>
 #

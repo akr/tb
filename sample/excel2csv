@@ -39,7 +39,7 @@
 #   --mergecells=fill : set the value for all cells in a merged cells
 #   --mergecells=topleft : set the value for the top left cell in a merged cells
 
-require 'table'
+require 'tb'
 
 require 'win32ole'
 require 'optparse'
@@ -239,7 +239,7 @@ excel = WIN32OLE.new('Excel.Application')
 WIN32OLE.const_load(excel,Excel)
 begin
   excel.displayAlerts = false
-  Table.csv_stream_output(STDOUT) {|csvgen|
+  Tb.csv_stream_output(STDOUT) {|csvgen|
     ARGV.each {|excel_filename|
       if File.directory? excel_filename
         filenames = []

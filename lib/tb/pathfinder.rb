@@ -1,4 +1,4 @@
-# lib/table/pathfinder.rb - pattern matcher for two-dimensional array.
+# lib/tb/pathfinder.rb - pattern matcher for two-dimensional array.
 #
 # Copyright (C) 2011 Tanaka Akira  <akr@fsij.org>
 # 
@@ -24,7 +24,7 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-module Table::Pathfinder
+module Tb::Pathfinder
   module_function
 
   def strary_to_aa(strary)
@@ -47,7 +47,7 @@ module Table::Pathfinder
   def each_match(pat, aa, spos=nil)
     if spos
       run {
-        try(pat, aa, Table::Pathfinder::EmptyState.merge(:pos => spos)) {|st2|
+        try(pat, aa, Tb::Pathfinder::EmptyState.merge(:pos => spos)) {|st2|
           yield spos, st2.fetch(:pos), st2.reject {|k,v| k == :pos }
           nil
         }
@@ -57,7 +57,7 @@ module Table::Pathfinder
         a.each_index {|x|
           spos = [x,y]
           run {
-            try(pat, aa, Table::Pathfinder::EmptyState.merge(:pos => spos)) {|st2|
+            try(pat, aa, Tb::Pathfinder::EmptyState.merge(:pos => spos)) {|st2|
               yield spos, st2.fetch(:pos), st2.reject {|k,v| k == :pos }
               nil
             }
@@ -406,7 +406,7 @@ module Table::Pathfinder
   end
 end
 
-module Table::Pathfinder::EmptyState
+module Tb::Pathfinder::EmptyState
   module_function
 
   def empty?
@@ -441,7 +441,7 @@ module Table::Pathfinder::EmptyState
   def merge(h)
     pairs = self
     h.reverse_each {|k, v|
-      pairs = Table::Pathfinder::State.new(k, v, pairs)
+      pairs = Tb::Pathfinder::State.new(k, v, pairs)
     }
     pairs
   end
@@ -451,11 +451,11 @@ module Table::Pathfinder::EmptyState
   end
 
   def inspect
-    "\#<Table::Pathfinder::EmptyState>"
+    "\#<Tb::Pathfinder::EmptyState>"
   end
 end
 
-class Table::Pathfinder::State
+class Tb::Pathfinder::State
   def initialize(key, val, tail=nil)
     @key = key
     @val = val
@@ -529,10 +529,10 @@ class Table::Pathfinder::State
     end
     (needs_copy-1).downto(0) {|i|
       pairs = ary[i]
-      result = Table::Pathfinder::State.new(pairs.key, pairs.val, result)
+      result = Tb::Pathfinder::State.new(pairs.key, pairs.val, result)
     }
     h.reverse_each {|k, v|
-      result = Table::Pathfinder::State.new(k, v, result)
+      result = Tb::Pathfinder::State.new(k, v, result)
     }
     result
   end
@@ -546,9 +546,9 @@ class Table::Pathfinder::State
       end
       pairs = pairs.tail
     end
-    result = Table::Pathfinder::EmptyState
+    result = Tb::Pathfinder::EmptyState
     ary.reverse_each {|pairs|
-      result = Table::Pathfinder::State.new(pairs.key, pairs.val, result)
+      result = Tb::Pathfinder::State.new(pairs.key, pairs.val, result)
     }
     result
   end

@@ -1,4 +1,4 @@
-# lib/table/basic.rb - basic fetures for table library
+# lib/tb/basic.rb - basic fetures for table library
 #
 # Copyright (C) 2010-2011 Tanaka Akira  <akr@fsij.org>
 # 
@@ -26,7 +26,7 @@
 
 require 'pp'
 
-# Table represents a set of records.
+# Tb represents a set of records.
 # A record contains field values accessed by field names.
 #
 # A table can be visualized as follows.
@@ -44,7 +44,7 @@ require 'pp'
 # The field names starts with "_" is reserved.
 # "_recordid" is a reserved field always defined to identify a record.
 #
-# Non-reserved fields can be defined by Table.new and Table#define_field.
+# Non-reserved fields can be defined by Tb.new and Tb#define_field.
 # It is an error to access a field which is not defined.
 #
 # A value in a record is identified by a recordid and field name.
@@ -52,14 +52,14 @@ require 'pp'
 # A value for _recordid is an non-negative integer and it is automatically allocated when a new record is inserted.
 # It is an error to access a record by recordid which is not allocated.
 #
-class Table
+class Tb
   include Enumerable
 
   # :call-seq:
-  #   Table.new
-  #   Table.new(fields, values1, values2, ...)
+  #   Tb.new
+  #   Tb.new(fields, values1, values2, ...)
   #
-  # creates an instance of Table class.
+  # creates an instance of Tb class.
   #
   # If the first argument, _fields_, is given, it should be an array of strings.
   # The strings are used as field names to define fields.
@@ -71,12 +71,12 @@ class Table
   # The arrays are used as records to define records.
   # A value in the array is used for a value of corresponding field defined by the first argument.
   #
-  #   t = Table.new %w[fruit color],
+  #   t = Tb.new %w[fruit color],
   #                 %w[apple red],
   #                 %w[banana yellow],
   #                 %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #     {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #     {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}>
   #   #     {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -100,7 +100,7 @@ class Table
   #
   # replaces the contents of _table_ same as _table2_.
   def replace(tbl2)
-    raise TypeError, "a Table expected but #{tbl2.inspect}" unless Table === tbl2
+    raise TypeError, "a Tb expected but #{tbl2.inspect}" unless Tb === tbl2
     @next_recordid = tbl2.instance_variable_get(:@next_recordid)
     @recordid2index = tbl2.instance_variable_get(:@recordid2index).dup
     @free_index = tbl2.instance_variable_get(:@free_index).dup
@@ -177,18 +177,18 @@ class Table
   # If a block is given, the block is called for each record.
   # The return value of the block is used for the initial value of the field.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   t.define_field("namelen") {|record| record["fruit"].length }
   #   pp t
-  #   #=>  #<Table
+  #   #=>  #<Tb
   #   #     {"_recordid"=>0, "fruit"=>"apple", "color"=>"red", "namelen"=>5}
   #   #     {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow", "namelen"=>6}
   #   #     {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange", "namelen"=>6}>
@@ -218,12 +218,12 @@ class Table
   #
   # returns true if the field specified by the argument is exist.
   #
-  #   t = Table.new %w[fruit color], 
-  #                 %w[apple red], 
-  #                 %w[banana yellow], 
-  #                 %w[orange orange] 
+  #   t = Tb.new %w[fruit color], 
+  #              %w[apple red], 
+  #              %w[banana yellow], 
+  #              %w[orange orange] 
   #   pp t 
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -240,12 +240,12 @@ class Table
   #
   # returns the list of non-reserved field names as an array of strings.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -260,12 +260,12 @@ class Table
   #
   # returns the list of reserved and non-reserved field names as an array of strings.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -280,14 +280,14 @@ class Table
   #
   # reorder the fields.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   p t.list_fields
   #   #=> ["fruit", "color"]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -295,7 +295,7 @@ class Table
   #   p t.list_fields
   #   #=> ["color", "fruit"]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "color"=>"red", "fruit"=>"apple"}
   #   #    {"_recordid"=>1, "color"=>"yellow", "fruit"=>"banana"}
   #   #    {"_recordid"=>2, "color"=>"orange", "fruit"=>"orange"}>
@@ -311,12 +311,12 @@ class Table
   #
   # returns the list of recordids as an array of integers.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -331,12 +331,12 @@ class Table
   #
   # returns the number of records.
   #
-  #   t = Table.new %w[fruit],      
-  #                 %w[apple],    
-  #                 %w[banana],       
-  #                 %w[orange]       
+  #   t = Tb.new %w[fruit],      
+  #              %w[apple],    
+  #              %w[banana],       
+  #              %w[orange]       
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple"}
   #   #    {"_recordid"=>1, "fruit"=>"banana"}
   #   #    {"_recordid"=>2, "fruit"=>"orange"}>
@@ -354,18 +354,18 @@ class Table
   # inserts a record and returns its identifier.
   # All fields of the record are initialized to nil.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.allocate_recoridd #=> 3
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
@@ -375,18 +375,18 @@ class Table
   # table, a record is allocated with the recordid.
   # If the specified recordid is already used, ArgumentError is raised.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   t.allocate_recordid(100)
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
@@ -422,7 +422,7 @@ class Table
   # the allocated record will have the recordid.
   # If _recordid_ is already used, ArgumentError is raised.
   def allocate_record(recordid=nil)
-    Table::Record.new(self, allocate_recordid(recordid))
+    Tb::Record.new(self, allocate_recordid(recordid))
   end
 
   # :call-seq:
@@ -430,18 +430,18 @@ class Table
   #
   # sets the value of the cell identified by _recordid_ and _field_.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   t.set_cell(1, "color", "green")
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"green"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -458,12 +458,12 @@ class Table
   #
   # returns the value of the cell identified by _recordid_ and _field_.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -483,18 +483,18 @@ class Table
   #
   # This method returns the old value.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange] 
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange] 
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.delete_cell(1, "color") #=> "yellow"
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -518,19 +518,19 @@ class Table
   #
   # This method returns nil.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.delete_recordid(1)
   #   #=> nil
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #
@@ -552,12 +552,12 @@ class Table
   #
   # This method returned the recordid of the inserted record.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -565,7 +565,7 @@ class Table
   #   p recordid
   #   #=> 3
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
@@ -589,19 +589,19 @@ class Table
   #
   # This method return an array of recordids.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.insert_values(["fruit", "color"], ["grape", "purple"], ["cherry", "red"])
   #   #=> [3, 4]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
@@ -632,20 +632,20 @@ class Table
   #
   # This method returns _table1_.
   #
-  #   t1 = Table.new %w[fruit color],
-  #                  %w[apple red]
-  #   t2 = Table.new %w[fruit color],
-  #                  %w[banana yellow],
-  #                  %w[orange orange]
+  #   t1 = Tb.new %w[fruit color],
+  #               %w[apple red]
+  #   t2 = Tb.new %w[fruit color],
+  #               %w[banana yellow],
+  #               %w[orange orange]
   #   pp t1
-  #   #=> #<Table {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}>
+  #   #=> #<Tb {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}>
   #   pp t2
-  #   #=> #<Table
+  #   #=> #<Tb
   #        {"_recordid"=>0, "fruit"=>"banana", "color"=>"yellow"}
   #        {"_recordid"=>1, "fruit"=>"orange", "color"=>"orange"}>
   #   t1.concat(t2)
   #   pp t1
-  #   #=> #<Table
+  #   #=> #<Tb
   #        {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #        {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #        {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -666,19 +666,19 @@ class Table
   #
   # updates the record specified by _recordid_.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.update_record(1, {"color"=>"green"}) 
   #   #=> nil
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"green"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -697,12 +697,12 @@ class Table
   #
   # extracts specified fields of the specified record.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -724,21 +724,21 @@ class Table
   #
   # get the record specified by _recordid_ as a hash.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.get_record(1)                    
-  #   #=> #<Table::Record: "_recordid"=>1, "fruit"=>"banana", "color"=>"yellow">
+  #   #=> #<Tb::Record: "_recordid"=>1, "fruit"=>"banana", "color"=>"yellow">
   #
   def get_record(recordid)
     recordid = check_recordid(recordid)
-    Table::Record.new(self, recordid)
+    Tb::Record.new(self, recordid)
   end
 
   # :call-seq:
@@ -746,12 +746,12 @@ class Table
   #
   # iterates over the non-reserved field names of the table.
   #
-  #   t = Table.new %w[fruit color],    
-  #                 %w[apple red], 
-  #                 %w[banana yellow], 
-  #                 %w[orange orange] 
+  #   t = Tb.new %w[fruit color],    
+  #              %w[apple red], 
+  #              %w[banana yellow], 
+  #              %w[orange orange] 
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -772,12 +772,12 @@ class Table
   #
   # iterates over the reserved and non-reserved field names of the table.
   #
-  #   t = Table.new %w[fruit color],    
-  #                 %w[apple red], 
-  #                 %w[banana yellow], 
-  #                 %w[orange orange] 
+  #   t = Tb.new %w[fruit color],    
+  #              %w[apple red], 
+  #              %w[banana yellow], 
+  #              %w[orange orange] 
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -798,12 +798,12 @@ class Table
   #
   # This method returns nil.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
@@ -823,21 +823,21 @@ class Table
   # :call-seq:
   #   table.to_a -> [record1, ...]
   #
-  # returns an array containing all records as Table::Record objects.
+  # returns an array containing all records as Tb::Record objects.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   pp t.to_a                         
-  #   #=> [#<Table::Record: "fruit"=>"apple", "color"=>"red">,
-  #   #    #<Table::Record: "fruit"=>"banana", "color"=>"yellow">,
-  #   #    #<Table::Record: "fruit"=>"orange", "color"=>"orange">]
+  #   #=> [#<Tb::Record: "fruit"=>"apple", "color"=>"red">,
+  #   #    #<Tb::Record: "fruit"=>"banana", "color"=>"yellow">,
+  #   #    #<Tb::Record: "fruit"=>"orange", "color"=>"orange">]
   #
   def to_a
     ary = []
@@ -851,23 +851,23 @@ class Table
   #   table.each {|record| ... }
   #   table.each_record {|record| ... }
   #
-  # iterates over all records and yields them as Table::Record object.
+  # iterates over all records and yields them as Tb::Record object.
   #
   # This method returns nil.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   t.each_record {|record| p record }   
-  #   #=> #<Table::Record: "fruit"=>"apple", "color"=>"red">
-  #   #   #<Table::Record: "fruit"=>"banana", "color"=>"yellow">
-  #   #   #<Table::Record: "fruit"=>"orange", "color"=>"orange">
+  #   #=> #<Tb::Record: "fruit"=>"apple", "color"=>"red">
+  #   #   #<Tb::Record: "fruit"=>"banana", "color"=>"yellow">
+  #   #   #<Tb::Record: "fruit"=>"orange", "color"=>"orange">
   #
   def each_record
     each_recordid {|recordid|
@@ -889,7 +889,7 @@ class Table
   # :call-seq:
   #   table.filter {|record| ... }
   def filter
-    t = Table.new list_fields
+    t = Tb.new list_fields
     each_record {|record|
       if yield(record)
         t.insert record
@@ -912,7 +912,7 @@ class Table
       k = rec2.values_at(*common_fields)
       (h[k] ||= []) << rec2
     }
-    result = Table.new(fields1 | fields2)
+    result = Tb.new(fields1 | fields2)
     table1.each {|rec1|
       k = rec1.values_at(*common_fields)
       rec2_list = h[k]
@@ -940,7 +940,7 @@ class Table
       k = rec2.values_at(*common_fields)
       (h[k] ||= []) << rec2
     }
-    result = Table.new(total_fields)
+    result = Tb.new(total_fields)
     ids2 = {}
     table1.each {|rec1|
       k = rec1.values_at(*common_fields)
@@ -997,17 +997,17 @@ class Table
   #
   # creates a new table which field names are renamed.
   #
-  #   t = Table.new %w[fruit color],
-  #                 %w[apple red],
-  #                 %w[banana yellow],
-  #                 %w[orange orange]
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   pp t.rename_field("fruit"=>"food")
-  #   #=> #<Table
+  #   #=> #<Tb
   #   #    {"_recordid"=>0, "food"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "food"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "food"=>"orange", "color"=>"orange"}>
@@ -1019,7 +1019,7 @@ class Table
       nf = check_field_type(nf)
       rh[of] = nf
     }
-    result = Table.new
+    result = Tb.new
     field_list = self.list_fields
     field_list.each {|of|
       nf = rh.fetch(of, of)
@@ -1044,24 +1044,24 @@ class Table
   #
   # The sort order is defined as similar manner to Enumerable#sort_by.
   #
-  #  t = Table.new %w[fruit color],
-  #                %w[apple red],
-  #                %w[banana yellow],
-  #                %w[orange orange]
+  #  t = Tb.new %w[fruit color],
+  #             %w[apple red],
+  #             %w[banana yellow],
+  #             %w[orange orange]
   #  pp t
-  #  #=> #<Table
+  #  #=> #<Tb
   #  #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #  #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #  #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #
   #  pp t.reorder_records_by {|rec| rec["color"] }
-  #  #=> #<Table
+  #  #=> #<Tb
   #  #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}
   #  #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #  #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}>
   #
   def reorder_records_by(&b)
-    result = Table.new self.list_fields
+    result = Tb.new self.list_fields
     self.sort_by(&b).each {|rec|
       recordid = result.allocate_recordid(rec["_recordid"])
       result.update_record(recordid, rec)

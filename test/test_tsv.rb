@@ -1,10 +1,10 @@
-require 'table'
+require 'tb'
 require 'test/unit'
 
-class TestTableTSV < Test::Unit::TestCase
+class TestTbTSV < Test::Unit::TestCase
   def test_parse
     tsv = "a\tb\n1\t2\n"
-    t = Table.parse_tsv(tsv)
+    t = Tb.parse_tsv(tsv)
     records = []
     t.each_record {|record|
       records << record.to_h_with_reserved
@@ -16,7 +16,7 @@ class TestTableTSV < Test::Unit::TestCase
 
   def test_parse_conv
     tsv = "foo\na\tb\n1\t2\n"
-    t = Table.parse_tsv(tsv) {|aa|
+    t = Tb.parse_tsv(tsv) {|aa|
       assert_equal([%w[foo],
                    %w[a b],
                    %w[1 2]],
@@ -34,7 +34,7 @@ class TestTableTSV < Test::Unit::TestCase
   end
 
   def test_generate_tsv
-    tbl = Table.new %w[a b], %w[foo bar]
+    tbl = Tb.new %w[a b], %w[foo bar]
     tbl.generate_tsv(out="")
     assert_equal("a\tb\nfoo\tbar\n", out)
   end

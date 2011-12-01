@@ -28,7 +28,7 @@
 
 $KCODE = 'u'
 
-require 'table'
+require 'tb'
 require 'optparse'
 
 require 'jakarta-poi.jar'
@@ -382,7 +382,7 @@ def convert_book(filename, input, csvgen)
   end
 end
 
-Table.csv_stream_output(STDOUT) {|csvgen|
+Tb.csv_stream_output(STDOUT) {|csvgen|
   argv = ARGV.empty? ? ['-'] : ARGV
   argv.each {|filename|
     if filename == '-'

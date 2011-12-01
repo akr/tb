@@ -24,7 +24,7 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-require 'table'
+require 'tb'
 require 'optparse'
 require 'enumerator'
 
@@ -51,7 +51,7 @@ def main(argv)
   when 'mheader' then main_mheader(argv)
   when 'crop' then main_crop(argv)
   when nil
-    err "Usage: table subcommand args..."
+    err "Usage: tb subcommand args..."
   else
     err "unexpected subcommand: #{subcommand.inspect}"
   end
@@ -60,24 +60,24 @@ end
 def usage(status)
   print <<'End'
 Usage:
-  table csv [OPTS] [TABLE]
-  table tsv [OPTS] [TABLE]
-  table json [OPTS] [TABLE]
-  table yaml [OPTS] [TABLE]
-  table pp [OPTS] [TABLE]
-  table grep [OPTS] REGEXP [TABLE]
-  table gsub [OPTS] REGEXP STRING [TABLE]
-  table sort [OPTS] [TABLE]
-  table select [OPTS] FIELD,... [TABLE]
-  table rename [OPTS] SRC,DST,... [TABLE]
-  table newfield [OPTS] FIELD RUBY-EXP [TABLE]
-  table cat [OPTS] [TABLE ...]
-  table join [OPTS] [TABLE ...]
-  table group [OPTS] [TABLE]
-  table cross [OPTS] [TABLE]
-  table shape [OPTS] [TABLE ...]
-  table mheader [OPTS] [TABLE]
-  table crop [OPTS] [TABLE]
+  tb csv [OPTS] [TABLE]
+  tb tsv [OPTS] [TABLE]
+  tb json [OPTS] [TABLE]
+  tb yaml [OPTS] [TABLE]
+  tb pp [OPTS] [TABLE]
+  tb grep [OPTS] REGEXP [TABLE]
+  tb gsub [OPTS] REGEXP STRING [TABLE]
+  tb sort [OPTS] [TABLE]
+  tb select [OPTS] FIELD,... [TABLE]
+  tb rename [OPTS] SRC,DST,... [TABLE]
+  tb newfield [OPTS] FIELD RUBY-EXP [TABLE]
+  tb cat [OPTS] [TABLE ...]
+  tb join [OPTS] [TABLE ...]
+  tb group [OPTS] [TABLE]
+  tb cross [OPTS] [TABLE]
+  tb shape [OPTS] [TABLE ...]
+  tb mheader [OPTS] [TABLE]
+  tb crop [OPTS] [TABLE]
 End
   exit status
 end
@@ -116,7 +116,7 @@ $opt_no_pager = nil
 
 def op_csv
   op = OptionParser.new
-  op.banner = 'Usage: table csv [OPTS] [TABLE]'
+  op.banner = 'Usage: tb csv [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -125,7 +125,7 @@ end
 
 def op_tsv
   op = OptionParser.new
-  op.banner = 'Usage: table tsv [OPTS] [TABLE]'
+  op.banner = 'Usage: tb tsv [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -134,7 +134,7 @@ end
 
 def op_json
   op = OptionParser.new
-  op.banner = 'Usage: table json [OPTS] [TABLE]'
+  op.banner = 'Usage: tb json [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -143,7 +143,7 @@ end
 
 def op_yaml
   op = OptionParser.new
-  op.banner = 'Usage: table yaml [OPTS] [TABLE]'
+  op.banner = 'Usage: tb yaml [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -152,7 +152,7 @@ end
 
 def op_pp
   op = OptionParser.new
-  op.banner = 'Usage: table pp [OPTS] [TABLE]'
+  op.banner = 'Usage: tb pp [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -165,7 +165,7 @@ $opt_grep_f = nil
 $opt_grep_v = nil
 def op_grep
   op = OptionParser.new
-  op.banner = 'Usage: table grep [OPTS] REGEXP [TABLE]'
+  op.banner = 'Usage: tb grep [OPTS] REGEXP [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('-f FIELD', 'search field') {|field| $opt_grep_f = field }
@@ -180,7 +180,7 @@ $opt_gsub_e = nil
 $opt_gsub_f = nil
 def op_gsub
   op = OptionParser.new
-  op.banner = 'Usage: table gsub [OPTS] REGEXP STRING [TABLE]'
+  op.banner = 'Usage: tb gsub [OPTS] REGEXP STRING [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('-f FIELD', 'search field') {|field| $opt_gsub_f = field }
@@ -192,7 +192,7 @@ end
 $opt_sort_f = nil
 def op_sort
   op = OptionParser.new
-  op.banner = 'Usage: table sort [OPTS] [TABLE]'
+  op.banner = 'Usage: tb sort [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('-f FIELD,...', 'specify sort keys') {|fs| $opt_sort_f = fs }
@@ -203,7 +203,7 @@ end
 $opt_select_v = nil
 def op_select
   op = OptionParser.new
-  op.banner = 'Usage: table select [OPTS] FIELD,... [TABLE]'
+  op.banner = 'Usage: tb select [OPTS] FIELD,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('-v', 'invert match') { $opt_select_v = true }
@@ -213,7 +213,7 @@ end
 
 def op_rename
   op = OptionParser.new
-  op.banner = 'Usage: table rename [OPTS] SRC,DST,... [TABLE]'
+  op.banner = 'Usage: tb rename [OPTS] SRC,DST,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
@@ -221,7 +221,7 @@ end
 
 def op_newfield
   op = OptionParser.new
-  op.banner = 'Usage: table newfield [OPTS] FIELD RUBY-EXP [TABLE]'
+  op.banner = 'Usage: tb newfield [OPTS] FIELD RUBY-EXP [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
   op
@@ -229,7 +229,7 @@ end
 
 def op_cat
   op = OptionParser.new
-  op.banner = 'Usage: table cat [OPTS] [TABLE ...]'
+  op.banner = 'Usage: tb cat [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -240,7 +240,7 @@ $opt_join_outer = nil
 $opt_join_outer_missing = nil
 def op_join
   op = OptionParser.new
-  op.banner = 'Usage: table join [OPTS] [TABLE ...]'
+  op.banner = 'Usage: tb join [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-d', '--debug', 'show debug message') { $opt_debug += 1 }
   op.def_option('-N', 'use numeric field name') { $opt_N = true }
@@ -258,7 +258,7 @@ end
 $opt_group_fields = []
 def op_group
   op = OptionParser.new
-  op.banner = 'Usage: table group [OPTS] KEY-FIELD1,... [TABLE]'
+  op.banner = 'Usage: tb group [OPTS] KEY-FIELD1,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_group_fields << arg }
@@ -270,7 +270,7 @@ $opt_cross_fields = []
 $opt_cross_compact = false
 def op_cross
   op = OptionParser.new
-  op.banner = 'Usage: table cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE]'
+  op.banner = 'Usage: tb cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_cross_fields << arg }
@@ -281,7 +281,7 @@ end
 
 def op_shape
   op = OptionParser.new
-  op.banner = 'Usage: table shape [OPTS] [TABLE ...]'
+  op.banner = 'Usage: tb shape [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { $opt_N = true }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -291,7 +291,7 @@ end
 $opt_mheader_count = nil
 def op_mheader
   op = OptionParser.new
-  op.banner = 'Usage: table mheader [OPTS] [TABLE]'
+  op.banner = 'Usage: tb mheader [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-c N', 'number of header records') {|arg| $opt_mheader_count = arg.to_i }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -301,7 +301,7 @@ end
 $opt_crop_range = nil
 def op_crop
   op = OptionParser.new
-  op.banner = 'Usage: table crop [OPTS] [TABLE]'
+  op.banner = 'Usage: tb crop [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-r RANGE', 'range.  i.e. "2,1-4,3", "B1:D3"') {|arg| $opt_crop_range = arg }
   op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
@@ -764,7 +764,7 @@ end
 
 def main_join(argv)
   op_join.parse!(argv)
-  result = Table.new([], [])
+  result = Tb.new([], [])
   retain_left = false
   retain_right = false
   case $opt_join_outer
@@ -819,7 +819,7 @@ def main_group(argv)
         }
       end
     }
-    result = Table.new(result_fields)
+    result = Tb.new(result_fields)
     h.keys.sort_by {|k| k.map {|v| comparison_value(v) } }.each {|k|
       a = h[k]
       result.insert_values result_fields, k + a.map {|ag| ag.finish }
@@ -871,7 +871,7 @@ def main_cross(argv)
     vary = vset.keys.sort_by {|a| a.map {|v| comparison_value(v) } }
     hary = hset.keys.sort_by {|a| a.map {|v| comparison_value(v) } }
     with_output {|out|
-      Table.csv_stream_output(out) {|gen|
+      Tb.csv_stream_output(out) {|gen|
         hkfs.each_with_index {|hkf, i|
           next if $opt_cross_compact && i == hkfs.length - 1
           row = [nil] * (vkfs.length - 1) + [hkf]
@@ -907,7 +907,7 @@ end
 def main_shape(argv)
   op_shape.parse!(argv)
   filenames = argv.empty? ? ['-'] : argv
-  result = Table.new(%w[header_fields min_fields max_fields records filename])
+  result = Tb.new(%w[header_fields min_fields max_fields records filename])
   filenames.each {|filename|
     tablereader_open(filename) {|tblreader|
       num_header_fields = tblreader.header.length
@@ -955,7 +955,7 @@ def main_mheader(argv)
     }
   end
   with_table_stream_output {|gen|
-    Table::Reader.open(filename, {:numeric=>true}) {|tblreader|
+    Tb::Reader.open(filename, {:numeric=>true}) {|tblreader|
       tblreader.each {|ary|
         if header
           ary.each_with_index {|v,i|
@@ -1003,7 +1003,7 @@ def main_crop(argv)
   end
   if stream
     with_table_stream_output {|gen|
-      Table::Reader.open(filename, {:numeric=>true}) {|tblreader|
+      Tb::Reader.open(filename, {:numeric=>true}) {|tblreader|
         rownum = 1
 	tblreader.each {|ary|
 	  if range_row2 < rownum
@@ -1024,7 +1024,7 @@ def main_crop(argv)
     }
   else
     arys = []
-    Table::Reader.open(filename, {:numeric=>true}) {|tblreader|
+    Tb::Reader.open(filename, {:numeric=>true}) {|tblreader|
       tblreader.each {|a|
         a.pop while !a.empty? && (a.last.nil? || a.last == '')
 	arys << a
@@ -1052,7 +1052,7 @@ def split_field_list_argument(arg)
 end
 
 def split_csv_argument(arg)
-  Table.csv_stream_input(arg) {|ary| return ary }
+  Tb.csv_stream_input(arg) {|ary| return ary }
   return []
 end
 
@@ -1074,7 +1074,7 @@ def load_table(filename)
       arys << ary
     }
     header = tblreader.header
-    tbl = Table.new(header)
+    tbl = Tb.new(header)
     arys.each {|ary|
       ary << nil while ary.length < header.length
       tbl.insert_values header, ary
@@ -1084,12 +1084,12 @@ def load_table(filename)
 end
 
 def tablereader_open(filename, &b)
-  Table::Reader.open(filename, {:numeric=>$opt_N}, &b)
+  Tb::Reader.open(filename, {:numeric=>$opt_N}, &b)
 end
 
 def with_table_stream_output
   with_output {|out|
-    Table.csv_stream_output(out) {|gen|
+    Tb.csv_stream_output(out) {|gen|
       def gen.output_header(header)
         self << header if !$opt_N
       end
@@ -1101,7 +1101,7 @@ end
 def tbl_generate_csv(tbl, out)
   if $opt_N
     header = tbl.list_fields
-    Table.csv_stream_output(out) {|gen|
+    Tb.csv_stream_output(out) {|gen|
       tbl.each {|rec|
         gen << rec.values_at(*header)
       }
@@ -1114,7 +1114,7 @@ end
 def tbl_generate_tsv(tbl, out)
   if $opt_N
     header = tbl.list_fields
-    Table.tsv_stream_output(out) {|gen|
+    Tb.tsv_stream_output(out) {|gen|
       tbl.each {|rec|
         gen << rec.values_at(*header)
       }
