@@ -22,6 +22,8 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
+Tb::Cmd.subcommands << 'rename'
+
 def op_rename
   op = OptionParser.new
   op.banner = 'Usage: tb rename [OPTS] SRC,DST,... [TABLE]'

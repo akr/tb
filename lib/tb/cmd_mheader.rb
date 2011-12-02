@@ -22,6 +22,8 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
+Tb::Cmd.subcommands << 'mheader'
+
 $opt_mheader_count = nil
 def op_mheader
   op = OptionParser.new

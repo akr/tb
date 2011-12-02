@@ -22,6 +22,13 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
+class Tb::Cmd
+  @subcommands = []
+  class << self
+    attr_reader :subcommands
+  end
+end
+
 $opt_N = nil
 $opt_debug = 0
 $opt_no_pager = nil

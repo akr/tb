@@ -22,6 +22,8 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
+Tb::Cmd.subcommands << 'grep'
+
 $opt_grep_e = nil
 $opt_grep_ruby = nil
 $opt_grep_f = nil

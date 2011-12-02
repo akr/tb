@@ -22,6 +22,8 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
+Tb::Cmd.subcommands << 'gsub'
+
 $opt_gsub_e = nil
 $opt_gsub_f = nil
 def op_gsub

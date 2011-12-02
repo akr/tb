@@ -22,6 +22,8 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
+Tb::Cmd.subcommands << 'shape'
+
 def op_shape
   op = OptionParser.new
   op.banner = 'Usage: tb shape [OPTS] [TABLE ...]'

@@ -46,6 +46,7 @@ require 'tb/cmd_cross'
 require 'tb/cmd_shape'
 require 'tb/cmd_mheader'
 require 'tb/cmd_crop'
+require 'tb/cmd_help'
 require 'tb/cmdmain'
 
 main ARGV

@@ -22,33 +22,58 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-Tb::Cmd.subcommands << 'pp'
+Tb::Cmd.subcommands << 'help'
 
-def op_pp
-  op = OptionParser.new
-  op.banner = 'Usage: tb pp [OPTS] [TABLE]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { $opt_N = true }
-  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
-  op
+def usage(status)
+  print <<'End'
+Usage:
+  tb csv [OPTS] [TABLE]
+  tb tsv [OPTS] [TABLE]
+  tb json [OPTS] [TABLE]
+  tb yaml [OPTS] [TABLE]
+  tb pp [OPTS] [TABLE]
+  tb grep [OPTS] REGEXP [TABLE]
+  tb gsub [OPTS] REGEXP STRING [TABLE]
+  tb sort [OPTS] [TABLE]
+  tb select [OPTS] FIELD,... [TABLE]
+  tb rename [OPTS] SRC,DST,... [TABLE]
+  tb newfield [OPTS] FIELD RUBY-EXP [TABLE]
+  tb cat [OPTS] [TABLE ...]
+  tb join [OPTS] [TABLE ...]
+  tb group [OPTS] [TABLE]
+  tb cross [OPTS] [TABLE]
+  tb shape [OPTS] [TABLE ...]
+  tb mheader [OPTS] [TABLE]
+  tb crop [OPTS] [TABLE]
+End
+  exit status
 end
 
-def main_pp(argv)
-  op_pp.parse!(argv)
-  argv.unshift '-' if argv.empty?
-  with_output {|out|
-    argv.each {|filename|
-      tablereader_open(filename) {|tblreader|
-        tblreader.each {|ary|
-          h = {}
-          ary.each_with_index {|v, i|
-            next if v.nil?
-            h[tblreader.field_from_index_ex(i)] = v
-          }
-          PP.pp h, out
-        }
-      }
-    }
-  }
+def main_help(argv)
+  subcommand = argv.shift
+  case subcommand
+  when 'csv' then puts op_csv
+  when 'tsv' then puts op_tsv
+  when 'json' then puts op_json
+  when 'yaml' then puts op_yaml
+  when 'pp' then puts op_pp
+  when 'grep' then puts op_grep
+  when 'gsub' then puts op_gsub
+  when 'sort' then puts op_sort
+  when 'select' then puts op_select
+  when 'rename' then puts op_rename
+  when 'newfield' then puts op_newfield
+  when 'cat' then puts op_cat
+  when 'join' then puts op_join
+  when 'group' then puts op_group
+  when 'cross' then puts op_cross
+  when 'shape' then puts op_shape
+  when 'mheader' then puts op_mheader
+  when 'crop' then puts op_crop
+  when nil
+    usage(true)
+  else
+    err "unexpected subcommand: #{subcommand.inspect}"
+  end
 end
 

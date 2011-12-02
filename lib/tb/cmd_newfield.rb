@@ -22,6 +22,8 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
+Tb::Cmd.subcommands << 'newfield'
+
 def op_newfield
   op = OptionParser.new
   op.banner = 'Usage: tb newfield [OPTS] FIELD RUBY-EXP [TABLE]'

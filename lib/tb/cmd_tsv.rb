@@ -22,6 +22,8 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
+Tb::Cmd.subcommands << 'tsv'
+
 def op_tsv
   op = OptionParser.new
   op.banner = 'Usage: tb tsv [OPTS] [TABLE]'
