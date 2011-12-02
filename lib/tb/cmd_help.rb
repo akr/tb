@@ -51,26 +51,9 @@ end
 
 def main_help(argv)
   subcommand = argv.shift
-  case subcommand
-  when 'csv' then puts op_csv
-  when 'tsv' then puts op_tsv
-  when 'json' then puts op_json
-  when 'yaml' then puts op_yaml
-  when 'pp' then puts op_pp
-  when 'grep' then puts op_grep
-  when 'gsub' then puts op_gsub
-  when 'sort' then puts op_sort
-  when 'select' then puts op_select
-  when 'rename' then puts op_rename
-  when 'newfield' then puts op_newfield
-  when 'cat' then puts op_cat
-  when 'join' then puts op_join
-  when 'group' then puts op_group
-  when 'cross' then puts op_cross
-  when 'shape' then puts op_shape
-  when 'mheader' then puts op_mheader
-  when 'crop' then puts op_crop
-  when nil
+  if Tb::Cmd.subcommands.include?(subcommand)
+    puts self.send("op_#{subcommand}")
+  elsif subcommand == nil
     usage(true)
   else
     err "unexpected subcommand: #{subcommand.inspect}"
