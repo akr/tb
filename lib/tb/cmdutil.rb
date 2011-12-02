@@ -41,7 +41,7 @@ def err(msg)
   exit 1
 end
 
-def comparison_value(v)
+def smart_cmp_value(v)
   case v
   when nil
     []
@@ -102,7 +102,7 @@ end
 class MaxAggregator
   def initialize() @v = nil; @cmp = nil end 
   def update(v)
-    cmp = comparison_value(v)
+    cmp = smart_cmp_value(v)
     if @cmp == nil
       @v, @cmp = v, cmp
     else
@@ -115,7 +115,7 @@ end
 class MinAggregator
   def initialize() @v = @cmp = nil end 
   def update(v)
-    cmp = comparison_value(v)
+    cmp = smart_cmp_value(v)
     if @cmp == nil
       @v, @cmp = v, cmp
     else

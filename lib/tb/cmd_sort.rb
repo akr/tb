@@ -53,9 +53,9 @@ def (Tb::Cmd).main_sort(argv)
   end
   tbl = load_table(filename)
   if fs
-    blk = lambda {|rec| fs.map {|f| comparison_value(rec[f]) } }
+    blk = lambda {|rec| fs.map {|f| smart_cmp_value(rec[f]) } }
   else
-    blk = lambda {|rec| rec.map {|k, v| comparison_value(v) } }
+    blk = lambda {|rec| rec.map {|k, v| smart_cmp_value(v) } }
   end
   tbl2 = tbl.reorder_records_by(&blk)
   with_output {|out|

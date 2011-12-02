@@ -84,8 +84,8 @@ def (Tb::Cmd).main_cross(argv)
         }
       end
     }
-    vary = vset.keys.sort_by {|a| a.map {|v| comparison_value(v) } }
-    hary = hset.keys.sort_by {|a| a.map {|v| comparison_value(v) } }
+    vary = vset.keys.sort_by {|a| a.map {|v| smart_cmp_value(v) } }
+    hary = hset.keys.sort_by {|a| a.map {|v| smart_cmp_value(v) } }
     with_output {|out|
       Tb.csv_stream_output(out) {|gen|
         hkfs.each_with_index {|hkf, i|

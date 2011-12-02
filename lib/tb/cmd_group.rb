@@ -67,7 +67,7 @@ def (Tb::Cmd).main_group(argv)
       end
     }
     result = Tb.new(result_fields)
-    h.keys.sort_by {|k| k.map {|v| comparison_value(v) } }.each {|k|
+    h.keys.sort_by {|k| k.map {|v| smart_cmp_value(v) } }.each {|k|
       a = h[k]
       result.insert_values result_fields, k + a.map {|ag| ag.finish }
     }
