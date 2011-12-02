@@ -24,7 +24,7 @@
 
 Tb::Cmd.subcommands << 'cat'
 
-def op_cat
+def (Tb::Cmd).op_cat
   op = OptionParser.new
   op.banner = 'Usage: tb cat [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -33,7 +33,7 @@ def op_cat
   op
 end
 
-def main_cat(argv)
+def (Tb::Cmd).main_cat(argv)
   op_cat.parse!(argv)
   argv = ['-'] if argv.empty?
   if $opt_N

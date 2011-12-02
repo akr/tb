@@ -26,7 +26,7 @@ Tb::Cmd.subcommands << 'join'
 
 $opt_join_outer = nil
 $opt_join_outer_missing = nil
-def op_join
+def (Tb::Cmd).op_join
   op = OptionParser.new
   op.banner = 'Usage: tb join [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -43,7 +43,7 @@ def op_join
   op
 end
 
-def main_join(argv)
+def (Tb::Cmd).main_join(argv)
   op_join.parse!(argv)
   result = Tb.new([], [])
   retain_left = false

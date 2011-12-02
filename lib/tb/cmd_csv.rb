@@ -24,7 +24,7 @@
 
 Tb::Cmd.subcommands << 'csv'
 
-def op_csv
+def (Tb::Cmd).op_csv
   op = OptionParser.new
   op.banner = 'Usage: tb csv [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -33,7 +33,7 @@ def op_csv
   op
 end
 
-def main_csv(argv)
+def (Tb::Cmd).main_csv(argv)
   op_csv.parse!(argv)
   each_table_file(argv) {|tbl|
     with_output {|out|

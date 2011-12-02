@@ -28,7 +28,7 @@ $opt_grep_e = nil
 $opt_grep_ruby = nil
 $opt_grep_f = nil
 $opt_grep_v = nil
-def op_grep
+def (Tb::Cmd).op_grep
   op = OptionParser.new
   op.banner = 'Usage: tb grep [OPTS] REGEXP [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -41,7 +41,7 @@ def op_grep
   op
 end
 
-def main_grep(argv)
+def (Tb::Cmd).main_grep(argv)
   op_grep.parse!(argv)
   if $opt_grep_ruby
     pred = eval("lambda {|_| #{$opt_grep_ruby} }")

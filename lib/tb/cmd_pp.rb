@@ -24,7 +24,7 @@
 
 Tb::Cmd.subcommands << 'pp'
 
-def op_pp
+def (Tb::Cmd).op_pp
   op = OptionParser.new
   op.banner = 'Usage: tb pp [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -33,7 +33,7 @@ def op_pp
   op
 end
 
-def main_pp(argv)
+def (Tb::Cmd).main_pp(argv)
   op_pp.parse!(argv)
   argv.unshift '-' if argv.empty?
   with_output {|out|

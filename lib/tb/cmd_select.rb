@@ -25,7 +25,7 @@
 Tb::Cmd.subcommands << 'select'
 
 $opt_select_v = nil
-def op_select
+def (Tb::Cmd).op_select
   op = OptionParser.new
   op.banner = 'Usage: tb select [OPTS] FIELD,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -35,7 +35,7 @@ def op_select
   op
 end
 
-def main_select(argv)
+def (Tb::Cmd).main_select(argv)
   op_select.parse!(argv)
   fs = split_field_list_argument(argv.shift)
   filename = argv.shift || '-'

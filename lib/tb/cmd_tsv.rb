@@ -24,7 +24,7 @@
 
 Tb::Cmd.subcommands << 'tsv'
 
-def op_tsv
+def (Tb::Cmd).op_tsv
   op = OptionParser.new
   op.banner = 'Usage: tb tsv [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -33,7 +33,7 @@ def op_tsv
   op
 end
 
-def main_tsv(argv)
+def (Tb::Cmd).main_tsv(argv)
   op_tsv.parse!(argv)
   each_table_file(argv) {|tbl|
     with_output {|out|

@@ -22,7 +22,7 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-def main(argv)
+def (Tb::Cmd).main(argv)
   subcommand = argv.shift
   if subcommand == '-h'
     main_help(argv)

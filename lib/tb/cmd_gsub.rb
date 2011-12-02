@@ -26,7 +26,7 @@ Tb::Cmd.subcommands << 'gsub'
 
 $opt_gsub_e = nil
 $opt_gsub_f = nil
-def op_gsub
+def (Tb::Cmd).op_gsub
   op = OptionParser.new
   op.banner = 'Usage: tb gsub [OPTS] REGEXP STRING [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -37,7 +37,7 @@ def op_gsub
   op
 end
 
-def main_gsub(argv)
+def (Tb::Cmd).main_gsub(argv)
   op_gsub.parse!(argv)
   if $opt_gsub_e
     re = Regexp.new($opt_gsub_e)

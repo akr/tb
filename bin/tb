@@ -49,4 +49,4 @@ require 'tb/cmd_mheader'
 require 'tb/cmd_crop'
 require 'tb/cmdmain'
 
-main ARGV
+Tb::Cmd.main ARGV

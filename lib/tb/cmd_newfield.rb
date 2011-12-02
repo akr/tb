@@ -24,7 +24,7 @@
 
 Tb::Cmd.subcommands << 'newfield'
 
-def op_newfield
+def (Tb::Cmd).op_newfield
   op = OptionParser.new
   op.banner = 'Usage: tb newfield [OPTS] FIELD RUBY-EXP [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -32,7 +32,7 @@ def op_newfield
   op
 end
 
-def main_newfield(argv)
+def (Tb::Cmd).main_newfield(argv)
   op_rename.parse!(argv)
   field = argv.shift
   rubyexp = argv.shift

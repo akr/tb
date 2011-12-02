@@ -24,7 +24,7 @@
 
 Tb::Cmd.subcommands << 'shape'
 
-def op_shape
+def (Tb::Cmd).op_shape
   op = OptionParser.new
   op.banner = 'Usage: tb shape [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -33,7 +33,7 @@ def op_shape
   op
 end
 
-def main_shape(argv)
+def (Tb::Cmd).main_shape(argv)
   op_shape.parse!(argv)
   filenames = argv.empty? ? ['-'] : argv
   result = Tb.new(%w[header_fields min_fields max_fields records filename])

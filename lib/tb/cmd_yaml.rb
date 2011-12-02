@@ -24,7 +24,7 @@
 
 Tb::Cmd.subcommands << 'yaml'
 
-def op_yaml
+def (Tb::Cmd).op_yaml
   op = OptionParser.new
   op.banner = 'Usage: tb yaml [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -33,7 +33,7 @@ def op_yaml
   op
 end
 
-def main_yaml(argv)
+def (Tb::Cmd).main_yaml(argv)
   require 'yaml'
   op_yaml.parse!(argv)
   each_table_file(argv) {|tbl|

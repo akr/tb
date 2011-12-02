@@ -25,7 +25,7 @@
 Tb::Cmd.subcommands << 'group'
 
 $opt_group_fields = []
-def op_group
+def (Tb::Cmd).op_group
   op = OptionParser.new
   op.banner = 'Usage: tb group [OPTS] KEY-FIELD1,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -35,7 +35,7 @@ def op_group
   op
 end
 
-def main_group(argv)
+def (Tb::Cmd).main_group(argv)
   op_group.parse!(argv)
   kfs = split_field_list_argument(argv.shift)
   opt_group_fields = $opt_group_fields.map {|arg|

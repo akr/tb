@@ -25,7 +25,7 @@
 Tb::Cmd.subcommands << 'mheader'
 
 $opt_mheader_count = nil
-def op_mheader
+def (Tb::Cmd).op_mheader
   op = OptionParser.new
   op.banner = 'Usage: tb mheader [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -34,7 +34,7 @@ def op_mheader
   op
 end
 
-def main_mheader(argv)
+def (Tb::Cmd).main_mheader(argv)
   op_mheader.parse!(argv)
   filename = argv.shift || '-'
   warn "extra arguments: #{argv.join(" ")}" if !argv.empty?

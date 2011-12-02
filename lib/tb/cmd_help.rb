@@ -24,7 +24,7 @@
 
 Tb::Cmd.subcommands << 'help'
 
-def usage(status)
+def (Tb::Cmd).usage(status)
   print <<'End'
 Usage:
 End
@@ -34,14 +34,14 @@ End
   exit status
 end
 
-def op_help
+def (Tb::Cmd).op_help
   op = OptionParser.new
   op.banner = 'Usage: tb help [OPTS] [SUBCOMMAND]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op
 end
 
-def main_help(argv)
+def (Tb::Cmd).main_help(argv)
   subcommand = argv.shift
   if Tb::Cmd.subcommands.include?(subcommand)
     puts self.send("op_#{subcommand}")

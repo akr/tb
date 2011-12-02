@@ -25,7 +25,7 @@
 Tb::Cmd.subcommands << 'crop'
 
 $opt_crop_range = nil
-def op_crop
+def (Tb::Cmd).op_crop
   op = OptionParser.new
   op.banner = 'Usage: tb crop [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -34,7 +34,7 @@ def op_crop
   op
 end
 
-def main_crop(argv)
+def (Tb::Cmd).main_crop(argv)
   op_crop.parse!(argv)
   filename = argv.shift || '-'
   warn "extra arguments: #{argv.join(" ")}" if !argv.empty?

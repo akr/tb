@@ -24,7 +24,7 @@
 
 Tb::Cmd.subcommands << 'rename'
 
-def op_rename
+def (Tb::Cmd).op_rename
   op = OptionParser.new
   op.banner = 'Usage: tb rename [OPTS] SRC,DST,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -32,7 +32,7 @@ def op_rename
   op
 end
 
-def main_rename(argv)
+def (Tb::Cmd).main_rename(argv)
   op_rename.parse!(argv)
   fs = split_field_list_argument(argv.shift)
   filename = argv.shift || '-'

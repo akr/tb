@@ -25,7 +25,7 @@
 Tb::Cmd.subcommands << 'sort'
 
 $opt_sort_f = nil
-def op_sort
+def (Tb::Cmd).op_sort
   op = OptionParser.new
   op.banner = 'Usage: tb sort [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -35,7 +35,7 @@ def op_sort
   op
 end
 
-def main_sort(argv)
+def (Tb::Cmd).main_sort(argv)
   op_sort.parse!(argv)
   filename = argv.empty? ? '-' : argv.shift
   warn "extra arguments: #{argv.join(" ")}" if !argv.empty?

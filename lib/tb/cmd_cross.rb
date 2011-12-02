@@ -26,7 +26,7 @@ Tb::Cmd.subcommands << 'cross'
 
 $opt_cross_fields = []
 $opt_cross_compact = false
-def op_cross
+def (Tb::Cmd).op_cross
   op = OptionParser.new
   op.banner = 'Usage: tb cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -37,7 +37,7 @@ def op_cross
   op
 end
 
-def main_cross(argv)
+def (Tb::Cmd).main_cross(argv)
   op_cross.parse!(argv)
   hkfs = split_field_list_argument(argv.shift)
   vkfs = split_field_list_argument(argv.shift)

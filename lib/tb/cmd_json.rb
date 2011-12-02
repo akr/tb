@@ -24,7 +24,7 @@
 
 Tb::Cmd.subcommands << 'json'
 
-def op_json
+def (Tb::Cmd).op_json
   op = OptionParser.new
   op.banner = 'Usage: tb json [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
@@ -33,7 +33,7 @@ def op_json
   op
 end
 
-def main_json(argv)
+def (Tb::Cmd).main_json(argv)
   require 'json'
   op_json.parse!(argv)
   argv = ['-'] if argv.empty?
