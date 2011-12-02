@@ -4,6 +4,7 @@
 
   % tb help
   Usage:
+    tb help [OPTS] [SUBCOMMAND]
     tb csv [OPTS] [TABLE]
     tb tsv [OPTS] [TABLE]
     tb json [OPTS] [TABLE]
@@ -17,13 +18,11 @@
     tb newfield [OPTS] FIELD RUBY-EXP [TABLE]
     tb cat [OPTS] [TABLE ...]
     tb join [OPTS] [TABLE ...]
-    tb group [OPTS] [TABLE]
-    tb cross [OPTS] [TABLE]
+    tb group [OPTS] KEY-FIELD1,... [TABLE]
+    tb cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE]
     tb shape [OPTS] [TABLE ...]
     tb mheader [OPTS] [TABLE]
     tb crop [OPTS] [TABLE]
-
-  
 
 == Install
 
