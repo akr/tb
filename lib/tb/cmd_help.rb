@@ -27,26 +27,18 @@ Tb::Cmd.subcommands << 'help'
 def usage(status)
   print <<'End'
 Usage:
-  tb csv [OPTS] [TABLE]
-  tb tsv [OPTS] [TABLE]
-  tb json [OPTS] [TABLE]
-  tb yaml [OPTS] [TABLE]
-  tb pp [OPTS] [TABLE]
-  tb grep [OPTS] REGEXP [TABLE]
-  tb gsub [OPTS] REGEXP STRING [TABLE]
-  tb sort [OPTS] [TABLE]
-  tb select [OPTS] FIELD,... [TABLE]
-  tb rename [OPTS] SRC,DST,... [TABLE]
-  tb newfield [OPTS] FIELD RUBY-EXP [TABLE]
-  tb cat [OPTS] [TABLE ...]
-  tb join [OPTS] [TABLE ...]
-  tb group [OPTS] [TABLE]
-  tb cross [OPTS] [TABLE]
-  tb shape [OPTS] [TABLE ...]
-  tb mheader [OPTS] [TABLE]
-  tb crop [OPTS] [TABLE]
 End
+  Tb::Cmd.subcommands.each {|subcommand|
+    puts "  " + self.send("op_#{subcommand}").banner.sub(/\AUsage: /, '')
+  }
   exit status
+end
+
+def op_help
+  op = OptionParser.new
+  op.banner = 'Usage: tb help [OPTS] [SUBCOMMAND]'
+  op.def_option('-h', 'show help message') { puts op; exit 0 }
+  op
 end
 
 def main_help(argv)
@@ -59,4 +51,3 @@ def main_help(argv)
     err "unexpected subcommand: #{subcommand.inspect}"
   end
 end
-
