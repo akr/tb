@@ -24,13 +24,20 @@
 
 Tb::Cmd.subcommands << 'select'
 
-$opt_select_v = nil
+class Tb::Cmd
+  @opt_select_v = nil
+end
+
+class << Tb::Cmd
+  attr_accessor :opt_select_v
+end
+
 def (Tb::Cmd).op_select
   op = OptionParser.new
   op.banner = 'Usage: tb select [OPTS] FIELD,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
-  op.def_option('-v', 'invert match') { $opt_select_v = true }
+  op.def_option('-v', 'invert match') { Tb::Cmd.opt_select_v = true }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
@@ -41,7 +48,7 @@ def (Tb::Cmd).main_select(argv)
   filename = argv.shift || '-'
   warn "extra arguments: #{argv.join(" ")}" if !argv.empty?
   tablereader_open(filename) {|tblreader|
-    if $opt_select_v
+    if Tb::Cmd.opt_select_v
       h = {}
       fs.each {|f| h[tblreader.index_from_field(f)] = true }
       header = nil

@@ -24,13 +24,20 @@
 
 Tb::Cmd.subcommands << 'sort'
 
-$opt_sort_f = nil
+class Tb::Cmd
+  @opt_sort_f = nil
+end
+
+class << Tb::Cmd
+  attr_accessor :opt_sort_f
+end
+
 def (Tb::Cmd).op_sort
   op = OptionParser.new
   op.banner = 'Usage: tb sort [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
-  op.def_option('-f FIELD,...', 'specify sort keys') {|fs| $opt_sort_f = fs }
+  op.def_option('-f FIELD,...', 'specify sort keys') {|fs| Tb::Cmd.opt_sort_f = fs }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
@@ -39,8 +46,8 @@ def (Tb::Cmd).main_sort(argv)
   op_sort.parse!(argv)
   filename = argv.empty? ? '-' : argv.shift
   warn "extra arguments: #{argv.join(" ")}" if !argv.empty?
-  if $opt_sort_f
-    fs = split_field_list_argument($opt_sort_f)
+  if Tb::Cmd.opt_sort_f
+    fs = split_field_list_argument(Tb::Cmd.opt_sort_f)
   else
     fs = nil
   end

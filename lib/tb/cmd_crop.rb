@@ -24,12 +24,19 @@
 
 Tb::Cmd.subcommands << 'crop'
 
-$opt_crop_range = nil
+class Tb::Cmd
+  @opt_crop_range = nil
+end
+
+class << Tb::Cmd
+  attr_accessor :opt_crop_range
+end
+
 def (Tb::Cmd).op_crop
   op = OptionParser.new
   op.banner = 'Usage: tb crop [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-r RANGE', 'range.  i.e. "2,1-4,3", "B1:D3"') {|arg| $opt_crop_range = arg }
+  op.def_option('-r RANGE', 'range.  i.e. "2,1-4,3", "B1:D3"') {|arg| Tb::Cmd.opt_crop_range = arg }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
@@ -39,8 +46,8 @@ def (Tb::Cmd).main_crop(argv)
   filename = argv.shift || '-'
   warn "extra arguments: #{argv.join(" ")}" if !argv.empty?
   stream = false
-  if $opt_crop_range
-    case $opt_crop_range
+  if Tb::Cmd.opt_crop_range
+    case Tb::Cmd.opt_crop_range
     when /\A(\d+),(\d+)-(\d+),(\d+)\z/ # 1-based
       stream = true
       range_col1 = $1.to_i
@@ -54,7 +61,7 @@ def (Tb::Cmd).main_crop(argv)
       range_col2 = decode_a1_addressing_col($3)
       range_row2 = $4.to_i
     else
-      raise ArgumentError, "unexpected range argument: #{$opt_crop_range.inspect}"
+      raise ArgumentError, "unexpected range argument: #{Tb::Cmd.opt_crop_range.inspect}"
     end
   end
   if stream

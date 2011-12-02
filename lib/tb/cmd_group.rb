@@ -24,13 +24,20 @@
 
 Tb::Cmd.subcommands << 'group'
 
-$opt_group_fields = []
+class Tb::Cmd
+  @opt_group_fields = []
+end
+
+class << Tb::Cmd
+  attr_accessor :opt_group_fields
+end
+
 def (Tb::Cmd).op_group
   op = OptionParser.new
   op.banner = 'Usage: tb group [OPTS] KEY-FIELD1,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
-                '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_group_fields << arg }
+                '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| Tb::Cmd.opt_group_fields << arg }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
@@ -38,7 +45,7 @@ end
 def (Tb::Cmd).main_group(argv)
   op_group.parse!(argv)
   kfs = split_field_list_argument(argv.shift)
-  opt_group_fields = $opt_group_fields.map {|arg|
+  opt_group_fields = Tb::Cmd.opt_group_fields.map {|arg|
     aggregation_spec, new_field = split_field_list_argument(arg)
     new_field ||= aggregation_spec
     [new_field, lambda {|fields| make_aggregator(aggregation_spec, fields) } ]

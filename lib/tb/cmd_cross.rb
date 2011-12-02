@@ -24,15 +24,24 @@
 
 Tb::Cmd.subcommands << 'cross'
 
-$opt_cross_fields = []
-$opt_cross_compact = false
+class Tb::Cmd
+  @opt_cross_fields = []
+  @opt_cross_compact = false
+end
+
+class << Tb::Cmd
+  attr_accessor 
+  attr_accessor :opt_cross_fields
+  attr_accessor :opt_cross_compact
+end
+
 def (Tb::Cmd).op_cross
   op = OptionParser.new
   op.banner = 'Usage: tb cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
-                '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_cross_fields << arg }
-  op.def_option('-c', '--compact', 'compact format') { $opt_cross_compact = true }
+                '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| Tb::Cmd.opt_cross_fields << arg }
+  op.def_option('-c', '--compact', 'compact format') { Tb::Cmd.opt_cross_compact = true }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
@@ -41,10 +50,10 @@ def (Tb::Cmd).main_cross(argv)
   op_cross.parse!(argv)
   hkfs = split_field_list_argument(argv.shift)
   vkfs = split_field_list_argument(argv.shift)
-  if $opt_cross_fields.empty?
+  if Tb::Cmd.opt_cross_fields.empty?
     opt_cross_fields = [['count', 'count']]
   else
-    opt_cross_fields = $opt_cross_fields.map {|arg|
+    opt_cross_fields = Tb::Cmd.opt_cross_fields.map {|arg|
       agg_spec, new_field = split_field_list_argument(arg)
       new_field ||= agg_spec
       [agg_spec, new_field]
@@ -80,12 +89,12 @@ def (Tb::Cmd).main_cross(argv)
     with_output {|out|
       Tb.csv_stream_output(out) {|gen|
         hkfs.each_with_index {|hkf, i|
-          next if $opt_cross_compact && i == hkfs.length - 1
+          next if Tb::Cmd.opt_cross_compact && i == hkfs.length - 1
           row = [nil] * (vkfs.length - 1) + [hkf]
           hary.each {|hkvs| opt_cross_fields.length.times { row << hkvs[i] } }
           gen << row
         }
-        if $opt_cross_compact
+        if Tb::Cmd.opt_cross_compact
           r = vkfs.dup
           hary.each {|hkvs| r.concat([hkvs[-1]] * opt_cross_fields.length) }
           gen << r

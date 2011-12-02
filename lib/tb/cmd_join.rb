@@ -24,20 +24,28 @@
 
 Tb::Cmd.subcommands << 'join'
 
-$opt_join_outer = nil
-$opt_join_outer_missing = nil
+class Tb::Cmd
+  @opt_join_outer = nil
+  @opt_join_outer_missing = nil
+end
+
+class Tb::Cmd
+  attr_accessor :opt_join_outer
+  attr_accessor :opt_join_outer_missing
+end
+
 def (Tb::Cmd).op_join
   op = OptionParser.new
   op.banner = 'Usage: tb join [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-d', '--debug', 'show debug message') { Tb::Cmd.opt_debug += 1 }
   op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
-  op.def_option('--outer', 'outer join') { $opt_join_outer = :full }
-  op.def_option('--left', 'left outer join') { $opt_join_outer = :left }
-  op.def_option('--right', 'right outer join') { $opt_join_outer = :right }
+  op.def_option('--outer', 'outer join') { Tb::Cmd.opt_join_outer = :full }
+  op.def_option('--left', 'left outer join') { Tb::Cmd.opt_join_outer = :left }
+  op.def_option('--right', 'right outer join') { Tb::Cmd.opt_join_outer = :right }
   op.def_option('--outer-missing=DEFAULT', 'missing value for outer join') {|missing|
-    $opt_join_outer ||= :full
-    $opt_join_outer_missing = missing
+    Tb::Cmd.opt_join_outer ||= :full
+    Tb::Cmd.opt_join_outer_missing = missing
   }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
@@ -48,7 +56,7 @@ def (Tb::Cmd).main_join(argv)
   result = Tb.new([], [])
   retain_left = false
   retain_right = false
-  case $opt_join_outer
+  case Tb::Cmd.opt_join_outer
   when :full
     retain_left = true
     retain_right = true
@@ -58,12 +66,12 @@ def (Tb::Cmd).main_join(argv)
     retain_right = true
   when nil
   else
-    raise "unexpected $opt_join_outer: #{$opt_join_outer.inspect}"
+    raise "unexpected Tb::Cmd.opt_join_outer: #{Tb::Cmd.opt_join_outer.inspect}"
   end
-  if $opt_join_outer
+  if Tb::Cmd.opt_join_outer
     each_table_file(argv) {|tbl|
       STDERR.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= Tb::Cmd.opt_debug
-      result = result.natjoin2_outer(tbl, $opt_join_outer_missing, retain_left, retain_right)
+      result = result.natjoin2_outer(tbl, Tb::Cmd.opt_join_outer_missing, retain_left, retain_right)
     }
   else
     each_table_file(argv) {|tbl|

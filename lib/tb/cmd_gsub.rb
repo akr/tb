@@ -24,23 +24,31 @@
 
 Tb::Cmd.subcommands << 'gsub'
 
-$opt_gsub_e = nil
-$opt_gsub_f = nil
+class Tb::Cmd
+  @opt_gsub_e = nil
+  @opt_gsub_f = nil
+end
+
+class << Tb::Cmd
+  attr_accessor :opt_gsub_e
+  attr_accessor :opt_gsub_f
+end
+
 def (Tb::Cmd).op_gsub
   op = OptionParser.new
   op.banner = 'Usage: tb gsub [OPTS] REGEXP STRING [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
-  op.def_option('-f FIELD', 'search field') {|field| $opt_gsub_f = field }
-  op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| $opt_gsub_e = pattern }
+  op.def_option('-f FIELD', 'search field') {|field| Tb::Cmd.opt_gsub_f = field }
+  op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| Tb::Cmd.opt_gsub_e = pattern }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 
 def (Tb::Cmd).main_gsub(argv)
   op_gsub.parse!(argv)
-  if $opt_gsub_e
-    re = Regexp.new($opt_gsub_e)
+  if Tb::Cmd.opt_gsub_e
+    re = Regexp.new(Tb::Cmd.opt_gsub_e)
   else
     re = Regexp.new(argv.shift)
   end
@@ -51,11 +59,11 @@ def (Tb::Cmd).main_gsub(argv)
     with_table_stream_output {|gen|
       gen.output_header tblreader.header
       tblreader.each {|ary|
-        if $opt_gsub_f
+        if Tb::Cmd.opt_gsub_f
           ary2 = []
           ary.each_with_index {|str, i|
             f = tblreader.field_from_index_ex(i)
-            if f == $opt_gsub_f
+            if f == Tb::Cmd.opt_gsub_f
               str ||= ''
               ary2 << str.gsub(re, repl)
             else
