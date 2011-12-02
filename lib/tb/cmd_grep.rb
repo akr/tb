@@ -32,12 +32,12 @@ def (Tb::Cmd).op_grep
   op = OptionParser.new
   op.banner = 'Usage: tb grep [OPTS] REGEXP [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { $opt_N = true }
+  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
   op.def_option('-f FIELD', 'search field') {|field| $opt_grep_f = field }
   op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| $opt_grep_e = pattern }
   op.def_option('--ruby RUBY-EXP', 'specify a regexp.  no usual regexp argument.') {|ruby_exp| $opt_grep_ruby = ruby_exp }
   op.def_option('-v', 'ouput the records which doesn\'t match') { $opt_grep_v = true }
-  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 

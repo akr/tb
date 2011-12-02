@@ -30,7 +30,7 @@ def (Tb::Cmd).op_mheader
   op.banner = 'Usage: tb mheader [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-c N', 'number of header records') {|arg| $opt_mheader_count = arg.to_i }
-  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 

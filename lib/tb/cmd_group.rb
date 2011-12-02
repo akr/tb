@@ -31,7 +31,7 @@ def (Tb::Cmd).op_group
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_group_fields << arg }
-  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 

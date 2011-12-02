@@ -29,9 +29,9 @@ def (Tb::Cmd).op_select
   op = OptionParser.new
   op.banner = 'Usage: tb select [OPTS] FIELD,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { $opt_N = true }
+  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
   op.def_option('-v', 'invert match') { $opt_select_v = true }
-  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 
@@ -45,7 +45,7 @@ def (Tb::Cmd).main_select(argv)
       h = {}
       fs.each {|f| h[tblreader.index_from_field(f)] = true }
       header = nil
-      if !$opt_N
+      if !Tb::Cmd.opt_N
         header = []
         tblreader.header.each_with_index {|f, i|
           header << f if !h[i]

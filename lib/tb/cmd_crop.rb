@@ -30,7 +30,7 @@ def (Tb::Cmd).op_crop
   op.banner = 'Usage: tb crop [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-r RANGE', 'range.  i.e. "2,1-4,3", "B1:D3"') {|arg| $opt_crop_range = arg }
-  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 

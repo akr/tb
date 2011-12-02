@@ -30,8 +30,8 @@ def (Tb::Cmd).op_join
   op = OptionParser.new
   op.banner = 'Usage: tb join [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-d', '--debug', 'show debug message') { $opt_debug += 1 }
-  op.def_option('-N', 'use numeric field name') { $opt_N = true }
+  op.def_option('-d', '--debug', 'show debug message') { Tb::Cmd.opt_debug += 1 }
+  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
   op.def_option('--outer', 'outer join') { $opt_join_outer = :full }
   op.def_option('--left', 'left outer join') { $opt_join_outer = :left }
   op.def_option('--right', 'right outer join') { $opt_join_outer = :right }
@@ -39,7 +39,7 @@ def (Tb::Cmd).op_join
     $opt_join_outer ||= :full
     $opt_join_outer_missing = missing
   }
-  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 
@@ -62,12 +62,12 @@ def (Tb::Cmd).main_join(argv)
   end
   if $opt_join_outer
     each_table_file(argv) {|tbl|
-      STDERR.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= $opt_debug
+      STDERR.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= Tb::Cmd.opt_debug
       result = result.natjoin2_outer(tbl, $opt_join_outer_missing, retain_left, retain_right)
     }
   else
     each_table_file(argv) {|tbl|
-      STDERR.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= $opt_debug
+      STDERR.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= Tb::Cmd.opt_debug
       result = result.natjoin2(tbl)
     }
   end

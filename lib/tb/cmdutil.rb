@@ -24,14 +24,17 @@
 
 class Tb::Cmd
   @subcommands = []
-  class << self
-    attr_reader :subcommands
-  end
+  @opt_N = nil
+  @opt_debug = 0
+  @opt_no_pager = nil
 end
 
-$opt_N = nil
-$opt_debug = 0
-$opt_no_pager = nil
+class << Tb::Cmd
+  attr_reader :subcommands
+  attr_accessor :opt_N 
+  attr_accessor :opt_debug 
+  attr_accessor :opt_no_pager
+end
 
 def err(msg)
   STDERR.puts msg
@@ -228,14 +231,14 @@ def load_table(filename)
 end
 
 def tablereader_open(filename, &b)
-  Tb::Reader.open(filename, {:numeric=>$opt_N}, &b)
+  Tb::Reader.open(filename, {:numeric=>Tb::Cmd.opt_N}, &b)
 end
 
 def with_table_stream_output
   with_output {|out|
     Tb.csv_stream_output(out) {|gen|
       def gen.output_header(header)
-        self << header if !$opt_N
+        self << header if !Tb::Cmd.opt_N
       end
       yield gen
     }
@@ -243,7 +246,7 @@ def with_table_stream_output
 end
 
 def tbl_generate_csv(tbl, out)
-  if $opt_N
+  if Tb::Cmd.opt_N
     header = tbl.list_fields
     Tb.csv_stream_output(out) {|gen|
       tbl.each {|rec|
@@ -256,7 +259,7 @@ def tbl_generate_csv(tbl, out)
 end
 
 def tbl_generate_tsv(tbl, out)
-  if $opt_N
+  if Tb::Cmd.opt_N
     header = tbl.list_fields
     Tb.tsv_stream_output(out) {|gen|
       tbl.each {|rec|
@@ -269,7 +272,7 @@ def tbl_generate_tsv(tbl, out)
 end
 
 def with_output
-  if STDOUT.tty? && !$opt_no_pager
+  if STDOUT.tty? && !Tb::Cmd.opt_no_pager
     IO.popen(ENV['PAGER'] || 'more', 'w') {|pager|
       yield pager
     }

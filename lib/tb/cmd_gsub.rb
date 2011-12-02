@@ -30,10 +30,10 @@ def (Tb::Cmd).op_gsub
   op = OptionParser.new
   op.banner = 'Usage: tb gsub [OPTS] REGEXP STRING [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { $opt_N = true }
+  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
   op.def_option('-f FIELD', 'search field') {|field| $opt_gsub_f = field }
   op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| $opt_gsub_e = pattern }
-  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 

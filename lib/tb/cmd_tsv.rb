@@ -28,8 +28,8 @@ def (Tb::Cmd).op_tsv
   op = OptionParser.new
   op.banner = 'Usage: tb tsv [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { $opt_N = true }
-  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
+  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 

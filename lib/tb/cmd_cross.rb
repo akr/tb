@@ -33,7 +33,7 @@ def (Tb::Cmd).op_cross
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| $opt_cross_fields << arg }
   op.def_option('-c', '--compact', 'compact format') { $opt_cross_compact = true }
-  op.def_option('--no-pager', 'don\'t use pager') { $opt_no_pager = true }
+  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 
