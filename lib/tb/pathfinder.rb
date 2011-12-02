@@ -547,14 +547,13 @@ class Tb::Pathfinder::State
       pairs = pairs.tail
     end
     result = Tb::Pathfinder::EmptyState
-    ary.reverse_each {|pairs|
-      result = Tb::Pathfinder::State.new(pairs.key, pairs.val, result)
+    ary.reverse_each {|pairs2|
+      result = Tb::Pathfinder::State.new(pairs2.key, pairs2.val, result)
     }
     result
   end
 
   def inspect
-    h = {}
     pairs = self
     str = ''
     while !pairs.empty?
