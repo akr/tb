@@ -7,6 +7,7 @@ class TestTbCmdGrep < Test::Unit::TestCase
     Tb::Cmd.reset_option
     @curdir = Dir.pwd
     @tmpdir = Dir.mktmpdir
+    Dir.chdir @tmpdir
   end
   def teardown
     Tb::Cmd.reset_option
