@@ -22,15 +22,11 @@ class TestTbCmdYAML < Test::Unit::TestCase
       4,5,6
     End
     Tb::Cmd.main_yaml(['-o', o="o.yaml", i])
-    assert_equal(<<-"End", File.read(o))
----
-- a: '0'
-  b: '1'
-  c: '2'
-- a: '4'
-  b: '5'
-  c: '6'
-
-    End
+    assert_equal(
+      [
+        {'a' => '0', 'b' => '1', 'c' => '2'},
+        {'a' => '4', 'b' => '5', 'c' => '6'},
+      ],
+      YAML.load(File.read(o)))
   end
 end
