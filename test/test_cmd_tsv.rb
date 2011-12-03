@@ -28,4 +28,19 @@ class TestTbCmdTSV < Test::Unit::TestCase
       4\t5\t6
     End
   end
+
+  def test_numeric
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      0,1,2
+      4,5,6
+    End
+    assert_equal(true, Tb::Cmd.main_tsv(['-o', o="o.tsv", '-N', i]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a\tb\tc
+      0\t1\t2
+      4\t5\t6
+    End
+  end
+
 end
