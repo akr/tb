@@ -34,7 +34,7 @@ class TestTbCmdPP < Test::Unit::TestCase
       0,1,2,3
     End
     assert_equal(true, Tb::Cmd.main_pp(['-o', o="o.pp", i]))
-    assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, '')) # xxx
+    assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, ''))
       { "a" => "0", "b" => "1", "1" => "2", "2" => "3" }
     End
   end
