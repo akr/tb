@@ -1,6 +1,10 @@
 require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
+begin
+  require 'json'
+rescue LoadError
+end
 
 class TestTbCmdJSON < Test::Unit::TestCase
   def setup
@@ -35,4 +39,4 @@ class TestTbCmdJSON < Test::Unit::TestCase
       }]
     End
   end
-end
+end if defined?(JSON)
