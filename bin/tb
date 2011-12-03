@@ -24,29 +24,6 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-require 'tb'
-require 'optparse'
-require 'enumerator'
-require 'tb/cmdutil'
-require 'tb/cmd_help'
-require 'tb/cmd_csv'
-require 'tb/cmd_tsv'
-require 'tb/cmd_json'
-require 'tb/cmd_yaml'
-require 'tb/cmd_pp'
-require 'tb/cmd_grep'
-require 'tb/cmd_gsub'
-require 'tb/cmd_sort'
-require 'tb/cmd_select'
-require 'tb/cmd_rename'
-require 'tb/cmd_newfield'
-require 'tb/cmd_cat'
-require 'tb/cmd_join'
-require 'tb/cmd_group'
-require 'tb/cmd_cross'
-require 'tb/cmd_shape'
-require 'tb/cmd_mheader'
-require 'tb/cmd_crop'
-require 'tb/cmdmain'
+require 'tb/cmdtop'
 
 Tb::Cmd.main ARGV

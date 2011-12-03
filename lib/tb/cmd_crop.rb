@@ -24,19 +24,14 @@
 
 Tb::Cmd.subcommands << 'crop'
 
-class Tb::Cmd
-  @opt_crop_range = nil
-end
-
-class << Tb::Cmd
-  attr_accessor :opt_crop_range
-end
+Tb::Cmd.default_option[:opt_crop_range] = nil
 
 def (Tb::Cmd).op_crop
   op = OptionParser.new
   op.banner = 'Usage: tb crop [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-r RANGE', 'range.  i.e. "2,1-4,3", "B1:D3"') {|arg| Tb::Cmd.opt_crop_range = arg }
+  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end

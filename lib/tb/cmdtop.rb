@@ -22,23 +22,29 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-Tb::Cmd.subcommands << 'csv'
+require 'tb'
+require 'optparse'
+require 'enumerator'
+require 'tb/cmdutil'
+require 'tb/cmd_help'
+require 'tb/cmd_csv'
+require 'tb/cmd_tsv'
+require 'tb/cmd_json'
+require 'tb/cmd_yaml'
+require 'tb/cmd_pp'
+require 'tb/cmd_grep'
+require 'tb/cmd_gsub'
+require 'tb/cmd_sort'
+require 'tb/cmd_select'
+require 'tb/cmd_rename'
+require 'tb/cmd_newfield'
+require 'tb/cmd_cat'
+require 'tb/cmd_join'
+require 'tb/cmd_group'
+require 'tb/cmd_cross'
+require 'tb/cmd_shape'
+require 'tb/cmd_mheader'
+require 'tb/cmd_crop'
+require 'tb/cmdmain'
 
-def (Tb::Cmd).op_csv
-  op = OptionParser.new
-  op.banner = 'Usage: tb csv [OPTS] [TABLE]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
-  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
-  op
-end
-
-def (Tb::Cmd).main_csv(argv)
-  op_csv.parse!(argv)
-  each_table_file(argv) {|tbl|
-    with_output {|out|
-      tbl_generate_csv(tbl, out)
-    }
-  }
-end
+Tb::Cmd.init_option

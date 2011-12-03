@@ -28,6 +28,7 @@ def (Tb::Cmd).op_rename
   op = OptionParser.new
   op.banner = 'Usage: tb rename [OPTS] SRC,DST,... [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
+  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end

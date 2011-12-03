@@ -24,19 +24,14 @@
 
 Tb::Cmd.subcommands << 'mheader'
 
-class Tb::Cmd
-  @opt_mheader_count = nil
-end
-
-class << Tb::Cmd
-  attr_accessor :opt_mheader_count
-end
+Tb::Cmd.default_option[:opt_mheader_count] = nil
 
 def (Tb::Cmd).op_mheader
   op = OptionParser.new
   op.banner = 'Usage: tb mheader [OPTS] [TABLE]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-c N', 'number of header records') {|arg| Tb::Cmd.opt_mheader_count = arg.to_i }
+  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end

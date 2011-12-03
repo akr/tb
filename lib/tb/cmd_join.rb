@@ -24,15 +24,8 @@
 
 Tb::Cmd.subcommands << 'join'
 
-class Tb::Cmd
-  @opt_join_outer = nil
-  @opt_join_outer_missing = nil
-end
-
-class Tb::Cmd
-  attr_accessor :opt_join_outer
-  attr_accessor :opt_join_outer_missing
-end
+Tb::Cmd.default_option[:opt_join_outer] = nil
+Tb::Cmd.default_option[:opt_join_outer_missing] = nil
 
 def (Tb::Cmd).op_join
   op = OptionParser.new
@@ -47,6 +40,7 @@ def (Tb::Cmd).op_join
     Tb::Cmd.opt_join_outer ||= :full
     Tb::Cmd.opt_join_outer_missing = missing
   }
+  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end

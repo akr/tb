@@ -24,13 +24,7 @@
 
 Tb::Cmd.subcommands << 'select'
 
-class Tb::Cmd
-  @opt_select_v = nil
-end
-
-class << Tb::Cmd
-  attr_accessor :opt_select_v
-end
+Tb::Cmd.default_option[:opt_select_v] = nil
 
 def (Tb::Cmd).op_select
   op = OptionParser.new
@@ -38,6 +32,7 @@ def (Tb::Cmd).op_select
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
   op.def_option('-v', 'invert match') { Tb::Cmd.opt_select_v = true }
+  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end

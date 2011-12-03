@@ -24,16 +24,33 @@
 
 class Tb::Cmd
   @subcommands = []
-  @opt_N = nil
-  @opt_debug = 0
-  @opt_no_pager = nil
+
+  @default_option = {
+    :opt_N => nil,
+    :opt_debug => 0,
+    :opt_no_pager => nil,
+    :opt_output => nil,
+  }
+
+  def self.reset_option
+    @default_option.each {|k, v|
+      instance_variable_set("@#{k}", Marshal.load(Marshal.dump(v)))
+    }
+  end
+
+  def self.init_option
+    class << Tb::Cmd
+      Tb::Cmd.default_option.each {|k, v|
+        attr_accessor k
+      }
+    end
+    reset_option
+  end
 end
 
 class << Tb::Cmd
   attr_reader :subcommands
-  attr_accessor :opt_N 
-  attr_accessor :opt_debug 
-  attr_accessor :opt_no_pager
+  attr_reader :default_option
 end
 
 def err(msg)
@@ -272,7 +289,11 @@ def tbl_generate_tsv(tbl, out)
 end
 
 def with_output
-  if STDOUT.tty? && !Tb::Cmd.opt_no_pager
+  if Tb::Cmd.opt_output
+    File.open(Tb::Cmd.opt_output, 'w') {|f|
+      yield f
+    }
+  elsif STDOUT.tty? && !Tb::Cmd.opt_no_pager
     IO.popen(ENV['PAGER'] || 'more', 'w') {|pager|
       yield pager
     }

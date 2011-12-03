@@ -24,16 +24,8 @@
 
 Tb::Cmd.subcommands << 'cross'
 
-class Tb::Cmd
-  @opt_cross_fields = []
-  @opt_cross_compact = false
-end
-
-class << Tb::Cmd
-  attr_accessor 
-  attr_accessor :opt_cross_fields
-  attr_accessor :opt_cross_compact
-end
+Tb::Cmd.default_option[:opt_cross_fields] = []
+Tb::Cmd.default_option[:opt_cross_compact] = false
 
 def (Tb::Cmd).op_cross
   op = OptionParser.new
@@ -42,6 +34,7 @@ def (Tb::Cmd).op_cross
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| Tb::Cmd.opt_cross_fields << arg }
   op.def_option('-c', '--compact', 'compact format') { Tb::Cmd.opt_cross_compact = true }
+  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end

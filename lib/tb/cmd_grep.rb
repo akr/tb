@@ -24,19 +24,10 @@
 
 Tb::Cmd.subcommands << 'grep'
 
-class Tb::Cmd
-  @opt_grep_e = nil
-  @opt_grep_ruby = nil
-  @opt_grep_f = nil
-  @opt_grep_v = nil
-end
-
-class << Tb::Cmd
-  attr_accessor :opt_grep_e
-  attr_accessor :opt_grep_ruby
-  attr_accessor :opt_grep_f
-  attr_accessor :opt_grep_v
-end
+Tb::Cmd.default_option[:opt_grep_e] = nil
+Tb::Cmd.default_option[:opt_grep_ruby] = nil
+Tb::Cmd.default_option[:opt_grep_f] = nil
+Tb::Cmd.default_option[:opt_grep_v] = nil
 
 def (Tb::Cmd).op_grep
   op = OptionParser.new
@@ -47,6 +38,7 @@ def (Tb::Cmd).op_grep
   op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| Tb::Cmd.opt_grep_e = pattern }
   op.def_option('--ruby RUBY-EXP', 'specify a regexp.  no usual regexp argument.') {|ruby_exp| Tb::Cmd.opt_grep_ruby = ruby_exp }
   op.def_option('-v', 'ouput the records which doesn\'t match') { Tb::Cmd.opt_grep_v = true }
+  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
