@@ -194,20 +194,4 @@ class Tb::Reader
   def close
     @reader.close
   end
-
-  def fix_header(header)
-    h = {}
-    header.map {|s|
-      s ||= ''
-      if h[s]
-        s += "(2)" if /\(\d+\)\z/ !~ s
-        while h[s]
-          s = s.sub(/\((\d+)\)\z/) { n = $1.to_i; "(#{n+1})" }
-        end
-        s
-      end
-      h[s] = true
-      s
-    }
-  end
 end
