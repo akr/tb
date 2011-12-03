@@ -32,4 +32,23 @@ class TestTbCmdRename < Test::Unit::TestCase
       c,d,e,f
     End
   end
+
+  def test_empty
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c,d
+      0,1,2,3
+      4,5,6,7
+      8,9,a,b
+      c,d,e,f
+    End
+    assert_equal(true, Tb::Cmd.main_rename(['-o', o="o.csv", '', i]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,b,c,d
+      0,1,2,3
+      4,5,6,7
+      8,9,a,b
+      c,d,e,f
+    End
+  end
+
 end

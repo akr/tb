@@ -16,7 +16,7 @@ class TestTbCmdHelp < Test::Unit::TestCase
   end
 
   def test_basic
-    assert_equal(true, Tb::Cmd.main_help(['-o', o="msg"]))
+    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg"]))
     msg = File.read(o)
     assert_match(/Usage:/, msg)
     assert_match(/ tb csv /, msg)
@@ -24,7 +24,7 @@ class TestTbCmdHelp < Test::Unit::TestCase
   end
 
   def test_subcommand
-    assert_equal(true, Tb::Cmd.main_help(['-o', o="msg", 'cat']))
+    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", 'cat']))
     msg = File.read(o)
     assert_match(/tb cat /, msg)
   end
@@ -38,6 +38,14 @@ class TestTbCmdHelp < Test::Unit::TestCase
     STDERR.reopen(save)
     save.close
     assert_match(/unexpected subcommand/, File.read("log"))
+  end
+
+  def test_opt_h
+    assert_equal(true, Tb::Cmd.main(['-h', '-o', o="msg"]))
+    msg = File.read(o)
+    assert_match(/Usage:/, msg)
+    assert_match(/ tb csv /, msg)
+    assert_match(/ tb select /, msg)
   end
 
 end
