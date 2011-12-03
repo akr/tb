@@ -22,12 +22,13 @@ class TestTbCmdGroup < Test::Unit::TestCase
       4,5,6,7
       8,9,a,b
       c,d,e,f
+      x,5,6,y
     End
     Tb::Cmd.main_group(['-o', o="o.csv", 'b,c', '-a', 'count', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       b,c,count
       1,2,1
-      5,6,1
+      5,6,2
       9,a,1
       d,e,1
     End

@@ -28,4 +28,33 @@ class TestTbCmdGsub < Test::Unit::TestCase
       qYYx,qYYYYYYx
     End
   end
+
+  def test_opt_e
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      foo,bar,baz
+      qux,quuux
+    End
+    Tb::Cmd.main_gsub(['-o', o="o.csv", '-e', '[au]', 'YY', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,b,c
+      foo,bYYr,bYYz
+      qYYx,qYYYYYYx
+    End
+  end
+
+  def test_opt_f
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      foo,bar,baz
+      qux,quuux
+    End
+    Tb::Cmd.main_gsub(['-o', o="o.csv", '-f', 'b', '[au]', 'YY', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,b,c
+      foo,bYYr,buz
+      qux,qYYYYYYx
+    End
+  end
+
 end

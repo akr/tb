@@ -57,12 +57,13 @@ class TestTbCmdCross < Test::Unit::TestCase
       bbbb,2001,3
       bbbb,2000,4
       cccc,2002,5
+      aaaa,2000,2
     End
     Tb::Cmd.main_cross(['-o', o="o.csv", 'name', 'year', '-a', 'sum(observ)', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       name,aaaa,bbbb,cccc
       year,sum(observ),sum(observ),sum(observ)
-      2000,1,4,
+      2000,3,4,
       2001,,3,
       2002,,,5
     End

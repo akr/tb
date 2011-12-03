@@ -30,4 +30,36 @@ class TestTbCmdGrep < Test::Unit::TestCase
       c,d,e,f
     End
   end
+
+  def test_opt_e
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c,d
+      0,1,2,3
+      4,5,6,7
+      8,9,a,b
+      c,d,e,f
+    End
+    Tb::Cmd.main_grep(['-o', o="o.csv", '-e', '[6f]', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,b,c,d
+      4,5,6,7
+      c,d,e,f
+    End
+  end
+
+  def test_ruby_pred
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c,d
+      0,1,2,3
+      4,5,6,7
+      8,9,a,b
+      c,d,e,f
+    End
+    Tb::Cmd.main_grep(['-o', o="o.csv", '--ruby', '_["b"] == "5"', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,b,c,d
+      4,5,6,7
+    End
+  end
+
 end
