@@ -34,7 +34,7 @@ class TestTbCmdHelp < Test::Unit::TestCase
     log = File.open("log", "w")
     STDERR.reopen(log)
     log.close
-    assert_raise(SystemExit) { Tb::Cmd.main_help(['-o', o="msg", 'foo']) }
+    assert_raise(SystemExit) { Tb::Cmd.main_help(['-o', "msg", 'foo']) }
     STDERR.reopen(save)
     save.close
     assert_match(/unexpected subcommand/, File.read("log"))

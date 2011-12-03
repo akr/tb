@@ -56,11 +56,19 @@ class TestTbCmdSelect < Test::Unit::TestCase
       a,b
       0,1,2,3
     End
-    assert_equal(true, Tb::Cmd.main_select(['-o', o="o.csv", 'a,1,2', i]))
+    assert_equal(true, Tb::Cmd.main_select(['-o', o="o.csv", 'a,2,1', i]))
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
-      a,1,2
-      0,2,3
+      a,2,1
+      0,3,2
     End
+  end
+
+  def test_unextendable
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      0,1,2,3
+    End
+    assert_raise(ArgumentError) { Tb::Cmd.main_select(['-o', "o.csv", '0', i]) }
   end
 
 end
