@@ -21,7 +21,7 @@ class TestTbCmdYAML < Test::Unit::TestCase
       0,1,2
       4,5,6
     End
-    Tb::Cmd.main_yaml(['-o', o="o.yaml", i])
+    assert_equal(true, Tb::Cmd.main_yaml(['-o', o="o.yaml", i]))
     assert_equal(
       [
         {'a' => '0', 'b' => '1', 'c' => '2'},

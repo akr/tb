@@ -26,4 +26,4 @@
 
 require 'tb/cmdtop'
 
-Tb::Cmd.main ARGV
+exit Tb::Cmd.main(ARGV)

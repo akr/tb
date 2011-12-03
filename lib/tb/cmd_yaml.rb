@@ -44,6 +44,7 @@ def (Tb::Cmd).main_yaml(argv)
       out.puts
     }
   }
+  true
 end
 
 

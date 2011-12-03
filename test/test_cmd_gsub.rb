@@ -21,7 +21,7 @@ class TestTbCmdGsub < Test::Unit::TestCase
       foo,bar,baz
       qux,quuux
     End
-    Tb::Cmd.main_gsub(['-o', o="o.csv", '[au]', 'YY', i])
+    assert_equal(true, Tb::Cmd.main_gsub(['-o', o="o.csv", '[au]', 'YY', i]))
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b,c
       foo,bYYr,bYYz
@@ -52,7 +52,7 @@ class TestTbCmdGsub < Test::Unit::TestCase
     Tb::Cmd.main_gsub(['-o', o="o.csv", '-f', 'b', '[au]', 'YY', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b,c
-      foo,bYYr,buz
+      foo,bYYr,baz
       qux,qYYYYYYx
     End
   end

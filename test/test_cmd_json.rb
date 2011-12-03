@@ -21,7 +21,7 @@ class TestTbCmdJSON < Test::Unit::TestCase
       0,1,2
       4,5,6
     End
-    Tb::Cmd.main_json(['-o', o="o.json", i])
+    assert_equal(true, Tb::Cmd.main_json(['-o', o="o.json", i]))
     assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, ''))
       [{
         "a": "0",

@@ -23,7 +23,7 @@ class TestTbCmdRename < Test::Unit::TestCase
       8,9,a,b
       c,d,e,f
     End
-    Tb::Cmd.main_rename(['-o', o="o.csv", 'b,x,c,b', i])
+    assert_equal(true, Tb::Cmd.main_rename(['-o', o="o.csv", 'b,x,c,b', i]))
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,x,b,d
       0,1,2,3

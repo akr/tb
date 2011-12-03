@@ -65,5 +65,6 @@ def (Tb::Cmd).main_shape(argv)
     # don't use tbl_generate_csv() because the header should always outputted.
     result.generate_csv(out)
   }
+  true
 end
 

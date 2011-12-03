@@ -75,5 +75,6 @@ def (Tb::Cmd).main_mheader(argv)
   if header
     warn "no header found."
   end
+  true
 end
 

@@ -75,5 +75,6 @@ def (Tb::Cmd).main_grep(argv)
       }
     }
   }
+  true
 end
 

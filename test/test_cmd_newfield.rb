@@ -21,7 +21,7 @@ class TestTbCmdNewfield < Test::Unit::TestCase
       1,2
       3,4
     End
-    Tb::Cmd.main_newfield(['-o', o="o.csv", 'c', '_["a"].to_i + _["b"].to_i', i])
+    assert_equal(true, Tb::Cmd.main_newfield(['-o', o="o.csv", 'c', '_["a"].to_i + _["b"].to_i', i]))
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       c,a,b
       3,1,2

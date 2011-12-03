@@ -78,4 +78,5 @@ def (Tb::Cmd).main_cat(argv)
       }
     }
   end
+  true
 end

@@ -21,7 +21,7 @@ class TestTbCmdTSV < Test::Unit::TestCase
       0,1,2
       4,5,6
     End
-    Tb::Cmd.main_tsv(['-o', o="o.tsv", i])
+    assert_equal(true, Tb::Cmd.main_tsv(['-o', o="o.tsv", i]))
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a\tb\tc
       0\t1\t2

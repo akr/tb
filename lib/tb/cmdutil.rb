@@ -26,6 +26,7 @@ class Tb::Cmd
   @subcommands = []
 
   @default_option = {
+    :opt_help => nil,
     :opt_N => nil,
     :opt_debug => 0,
     :opt_no_pager => nil,

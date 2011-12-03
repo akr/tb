@@ -55,5 +55,6 @@ def (Tb::Cmd).main_rename(argv)
       }
     }
   }
+  true
 end
 

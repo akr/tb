@@ -41,5 +41,6 @@ def (Tb::Cmd).main_tsv(argv)
       tbl_generate_tsv(tbl, out)
     }
   }
+  true
 end
 

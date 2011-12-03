@@ -75,5 +75,6 @@ def (Tb::Cmd).main_select(argv)
       }
     end
   }
+  true
 end
 

@@ -24,7 +24,7 @@ class TestTbCmdGroup < Test::Unit::TestCase
       c,d,e,f
       x,5,6,y
     End
-    Tb::Cmd.main_group(['-o', o="o.csv", 'b,c', '-a', 'count', i])
+    assert_equal(true, Tb::Cmd.main_group(['-o', o="o.csv", 'b,c', '-a', 'count', i]))
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       b,c,count
       1,2,1

@@ -24,7 +24,7 @@ class TestTbCmdCrop < Test::Unit::TestCase
       ,,,
 
     End
-    Tb::Cmd.main_crop(['-o', o="o.csv", i])
+    assert_equal(true, Tb::Cmd.main_crop(['-o', o="o.csv", i]))
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b
       0,1

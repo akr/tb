@@ -22,7 +22,7 @@ class TestTbCmdSort < Test::Unit::TestCase
       0,3
       3,2
     End
-    Tb::Cmd.main_sort(['-o', o="o.csv", i])
+    assert_equal(true, Tb::Cmd.main_sort(['-o', o="o.csv", i]))
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b
       0,3

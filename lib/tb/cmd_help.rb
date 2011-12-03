@@ -24,29 +24,38 @@
 
 Tb::Cmd.subcommands << 'help'
 
-def (Tb::Cmd).usage(status)
-  print <<'End'
+def (Tb::Cmd).usage
+  with_output {|f|
+    f.print <<'End'
 Usage:
 End
-  Tb::Cmd.subcommands.each {|subcommand|
-    puts "  " + self.send("op_#{subcommand}").banner.sub(/\AUsage: /, '')
+    Tb::Cmd.subcommands.each {|subcommand|
+      f.puts "  " + self.send("op_#{subcommand}").banner.sub(/\AUsage: /, '')
+    }
   }
-  exit status
 end
 
 def (Tb::Cmd).op_help
   op = OptionParser.new
   op.banner = 'Usage: tb help [OPTS] [SUBCOMMAND]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
+  op.def_option('-h', 'show help message') { Tb::Cmd.opt_help = true }
+  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
   op
 end
 
 def (Tb::Cmd).main_help(argv)
+  Tb::Cmd.opt_no_pager = true
+  op_help.parse!(argv)
+  if Tb::Cmd.opt_help then puts op_help; return true end
   subcommand = argv.shift
   if Tb::Cmd.subcommands.include?(subcommand)
-    puts self.send("op_#{subcommand}")
+    with_output {|f|
+      f.puts self.send("op_#{subcommand}")
+    }
+    true
   elsif subcommand == nil
-    usage(true)
+    usage
+    true
   else
     err "unexpected subcommand: #{subcommand.inspect}"
   end

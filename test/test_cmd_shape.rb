@@ -21,7 +21,7 @@ class TestTbCmdShape < Test::Unit::TestCase
       0,1
       4,5,6,7
     End
-    Tb::Cmd.main_shape(['-o', o="o.csv", i])
+    assert_equal(true, Tb::Cmd.main_shape(['-o', o="o.csv", i]))
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       header_fields,min_fields,max_fields,records,filename
       3,2,4,2,i.csv

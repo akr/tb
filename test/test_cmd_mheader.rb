@@ -22,7 +22,7 @@ class TestTbCmdMheader < Test::Unit::TestCase
       x,1,2,3,4
       y,5,6,7,8
     End
-    Tb::Cmd.main_mheader(['-o', o="o.csv", i])
+    assert_equal(true, Tb::Cmd.main_mheader(['-o', o="o.csv", i]))
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       name,2000 aaaa,2000 bbbb,2001 aaaa,2001 bbbb
       x,1,2,3,4

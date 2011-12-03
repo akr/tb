@@ -23,7 +23,7 @@ class TestTbCmdSelect < Test::Unit::TestCase
       8,9,a,b
       c,d,e,f
     End
-    Tb::Cmd.main_select(['-o', o="o.csv", 'b,d', i])
+    assert_equal(true, Tb::Cmd.main_select(['-o', o="o.csv", 'b,d', i]))
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       b,d
       1,3

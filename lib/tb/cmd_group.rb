@@ -70,5 +70,6 @@ def (Tb::Cmd).main_group(argv)
       tbl_generate_csv(result, out)
     }
   }
+  true
 end
 
