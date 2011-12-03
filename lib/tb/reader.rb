@@ -119,7 +119,6 @@ class Tb::Reader
     else
       reader
     end
-
   end
 
   def initialize(rawreader, opts={})
