@@ -31,6 +31,21 @@ class TestTbBasic < Test::Unit::TestCase
                  t2.to_a.map {|rec| rec.to_h })
   end
 
+  def test_pretty_print
+    t = Tb.new %w[fruit color],
+               %w[apple red],
+               %w[banana yellow],
+               %w[orange orange]
+    s = t.pretty_inspect
+    assert_match(/fruit/, s)
+    assert_match(/color/, s)
+    assert_match(/apple/, s)
+    assert_match(/red/, s)
+    assert_match(/banana/, s)
+    assert_match(/yellow/, s)
+    assert_match(/orange/, s)
+  end
+
   def test_enumerable
     t = Tb.new
     assert_kind_of(Enumerable, t)
@@ -50,6 +65,15 @@ class TestTbBasic < Test::Unit::TestCase
       else raise
       end
     }
+  end
+
+  def test_define_field_error
+    t = Tb.new %w[fruit color],
+               %w[apple red],
+               %w[banana yellow],
+               %w[orange orange]
+    assert_raise(ArgumentError) { t.define_field("_foo") }
+    assert_raise(ArgumentError) { t.define_field("fruit") }
   end
 
   def test_list_fields
@@ -182,11 +206,12 @@ class TestTbBasic < Test::Unit::TestCase
 
   def test_natjoin2
     t1 = Tb.new %w[a b], %w[1 2], %w[3 4], %w[0 4]
-    t2 = Tb.new %w[b c], %w[2 3], %w[4 5]
+    t2 = Tb.new %w[b c], %w[2 3], %w[4 5], %w[5 8]
     t3 = t1.natjoin2(t2)
     assert_equal([{"_recordid"=>0, "a"=>"1", "b"=>"2", "c"=>"3"},
                   {"_recordid"=>1, "a"=>"3", "b"=>"4", "c"=>"5"},
-                  {"_recordid"=>2, "a"=>"0", "b"=>"4", "c"=>"5"}], t3.to_a.map {|r| r.to_h_with_reserved })
+                  {"_recordid"=>2, "a"=>"0", "b"=>"4", "c"=>"5"}],
+                 t3.to_a.map {|r| r.to_h_with_reserved })
   end
 
   def test_natjoin2_nocommon
@@ -198,6 +223,18 @@ class TestTbBasic < Test::Unit::TestCase
                   {"a"=>"3", "b"=>"4", "c"=>"5", "d"=>"6"},
                   {"a"=>"3", "b"=>"4", "c"=>"7", "d"=>"8"}],
                   t3.to_a.map {|r| r.to_h })
+  end
+
+  def test_natjoin2_outer
+    t1 = Tb.new %w[a b], %w[1 2], %w[3 4], %w[0 4], %w[0 1]
+    t2 = Tb.new %w[b c], %w[2 3], %w[4 5], %w[5 8]
+    t3 = t1.natjoin2_outer(t2)
+    assert_equal([{"_recordid"=>0, "a"=>"1", "b"=>"2", "c"=>"3"},
+                  {"_recordid"=>1, "a"=>"3", "b"=>"4", "c"=>"5"},
+                  {"_recordid"=>2, "a"=>"0", "b"=>"4", "c"=>"5"},
+                  {"_recordid"=>3, "a"=>"0", "b"=>"1"},
+                  {"_recordid"=>4, "b"=>"5", "c"=>"8"}],
+                 t3.to_a.map {|r| r.to_h_with_reserved })
   end
 
   def test_fmap!
@@ -249,6 +286,21 @@ class TestTbBasic < Test::Unit::TestCase
     assert(recordid3 != recordid2)
   end
 
+  def test_allocate_recordid_error
+    t = Tb.new
+    recordid1 = t.allocate_recordid
+    assert_raise(ArgumentError) { t.allocate_recordid(recordid1) }
+  end
+
+  def test_allocate_record
+    t = Tb.new
+    rec1 = t.allocate_record
+    assert_kind_of(Tb::Record, rec1)
+    rec2 = t.allocate_record(200)
+    assert_kind_of(Tb::Record, rec2)
+    assert_equal(200, rec2.record_id)
+  end
+
   def test_reorder_fields!
     t = Tb.new %w[fruit color],
                %w[apple red],
@@ -287,4 +339,49 @@ class TestTbBasic < Test::Unit::TestCase
     t2 = t.reorder_records_by {|rec| rec["color"] }
     assert_equal(t.map {|rec| rec["color"] }.sort, t2.map {|rec| rec["color"] })
   end
+
+  def test_insert_values
+    t = Tb.new %w[fruit color],
+               %w[apple red],
+               %w[banana yellow],
+               %w[orange orange]
+    res = t.insert_values(["fruit", "color"], ["grape", "purple"], ["cherry", "red"])
+    assert_equal([3, 4], res)
+    assert_equal(["grape", "purple"], t.get_values(3, "fruit", "color"))
+    assert_equal(["cherry", "red"], t.get_values(4, "fruit", "color"))
+  end
+
+  def test_insert_values_error
+    t = Tb.new %w[fruit color],
+               %w[apple red],
+               %w[banana yellow],
+               %w[orange orange]
+    assert_raise(ArgumentError) { t.insert_values(["fruit", "color"], ["grape", "purple", "red"]) }
+  end
+
+  def test_concat
+    t1 = Tb.new %w[fruit color],
+                %w[apple red]
+    t2 = Tb.new %w[fruit color],
+                %w[banana yellow],
+                %w[orange orange]
+    t3 = t1.concat(t2)
+    assert_same(t1, t3)
+    assert_equal(3, t1.size)
+    assert_equal(["banana", "yellow"], t1.get_values(1, "fruit", "color"))
+    assert_equal(["orange", "orange"], t1.get_values(2, "fruit", "color"))
+  end
+
+  def test_each_record_values
+    t = Tb.new %w[fruit color],
+               %w[banana yellow],
+               %w[orange orange]
+    rs = []
+    t.each_record_values('fruit') {|r| rs << r }
+    assert_equal([['banana'], ['orange']], rs)
+    rs = []
+    t.each_record_values('fruit', 'color') {|r| rs << r }
+    assert_equal([['banana', 'yellow'], ['orange', 'orange']], rs)
+  end
+
 end
