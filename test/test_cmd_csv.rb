@@ -51,4 +51,31 @@ class TestTbCmdCSV < Test::Unit::TestCase
     input.close if input && !input.closed?
   end
 
+  def test_pipeout
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      0,1,2
+      4,5,6
+    End
+    r, w = IO.pipe
+    th = Thread.new { r.read }
+    save = STDOUT.dup
+    STDOUT.reopen(w)
+    w.close
+    main_result = Tb::Cmd.main_csv([i])
+    STDOUT.reopen(save)
+    save.close
+    result = th.value
+    assert_equal(true, main_result)
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), result)
+      a,b,c
+      0,1,2
+      4,5,6
+    End
+  ensure
+    r.close if r && !r.closed?
+    w.close if w && !w.closed?
+    save.close if save && !save.closed?
+  end
+
 end
