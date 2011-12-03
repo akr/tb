@@ -38,6 +38,9 @@ class TestTbCmdHelp < Test::Unit::TestCase
     STDERR.reopen(save)
     save.close
     assert_match(/unexpected subcommand/, File.read("log"))
+  ensure
+    save.close if save && !save.closed?
+    log.close if log && !log.closed?
   end
 
   def test_opt_h

@@ -57,6 +57,9 @@ class TestTbCmdMheader < Test::Unit::TestCase
     save.close
     assert_equal('', File.read(o))
     assert_match(/no header found/, File.read(log))
+  ensure
+    save.close if save && !save.closed?
+    log.close if log && !log.closed?
   end
 
 end
