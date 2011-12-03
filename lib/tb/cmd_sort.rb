@@ -24,13 +24,7 @@
 
 Tb::Cmd.subcommands << 'sort'
 
-class Tb::Cmd
-  @opt_sort_f = nil
-end
-
-class << Tb::Cmd
-  attr_accessor :opt_sort_f
-end
+Tb::Cmd.default_option[:opt_sort_f] = nil
 
 def (Tb::Cmd).op_sort
   op = OptionParser.new
