@@ -38,4 +38,11 @@ class TestTbTSV < Test::Unit::TestCase
     tbl.generate_tsv(out="")
     assert_equal("a\tb\nfoo\tbar\n", out)
   end
+
+  def test_generate_tsv_with_block
+    tbl = Tb.new %w[a b], %w[foo bar], %w[q w]
+    tbl.generate_tsv(out="") {|recids| recids.reverse }
+    assert_equal("a\tb\nq\tw\nfoo\tbar\n", out)
+  end
+
 end
