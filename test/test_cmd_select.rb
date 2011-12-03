@@ -51,4 +51,16 @@ class TestTbCmdSelect < Test::Unit::TestCase
     End
   end
 
+  def test_extend
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      0,1,2,3
+    End
+    assert_equal(true, Tb::Cmd.main_select(['-o', o="o.csv", 'a,1,2', i]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,1,2
+      0,2,3
+    End
+  end
+
 end

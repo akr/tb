@@ -57,4 +57,16 @@ class TestTbCmdGsub < Test::Unit::TestCase
     End
   end
 
+  def test_opt_f_extend
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      foo,bar,baz
+    End
+    Tb::Cmd.main_gsub(['-o', o="o.csv", '-f', '1', 'baz', 'Y', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,b
+      foo,bar,Y
+    End
+  end
+
 end

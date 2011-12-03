@@ -27,4 +27,16 @@ class TestTbCmdPP < Test::Unit::TestCase
       { "a" => "4", "b" => "5", "c" => "6" }
     End
   end
+
+  def test_extend
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      0,1,2,3
+    End
+    assert_equal(true, Tb::Cmd.main_pp(['-o', o="o.pp", i]))
+    assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, '')) # xxx
+      { "a" => "0", "b" => "1", "1" => "2", "2" => "3" }
+    End
+  end
+
 end

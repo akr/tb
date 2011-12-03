@@ -27,12 +27,43 @@
 class Tb::FieldSet
   def initialize(*fs)
     @header = []
-    add_fields(*fs) if !fs.empty?
+    @field2index = {}
+    fs.each {|f| add_field(f) }
   end
   attr_reader :header
 
+  def add_field(hint)
+    hint = '1' if hint.nil? || hint == ''
+    while @field2index[hint]
+      case hint
+      when /\A[1-9][0-9]*\z/
+        hint = (hint.to_i + 1).to_s
+      when /\([1-9][0-9]*\)\z/
+        hint = hint.sub(/\(([1-9][0-9]*)\)\z/) { "(#{$1.to_i + 1})" }
+      else
+        hint = "#{hint}(2)"
+      end
+    end
+    @field2index[hint] = @header.length
+    @header << hint
+    hint
+  end
+
+  def index_from_field_ex(f)
+    i = @field2index[f]
+    return i if !i.nil?
+    if /\A[1-9][0-9]*\z/ !~ f
+      raise ArgumentError, "unexpected field name: #{f.inspect}"
+    end
+    while true
+      if add_field(nil) == f
+        return @header.length-1
+      end
+    end
+  end
+
   def index_from_field(f)
-    i = self.header.index(f)
+    i = @field2index[f]
     if i.nil?
       raise ArgumentError, "unexpected field name: #{f.inspect}"
     end
@@ -40,17 +71,16 @@ class Tb::FieldSet
   end
 
   def field_from_index_ex(i)
-    if self.length <= i
-      fs2 = extend_length(i+1)
-      fs2.last
-    else
-      field_from_index(i)
+    raise ArgumentError, "negative index: #{i}" if i < 0
+    until i < @header.length
+      add_field(nil)
     end
+    @header[i]
   end
 
   def field_from_index(i)
     raise ArgumentError, "negative index: #{i}" if i < 0
-    f = self.header[i]
+    f = @header[i]
     if f.nil?
       raise ArgumentError, "index too big: #{i}"
     end
@@ -59,38 +89,5 @@ class Tb::FieldSet
 
   def length
     @header.length
-  end
-
-  def extend_length(len)
-    fs = [""] * (len - self.length)
-    add_fields(*fs)
-  end
-
-  def add_fields(*fs)
-    h = {}
-    max = {}
-    @header.each {|f|
-      h[f] = true
-      if /\((\d+)\)\z/ =~ f
-        prefix = $`
-        n = $1.to_i
-        max[prefix] = n if !max[prefix] || max[prefix] < n
-      end
-    }
-    fs2 = []
-    fs.each {|f|
-      f ||= ''
-      if !h[f]
-        f2 = f
-      else
-        max[f] = 1 if !max[f]
-        max[f] += 1
-        f2 = "#{f}(#{max[f]})"
-      end
-      fs2 << f2
-      h[f2] = true
-    }
-    @header.concat fs2
-    fs2
   end
 end

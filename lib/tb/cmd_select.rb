@@ -66,7 +66,7 @@ def (Tb::Cmd).main_select(argv)
     else
       header = tblreader.header
       is = []
-      is = fs.map {|f| tblreader.index_from_field(f) }
+      is = fs.map {|f| tblreader.index_from_field_ex(f) }
       with_table_stream_output {|gen|
         gen.output_header(is.map {|i| tblreader.field_from_index_ex(i) })
         tblreader.each {|ary|

@@ -18,8 +18,8 @@ class TestTbFieldSet < Test::Unit::TestCase
     fs = Tb::FieldSet.new('a', 'b')
     assert_equal('a', fs.field_from_index_ex(0))
     assert_equal('b', fs.field_from_index_ex(1))
-    assert_equal('', fs.field_from_index_ex(2)) # xxx
-    assert_equal('(2)', fs.field_from_index_ex(3)) # xxx
+    assert_equal('1', fs.field_from_index_ex(2))
+    assert_equal('2', fs.field_from_index_ex(3))
   end
 
   def test_field_from_index
@@ -32,6 +32,11 @@ class TestTbFieldSet < Test::Unit::TestCase
   def test_length
     fs = Tb::FieldSet.new('a', 'b')
     assert_equal(2, fs.length)
+  end
+
+  def test_numsuffix
+    fs = Tb::FieldSet.new('a', 'a(2)', 'a')
+    assert_equal(['a', 'a(2)', 'a(3)'], fs.header)
   end
 
 end
