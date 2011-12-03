@@ -48,6 +48,7 @@ class Tb::FieldSet
     @header << hint
     hint
   end
+  private :add_field
 
   def index_from_field_ex(f)
     i = @field2index[f]
