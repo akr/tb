@@ -78,4 +78,22 @@ class TestTbCmdCat < Test::Unit::TestCase
       ,7,8,y
     End
   end
+
+  def test_extend_both
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a
+      1,x
+    End
+    File.open(i2="i2.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      b
+      2,y
+    End
+    Tb::Cmd.main_cat(['-o', o="o.csv", i1, i2])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,b
+      1,,x
+      ,2,y
+    End
+  end
+
 end
