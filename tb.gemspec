@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
     sample/poi-xls2csv.rb
     sample/poi-xls2csv.sh
     test-all.rb
+    test-all-cov.rb
   ]
   s.test_files = %w[
     test/test_basic.rb
