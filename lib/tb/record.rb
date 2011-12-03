@@ -90,7 +90,7 @@ class Tb::Record
   end
 
   def to_a
-    a = {}
+    a = []
     @table.each_field {|f|
       v = @table.get_cell(@recordid, f)
       a << [f, v] if !v.nil?
@@ -99,7 +99,7 @@ class Tb::Record
   end
 
   def to_a_with_reserved
-    a = {}
+    a = []
     @table.each_field_with_reserved {|f|
       v = @table.get_cell(@recordid, f)
       a << [f, v] if !v.nil?
@@ -116,7 +116,7 @@ class Tb::Record
   end
 
   def each_with_reserved
-    @table.each_field_reserved {|f|
+    @table.each_field_with_reserved {|f|
       v = @table.get_cell(@recordid, f)
       yield [f, v] if !v.nil?
     }
