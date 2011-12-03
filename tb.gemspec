@@ -24,6 +24,24 @@ Gem::Specification.new do |s|
   ]
   s.test_files = %w[
     test/test_basic.rb
+    test/test_cmd_cat.rb
+    test/test_cmd_crop.rb
+    test/test_cmd_cross.rb
+    test/test_cmd_csv.rb
+    test/test_cmd_grep.rb
+    test/test_cmd_group.rb
+    test/test_cmd_gsub.rb
+    test/test_cmd_join.rb
+    test/test_cmd_json.rb
+    test/test_cmd_mheader.rb
+    test/test_cmd_newfield.rb
+    test/test_cmd_pp.rb
+    test/test_cmd_rename.rb
+    test/test_cmd_select.rb
+    test/test_cmd_shape.rb
+    test/test_cmd_sort.rb
+    test/test_cmd_tsv.rb
+    test/test_cmd_yaml.rb
     test/test_csv.rb
     test/test_enumerable.rb
     test/test_fieldset.rb
