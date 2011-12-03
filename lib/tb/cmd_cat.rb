@@ -38,8 +38,8 @@ def (Tb::Cmd).main_cat(argv)
   op_cat.parse!(argv)
   argv = ['-'] if argv.empty?
   if Tb::Cmd.opt_N
-    argv.each {|filename|
-      with_table_stream_output {|gen|
+    with_table_stream_output {|gen|
+      argv.each {|filename|
         tablereader_open(filename) {|tblreader|
           tblreader.each {|ary|
             gen << ary
