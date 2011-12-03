@@ -147,24 +147,12 @@ class Tb::Reader
 
   def index_from_field_ex(f)
     self.header
-    if @opt_n
-      raise "numeric field start from 1: #{f.inspect}" if /\A0+\z/ =~ f
-      raise "numeric field name expected: #{f.inspect}" if /\A(\d+)\z/ !~ f
-      $1.to_i - 1
-    else
-      @fieldset.index_from_field_ex(f)
-    end
+    @fieldset.index_from_field_ex(f)
   end
 
   def index_from_field(f)
     self.header
-    if @opt_n
-      raise "numeric field start from 1: #{f.inspect}" if /\A0+\z/ =~ f
-      raise "numeric field name expected: #{f.inspect}" if /\A(\d+)\z/ !~ f
-      $1.to_i - 1
-    else
-      @fieldset.index_from_field(f)
-    end
+    @fieldset.index_from_field(f)
   end
 
   def field_from_index_ex(i)
@@ -176,9 +164,6 @@ class Tb::Reader
   def field_from_index(i)
     raise ArgumentError, "negative index: #{i}" if i < 0
     self.header
-    if @opt_n
-      return "#{i+1}"
-    end
     @fieldset.field_from_index(i)
   end
 
