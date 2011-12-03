@@ -33,7 +33,7 @@ def (Tb::Cmd).op_newfield
 end
 
 def (Tb::Cmd).main_newfield(argv)
-  op_rename.parse!(argv)
+  op_newfield.parse!(argv)
   field = argv.shift
   rubyexp = argv.shift
   pr = eval("lambda {|_| #{rubyexp} }")
