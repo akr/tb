@@ -190,6 +190,14 @@ class Tb::Reader
     nil
   end
 
+  def read_all
+    result = []
+    while ary = self.shift
+      result << ary
+    end
+    result
+  end
+
   def close
     @reader.close
     if @opt_close
