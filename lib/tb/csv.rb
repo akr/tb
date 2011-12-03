@@ -29,11 +29,7 @@ require 'csv'
 class Tb
   def Tb.csv_stream_input(csv, &b)
     csvreader = CSVReader.new(csv)
-    begin
-      csvreader.each(&b)
-    ensure
-      csvreader.close
-    end
+    csvreader.each(&b)
     nil
   end
 
@@ -79,7 +75,6 @@ class Tb
     end
 
     def close
-      @csv.close
     end
   end
 
