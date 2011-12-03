@@ -29,4 +29,34 @@ class TestTbCmdMheader < Test::Unit::TestCase
       y,5,6,7,8
     End
   end
+
+  def test_opt_c
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      1,2,3
+      4,5,6
+    End
+    assert_equal(true, Tb::Cmd.main_mheader(['-o', o="o.csv", '-c', '2', i]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a 1,b 2,c 3
+      4,5,6
+    End
+  end
+
+  def test_no_unique_header
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,a
+      1,1
+    End
+    save = STDERR.dup
+    log = File.open(log="log", "w")
+    STDERR.reopen(log)
+    log.close
+    assert_equal(true, Tb::Cmd.main_mheader(['-o', o="o.csv", i]))
+    STDERR.reopen(save)
+    save.close
+    assert_equal('', File.read(o))
+    assert_match(/no header found/, File.read(log))
+  end
+
 end
