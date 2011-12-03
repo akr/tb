@@ -87,26 +87,34 @@ end
 class Tb::Reader
   def self.open(filename, opts={})
     io = nil
+    opts = opts.dup
     case filename
     when /\Acsv:/
       io = File.open($')
+      opts[:close] = io
       rawreader = Tb::CSVReader.new(io)
     when /\Atsv:/
       io = File.open($')
+      opts[:close] = io
       rawreader = Tb::TSVReader.new(io)
     when /\.csv\z/
       io = File.open(filename)
+      opts[:close] = io
       rawreader = Tb::CSVReader.new(io)
     when /\.tsv\z/
       io = File.open(filename)
+      opts[:close] = io
       rawreader = Tb::TSVReader.new(io)
     else
       if filename == '-'
         rawreader = Tb::CSVReader.new(STDIN)
-      else
+      elsif filename.respond_to? :to_str
         # guess table format?
         io = File.open(filename)
+        opts[:close] = io
         rawreader = Tb::CSVReader.new(io)
+      else
+        raise ArgumentError, "unexpected filename: #{filename.inspect}"
       end
     end
     reader = self.new(rawreader, opts)
@@ -123,6 +131,7 @@ class Tb::Reader
 
   def initialize(rawreader, opts={})
     @opt_n = opts[:numeric]
+    @opt_close = opts[:close]
     @reader = rawreader
     @fieldset = nil
   end
@@ -183,5 +192,8 @@ class Tb::Reader
 
   def close
     @reader.close
+    if @opt_close
+      @opt_close.close
+    end
   end
 end
