@@ -49,9 +49,9 @@ class TestTbCmdMheader < Test::Unit::TestCase
       1,1
     End
     save = STDERR.dup
-    log = File.open(log="log", "w")
-    STDERR.reopen(log)
-    log.close
+    logf = File.open(log="log", "w")
+    STDERR.reopen(logf)
+    logf.close
     assert_equal(true, Tb::Cmd.main_mheader(['-o', o="o.csv", i]))
     STDERR.reopen(save)
     save.close
@@ -59,7 +59,7 @@ class TestTbCmdMheader < Test::Unit::TestCase
     assert_match(/no header found/, File.read(log))
   ensure
     save.close if save && !save.closed?
-    log.close if log && !log.closed?
+    logf.close if logf && !logf.closed?
   end
 
 end
