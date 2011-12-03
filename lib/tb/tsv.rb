@@ -53,7 +53,6 @@ class Tb
     end
 
     def close
-      @input.close
     end
   end
 
