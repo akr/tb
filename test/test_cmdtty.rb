@@ -61,4 +61,4 @@ class TestTbCmdTTY < Test::Unit::TestCase
     save.close if save && !save.closed?
   end
 
-end if defined? PTY
+end if defined?(PTY) && defined?(PTY.open)
