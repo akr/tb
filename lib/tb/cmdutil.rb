@@ -200,14 +200,6 @@ def make_aggregator(spec, fs)
   end
 end
 
-def aggregate(spec, table)
-  update, finish = make_aggregator(spec, table.list_fields)
-  table.each {|rec|
-    update.call(rec.values_at(*fs))
-  }
-  finish.call
-end
-
 def decode_a1_addressing_col(str)
   (26**str.length-1)/25+str.tr("A-Z", "0-9A-P").to_i(26)
 end
