@@ -88,17 +88,17 @@ class Tb::Reader
   def self.open(filename, opts={})
     io = nil
     case filename
-    when /\.csv\z/
-      io = File.open(filename)
-      rawreader = Tb::CSVReader.new(io)
-    when /\.tsv\z/
-      io = File.open(filename)
-      rawreader = Tb::TSVReader.new(io)
     when /\Acsv:/
       io = File.open($')
       rawreader = Tb::CSVReader.new(io)
     when /\Atsv:/
       io = File.open($')
+      rawreader = Tb::TSVReader.new(io)
+    when /\.csv\z/
+      io = File.open(filename)
+      rawreader = Tb::CSVReader.new(io)
+    when /\.tsv\z/
+      io = File.open(filename)
       rawreader = Tb::TSVReader.new(io)
     else
       if filename == '-'
