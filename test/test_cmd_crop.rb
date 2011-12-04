@@ -40,10 +40,10 @@ class TestTbCmdCrop < Test::Unit::TestCase
       8,9,a,b
       c,d,e,f
     End
-    Tb::Cmd.main_crop(['-o', o="o.csv", '-r', 'B2:C3', i])
+    Tb::Cmd.main_crop(['-o', o="o.csv", '-r', 'B1:C2', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      b,c
       1,2
-      5,6
     End
   end
 
@@ -55,10 +55,10 @@ class TestTbCmdCrop < Test::Unit::TestCase
       8,9,a,b
       c,d,e,f
     End
-    Tb::Cmd.main_crop(['-o', o="o.csv", '-r', '2,2-3,3', i])
+    Tb::Cmd.main_crop(['-o', o="o.csv", '-r', '2,1-3,2', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      b,c
       1,2
-      5,6
     End
   end
 
@@ -70,10 +70,10 @@ class TestTbCmdCrop < Test::Unit::TestCase
       8,9,a,b
       c,d,e,f
     End
-    Tb::Cmd.main_crop(['-o', o="o.csv", '-r', 'R2C2:R3C3', i])
+    Tb::Cmd.main_crop(['-o', o="o.csv", '-r', 'R2C1:R3C2', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
-      1,2
-      5,6
+      0,1
+      4,5
     End
   end
 

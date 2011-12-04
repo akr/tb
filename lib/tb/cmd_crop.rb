@@ -55,10 +55,10 @@ def (Tb::Cmd).main_crop(argv)
       range_row2 = $4.to_i
     when /\AR(\d+)C(\d+):R(\d+)C(\d+)\z/ # 1-based (R1C1 reference style)
       stream = true
-      range_col1 = $1.to_i
-      range_row1 = $2.to_i
-      range_col2 = $3.to_i
-      range_row2 = $4.to_i
+      range_row1 = $1.to_i
+      range_col1 = $2.to_i
+      range_row2 = $3.to_i
+      range_col2 = $4.to_i
     when /\A([A-Z]+)(\d+):([A-Z]+)(\d+)\z/ # 1-based (A1 reference style)
       stream = true
       range_col1 = decode_a1_addressing_col($1)
