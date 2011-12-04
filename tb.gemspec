@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
     sample/excel2csv
     sample/poi-xls2csv.rb
     sample/poi-xls2csv.sh
+    sample/langs.csv
     test-all.rb
     test-all-cov.rb
   ]

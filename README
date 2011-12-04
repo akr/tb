@@ -5,14 +5,142 @@ Unix filter like operations (grep, sort, cat, etc.),
 SQL like operations (join, group, etc.),
 and more.
 
-tb supports CSV and TSV for inputs.
-tb basically generates CSV but it has conversion tool to TSV, JSON, YAML.
+== Example
 
-tb interprets a table similar to RDB table:
-list of rows which contains fields identified by field names.
-The field names are taken from the first (non-empty) row of the table.
-There is a way to choose another manner:
-field names are defined by numerical column index begins with 1.
+There is a CSV file for programming languages and their birth year in
+sample/ directory in tb package.
+
+  % head sample/langs.csv
+  language,year
+  FORTRAN,1955
+  LISP,1958
+  COBOL,1959
+  ALGOL 58,1958
+  APL,1962
+  Simula,1962
+  SNOBOL,1962
+  BASIC,1964
+  PL/I,1964
+
+You can sort a CSV file using "tb" command with "sort" subcommand.
+You don't need to care header: header is retained as is.
+
+  % tb sort sample/langs.csv|head
+  language,year
+  ALGOL 58,1958
+  APL,1962
+  Ada,1983
+  B,1969
+  BASIC,1964
+  BCPL,1967
+  C,1972
+  C#,2001
+  C++,1980
+
+You can specify a field to sort.
+You don't need to count the position of the field.
+
+  % tb sort -f year sample/langs.csv|head
+  language,year
+  FORTRAN,1955
+  LISP,1958
+  ALGOL 58,1958
+  COBOL,1959
+  APL,1962
+  SNOBOL,1962
+  Simula,1962
+  BASIC,1964
+  PL/I,1964
+
+You can search CSV file using "grep" subcommand.
+
+  % tb grep 'R' sample/langs.csv
+  language,year
+  FORTRAN,1955
+  Ruby,1993
+
+You can search languages which name contains characters other than alphabet.
+You don't need to care field separators (comma).
+
+  % tb grep -vf language '\A[A-Za-z]*\z' sample/langs.csv |cat
+  language,year
+  ALGOL 58,1958
+  PL/I,1964
+  C++,1980
+  Objective-C,1983
+  Common Lisp,1984
+  Visual Basic,1991
+  C#,2001
+  F#,2002
+
+You can search languages using Ruby expression, instead of a regexp.
+
+  % tb grep --ruby '(1990..1999).include?(_["year"].to_i)' sample/langs.csv
+  language,year
+  Haskell,1990
+  Python,1991
+  Visual Basic,1991
+  Ruby,1993
+  Lua,1993
+  CLOS,1994
+  Java,1995
+  Delphi,1995
+  JavaScript,1995
+  PHP,1995
+  D,1999
+
+You can extract language names using "select" subcommand.
+This is similar to "cut" command of Unix and projection of relational algebra.
+
+  % tb select language sample/langs.csv |head
+  language
+  FORTRAN
+  LISP
+  COBOL
+  ALGOL 58
+  APL
+  Simula
+  SNOBOL
+  BASIC
+  PL/I
+
+You can group languages for each year using "group" subcommand.
+
+  % tb group year -a count -a 'values(language)' sample/langs.csv |head
+  year,count,values(language)
+  1955,1,FORTRAN
+  1958,2,"LISP,ALGOL 58"
+  1959,1,COBOL
+  1962,3,"APL,Simula,SNOBOL"
+  1964,2,"BASIC,PL/I"
+  1967,1,BCPL
+  1968,1,Logo
+  1969,1,B
+  1970,2,"Pascal,Forth"
+
+You can see list of subcommand using "help" subcommand. 
+
+  % tb help
+  Usage:
+    tb help [OPTS] [SUBCOMMAND]
+    tb csv [OPTS] [TABLE]
+    tb tsv [OPTS] [TABLE]
+    tb json [OPTS] [TABLE]
+    tb yaml [OPTS] [TABLE]
+    tb pp [OPTS] [TABLE]
+    tb grep [OPTS] REGEXP [TABLE]
+    tb gsub [OPTS] REGEXP STRING [TABLE]
+    tb sort [OPTS] [TABLE]
+    tb select [OPTS] FIELD,... [TABLE]
+    tb rename [OPTS] SRC,DST,... [TABLE]
+    tb newfield [OPTS] FIELD RUBY-EXP [TABLE]
+    tb cat [OPTS] [TABLE ...]
+    tb join [OPTS] [TABLE ...]
+    tb group [OPTS] KEY-FIELD1,... [TABLE]
+    tb cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE]
+    tb shape [OPTS] [TABLE ...]
+    tb mheader [OPTS] [TABLE]
+    tb crop [OPTS] [TABLE]
 
 == Command Line Tool
 
@@ -37,75 +165,6 @@ tb command has many subcommands.
   shape    : show table size.
   mheader  : collapse multi rows header.
   crop     : extract rectangle in a table.
-
-== Format Conversion
-
-For example, a JSON can be generated from a CSV as follows.
-
-  % cat tst.csv       
-  a,b,c
-  0,1,2
-  4,5,6
-  % tb json tst.csv
-  [{
-    "a": "0",
-    "b": "1",
-    "c": "2"
-  },
-  {
-    "a": "4",
-    "b": "5",
-    "c": "6"
-  }]
-
-pp subcommand provides a compact format.
-
-  % tb pp tst.csv
-  {"a"=>"0", "b"=>"1", "c"=>"2"}
-  {"a"=>"4", "b"=>"5", "c"=>"6"}
-
-tsv subcommand generates a TSV.
-
-  % tb tsv tst.csv > tst.tsv
-  % cat -t tst.tsv 
-  a^Ib^Ic
-  0^I1^I2
-  4^I5^I6
-
-tb accepts TSV as inputs as well.
-
-  % tb yaml tst.tsv
-  ---
-  - a: '0'
-    b: '1'
-    c: '2'
-  - a: '4'
-    b: '5'
-    c: '6'
-
-== Usage
-
-  % tb help
-  Usage:
-    tb help [OPTS] [SUBCOMMAND]
-    tb csv [OPTS] [TABLE]
-    tb tsv [OPTS] [TABLE]
-    tb json [OPTS] [TABLE]
-    tb yaml [OPTS] [TABLE]
-    tb pp [OPTS] [TABLE]
-    tb grep [OPTS] REGEXP [TABLE]
-    tb gsub [OPTS] REGEXP STRING [TABLE]
-    tb sort [OPTS] [TABLE]
-    tb select [OPTS] FIELD,... [TABLE]
-    tb rename [OPTS] SRC,DST,... [TABLE]
-    tb newfield [OPTS] FIELD RUBY-EXP [TABLE]
-    tb cat [OPTS] [TABLE ...]
-    tb join [OPTS] [TABLE ...]
-    tb group [OPTS] KEY-FIELD1,... [TABLE]
-    tb cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE]
-    tb shape [OPTS] [TABLE ...]
-    tb mheader [OPTS] [TABLE]
-    tb crop [OPTS] [TABLE]
 
 == Install
 

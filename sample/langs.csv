@@ -1,0 +1,46 @@
+language,year
+FORTRAN,1955
+LISP,1958
+COBOL,1959
+ALGOL 58,1958
+APL,1962
+Simula,1962
+SNOBOL,1962
+BASIC,1964
+PL/I,1964
+BCPL,1967
+Logo,1968
+B,1969
+Pascal,1970
+Forth,1970
+C,1972
+Smalltalk,1972
+Prolog,1972
+ML,1973
+Scheme,1975
+SQL,1978
+C++,1980
+Objective-C,1983
+Ada,1983
+Common Lisp,1984
+Eiffel,1985
+Erlang,1986
+Perl,1987
+Tcl,1988
+Haskell,1990
+Python,1991
+Visual Basic,1991
+Ruby,1993
+Lua,1993
+CLOS,1994
+Java,1995
+Delphi,1995
+JavaScript,1995
+PHP,1995
+D,1999
+C#,2001
+F#,2002
+Groovy,2003
+Scala,2003
+Clojure,2007
+Go,2009
