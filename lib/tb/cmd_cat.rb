@@ -51,7 +51,7 @@ def (Tb::Cmd).main_cat(argv)
     readers = []
     h = {}
     argv.each {|filename|
-      r = tablereader_open(filename)
+      r = Tb::Reader.open(filename)
       readers << r
       r.header.each {|f|
         h[f] = h.size if !h[f]
