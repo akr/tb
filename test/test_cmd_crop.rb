@@ -62,6 +62,21 @@ class TestTbCmdCrop < Test::Unit::TestCase
     End
   end
 
+  def test_r1c1_range
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c,d
+      0,1,2,3
+      4,5,6,7
+      8,9,a,b
+      c,d,e,f
+    End
+    Tb::Cmd.main_crop(['-o', o="o.csv", '-r', 'R2C2:R3C3', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      1,2
+      5,6
+    End
+  end
+
   def test_invalid_range
     assert_raise(ArgumentError,) { Tb::Cmd.main_crop(['-r', 'foo']) }
   end
