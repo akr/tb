@@ -36,6 +36,10 @@ def (Tb::Cmd).op_crop
   op
 end
 
+def (Tb::Cmd).decode_a1_addressing_col(str)
+  (26**str.length-1)/25+str.tr("A-Z", "0-9A-P").to_i(26)
+end
+
 def (Tb::Cmd).main_crop(argv)
   op_crop.parse!(argv)
   filename = argv.shift || '-'
