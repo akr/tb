@@ -1,6 +1,10 @@
 = tb - manipulation tool for table: CSV, TSV, etc.
 
-tb provides a command and a library for manipulating tables.
+tb provides a command and a library for manipulating tables:
+format conversions (csv, tsv, json, etc.),
+Unix filter like operations (grep, sort, cat, etc.),
+SQL like operations (join, group, etc.),
+and more.
 
 == Command Line Tool
 
