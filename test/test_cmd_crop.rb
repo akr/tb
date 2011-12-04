@@ -66,4 +66,15 @@ class TestTbCmdCrop < Test::Unit::TestCase
     assert_raise(ArgumentError,) { Tb::Cmd.main_crop(['-r', 'foo']) }
   end
 
+  def test_decode_a1_addressing_col
+    assert_equal(1, Tb::Cmd.decode_a1_addressing_col("A"))
+    assert_equal(26, Tb::Cmd.decode_a1_addressing_col("Z"))
+    ("A".."Z").each_with_index {|ch, i|
+      assert_equal(i+1, Tb::Cmd.decode_a1_addressing_col(ch))
+    }
+    assert_equal(27, Tb::Cmd.decode_a1_addressing_col("AA"))
+    assert_equal(256, Tb::Cmd.decode_a1_addressing_col("IV"))
+    assert_equal(16384, Tb::Cmd.decode_a1_addressing_col("XFD"))
+  end
+
 end
