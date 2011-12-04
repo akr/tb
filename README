@@ -19,7 +19,7 @@ tb command has many subcommands.
   rename   : rename field names.
   newfield : add a field.
   cat      : concatenate tables vertically.
-  join     : concatenate tables horizontally.
+  join     : concatenate tables horizontally as left/right/full natural join.
   group    : group and aggregate rows.
   cross    : create a contingency table.
   shape    : show table size.
