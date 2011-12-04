@@ -22,7 +22,8 @@ sample/ directory in tb package.
   BASIC,1964
   PL/I,1964
 
-You can sort a CSV file using "tb" command with "sort" subcommand.
+"tb" command has many subcommands.
+"sort" subcommand sort a CSV file.
 You don't need to care header: header is retained as is.
 
   % tb sort sample/langs.csv|head
@@ -37,7 +38,7 @@ You don't need to care header: header is retained as is.
   C#,2001
   C++,1980
 
-You can specify a field to sort.
+"sort" subcommand takes -f option to specify a field to sort.
 You don't need to count the position of the field.
 
   % tb sort -f year sample/langs.csv|head
@@ -52,15 +53,15 @@ You don't need to count the position of the field.
   BASIC,1964
   PL/I,1964
 
-You can search CSV file using "grep" subcommand.
+"grep" subcommand search CSV file.
 
-  % tb grep 'R' sample/langs.csv
+  % tb grep R sample/langs.csv
   language,year
   FORTRAN,1955
   Ruby,1993
 
-You can search languages which name contains characters other than alphabet.
-You don't need to care field separators (comma).
+"grep" subcommand takes -f with field name and -v to show non-matching rows.
+You don't need to care field separators (comma) to match.
 
   % tb grep -vf language '\A[A-Za-z]*\z' sample/langs.csv |cat
   language,year
@@ -73,7 +74,7 @@ You don't need to care field separators (comma).
   C#,2001
   F#,2002
 
-You can search languages using Ruby expression, instead of a regexp.
+"grep" subcommand can take Ruby expression, instead of a regexp.
 
   % tb grep --ruby '(1990..1999).include?(_["year"].to_i)' sample/langs.csv
   language,year
@@ -89,7 +90,7 @@ You can search languages using Ruby expression, instead of a regexp.
   PHP,1995
   D,1999
 
-You can extract language names using "select" subcommand.
+"select" subcommand extract one or more fields.
 This is similar to "cut" command of Unix and projection of relational algebra.
 
   % tb select language sample/langs.csv |head
@@ -104,7 +105,8 @@ This is similar to "cut" command of Unix and projection of relational algebra.
   BASIC
   PL/I
 
-You can group languages for each year using "group" subcommand.
+"group" subcommand groups rows for specified field.
+-a option specifies aggregation expression to aggregate the grouped rows.
 
   % tb group year -a count -a 'values(language)' sample/langs.csv |head
   year,count,values(language)
@@ -118,7 +120,8 @@ You can group languages for each year using "group" subcommand.
   1969,1,B
   1970,2,"Pascal,Forth"
 
-You can see list of subcommand using "help" subcommand. 
+There are more subcommands.
+"help" subcommand shows list of subcommand.
 
   % tb help
   Usage:
