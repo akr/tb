@@ -1,10 +1,18 @@
 = tb - manipulation tool for table: CSV, TSV, etc.
 
 tb provides a command and a library for manipulating tables:
-format conversions (csv, tsv, json, etc.),
 Unix filter like operations (grep, sort, cat, etc.),
 SQL like operations (join, group, etc.),
 and more.
+
+tb supports CSV and TSV for inputs.
+tb basically generates CSV but it has conversion tool to TSV, JSON, YAML.
+
+tb interprets a table similar to RDB table:
+list of rows which contains fields identified by field names.
+The field names are taken from the first (non-empty) row of the table.
+There is a way to choose another manner:
+field names are defined by numerical column index begins with 1.
 
 == Command Line Tool
 
@@ -29,6 +37,51 @@ tb command has many subcommands.
   shape    : show table size.
   mheader  : collapse multi rows header.
   crop     : extract rectangle in a table.
+
+== Format Conversion
+
+For example, a JSON can be generated from a CSV as follows.
+
+  % cat tst.csv       
+  a,b,c
+  0,1,2
+  4,5,6
+  % tb json tst.csv
+  [{
+    "a": "0",
+    "b": "1",
+    "c": "2"
+  },
+  {
+    "a": "4",
+    "b": "5",
+    "c": "6"
+  }]
+
+pp subcommand provides a compact format.
+
+  % tb pp tst.csv
+  {"a"=>"0", "b"=>"1", "c"=>"2"}
+  {"a"=>"4", "b"=>"5", "c"=>"6"}
+
+tsv subcommand generates a TSV.
+
+  % tb tsv tst.csv > tst.tsv
+  % cat -t tst.tsv 
+  a^Ib^Ic
+  0^I1^I2
+  4^I5^I6
+
+tb accepts TSV as inputs as well.
+
+  % tb yaml tst.tsv
+  ---
+  - a: '0'
+    b: '1'
+    c: '2'
+  - a: '4'
+    b: '5'
+    c: '6'
 
 == Usage
 
