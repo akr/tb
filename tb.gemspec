@@ -9,6 +9,29 @@ Gem::Specification.new do |s|
     bin/tb
     lib/tb.rb
     lib/tb/basic.rb
+    lib/tb/catreader.rb
+    lib/tb/cmd_cat.rb
+    lib/tb/cmd_crop.rb
+    lib/tb/cmd_cross.rb
+    lib/tb/cmd_csv.rb
+    lib/tb/cmd_grep.rb
+    lib/tb/cmd_group.rb
+    lib/tb/cmd_gsub.rb
+    lib/tb/cmd_help.rb
+    lib/tb/cmd_join.rb
+    lib/tb/cmd_json.rb
+    lib/tb/cmd_mheader.rb
+    lib/tb/cmd_newfield.rb
+    lib/tb/cmd_pp.rb
+    lib/tb/cmd_rename.rb
+    lib/tb/cmd_select.rb
+    lib/tb/cmd_shape.rb
+    lib/tb/cmd_sort.rb
+    lib/tb/cmd_tsv.rb
+    lib/tb/cmd_yaml.rb
+    lib/tb/cmdmain.rb
+    lib/tb/cmdtop.rb
+    lib/tb/cmdutil.rb
     lib/tb/csv.rb
     lib/tb/enumerable.rb
     lib/tb/fieldset.rb
@@ -18,11 +41,11 @@ Gem::Specification.new do |s|
     lib/tb/record.rb
     lib/tb/tsv.rb
     sample/excel2csv
+    sample/langs.csv
     sample/poi-xls2csv.rb
     sample/poi-xls2csv.sh
-    sample/langs.csv
-    test-all.rb
     test-all-cov.rb
+    test-all.rb
   ]
   s.test_files = %w[
     test/test_basic.rb
@@ -33,6 +56,7 @@ Gem::Specification.new do |s|
     test/test_cmd_grep.rb
     test/test_cmd_group.rb
     test/test_cmd_gsub.rb
+    test/test_cmd_help.rb
     test/test_cmd_join.rb
     test/test_cmd_json.rb
     test/test_cmd_mheader.rb
@@ -44,9 +68,11 @@ Gem::Specification.new do |s|
     test/test_cmd_sort.rb
     test/test_cmd_tsv.rb
     test/test_cmd_yaml.rb
+    test/test_cmdtty.rb
     test/test_csv.rb
     test/test_enumerable.rb
     test/test_fieldset.rb
+    test/test_reader.rb
     test/test_record.rb
     test/test_tsv.rb
   ]
