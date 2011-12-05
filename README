@@ -63,7 +63,7 @@ Also, the comparison method used in tb is smart to sort numbers correctly.
 
 "grep" subcommand takes -f with field name and -v to show non-matching rows.
 You don't need to care field separators (comma) to match.
-Following example searches languages which uses non-alphabet characters in the name.
+Following example searches languages which name contains a non-alphabet character.
 
   % tb grep -vf language '\A[A-Za-z]*\z' sample/langs.csv |cat
   language,year
