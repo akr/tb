@@ -40,6 +40,7 @@ You don't need to care header: header is retained as is.
 
 "sort" subcommand takes -f option to specify a field to sort.
 You don't need to count the position of the field.
+Also, the comparison method used in tb is smart to sort numbers correctly.
 
   % tb sort -f year sample/langs.csv|head
   language,year
@@ -62,6 +63,7 @@ You don't need to count the position of the field.
 
 "grep" subcommand takes -f with field name and -v to show non-matching rows.
 You don't need to care field separators (comma) to match.
+Following example searches languages which uses non-alphabet characters in the name.
 
   % tb grep -vf language '\A[A-Za-z]*\z' sample/langs.csv |cat
   language,year
