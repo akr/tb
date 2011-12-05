@@ -47,12 +47,6 @@ def (Tb::Cmd).main_crop(argv)
   stream = false
   if Tb::Cmd.opt_crop_range
     case Tb::Cmd.opt_crop_range
-    when /\A(\d+),(\d+)-(\d+),(\d+)\z/ # 1-based
-      stream = true
-      range_col1 = $1.to_i
-      range_row1 = $2.to_i
-      range_col2 = $3.to_i
-      range_row2 = $4.to_i
     when /\AR(\d+)C(\d+):R(\d+)C(\d+)\z/ # 1-based (R1C1 reference style)
       stream = true
       range_row1 = $1.to_i

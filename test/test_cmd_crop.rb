@@ -47,21 +47,6 @@ class TestTbCmdCrop < Test::Unit::TestCase
     End
   end
 
-  def test_num_range
-    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
-      a,b,c,d
-      0,1,2,3
-      4,5,6,7
-      8,9,a,b
-      c,d,e,f
-    End
-    Tb::Cmd.main_crop(['-o', o="o.csv", '-r', '2,1-3,2', i])
-    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
-      b,c
-      1,2
-    End
-  end
-
   def test_r1c1_range
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c,d
