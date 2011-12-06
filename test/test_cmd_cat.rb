@@ -96,4 +96,23 @@ class TestTbCmdCat < Test::Unit::TestCase
     End
   end
 
+  def test_field_order
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      1,2,3
+      4,5,6
+    End
+    File.open(i2="i2.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      c,b,a
+      7,8,9
+    End
+    Tb::Cmd.main_cat(['-o', o="o.csv", i1, i2])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,b,c
+      1,2,3
+      4,5,6
+      9,8,7
+    End
+  end
+
 end
