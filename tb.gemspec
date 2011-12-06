@@ -49,6 +49,7 @@ Gem::Specification.new do |s|
   ]
   s.test_files = %w[
     test/test_basic.rb
+    test/test_catreader.rb
     test/test_cmd_cat.rb
     test/test_cmd_crop.rb
     test/test_cmd_cross.rb
