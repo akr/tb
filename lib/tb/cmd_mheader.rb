@@ -38,8 +38,7 @@ end
 
 def (Tb::Cmd).main_mheader(argv)
   op_mheader.parse!(argv)
-  filename = argv.shift || '-'
-  warn "extra arguments: #{argv.join(" ")}" if !argv.empty?
+  argv = ['-'] if argv.empty?
   header = []
   if Tb::Cmd.opt_mheader_count
     c = Tb::Cmd.opt_mheader_count
@@ -54,7 +53,7 @@ def (Tb::Cmd).main_mheader(argv)
     }
   end
   with_table_stream_output {|gen|
-    Tb::Reader.open(filename, {:numeric=>true}) {|tblreader|
+    Tb::CatReader.open(argv, true) {|tblreader|
       tblreader.each {|ary|
         if header
           ary.each_with_index {|v,i|

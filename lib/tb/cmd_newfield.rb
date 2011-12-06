@@ -38,9 +38,8 @@ def (Tb::Cmd).main_newfield(argv)
   field = argv.shift
   rubyexp = argv.shift
   pr = eval("lambda {|_| #{rubyexp} }")
-  filename = argv.shift || '-'
-  warn "extra arguments: #{argv.join(" ")}" if !argv.empty?
-  tablereader_open(filename) {|tblreader|
+  argv = ['-'] if argv.empty?
+  Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     renamed_header = [field] + tblreader.header
     with_table_stream_output {|gen|
       gen.output_header(renamed_header)

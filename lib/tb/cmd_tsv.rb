@@ -36,10 +36,10 @@ end
 
 def (Tb::Cmd).main_tsv(argv)
   op_tsv.parse!(argv)
-  each_table_file(argv) {|tbl|
-    with_output {|out|
-      tbl_generate_tsv(tbl, out)
-    }
+  argv = ['-'] if argv.empty?
+  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
+  with_output {|out|
+    tbl_generate_tsv(tbl, out)
   }
   true
 end

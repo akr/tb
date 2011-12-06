@@ -142,4 +142,25 @@ class TestTbCmdGroup < Test::Unit::TestCase
     End
   end
 
+  def test_twofile
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      1,2
+      3,4
+    End
+    File.open(i2="i2.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      b,a
+      5,6
+      7,8
+    End
+    assert_equal(true, Tb::Cmd.main_group(['-o', o="o.csv", 'a', '-a', 'count', i1, i2]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,count
+      1,1
+      3,1
+      6,1
+      8,1
+    End
+  end
+
 end

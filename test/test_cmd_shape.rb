@@ -27,4 +27,24 @@ class TestTbCmdShape < Test::Unit::TestCase
       3,2,4,2,i.csv
     End
   end
+
+  def test_twofile
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a
+      1
+      3
+    End
+    File.open(i2="i2.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      b,a
+      5,6
+      7,8
+    End
+    assert_equal(true, Tb::Cmd.main_shape(['-o', o="o.csv", i1, i2]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      header_fields,min_fields,max_fields,records,filename
+      1,1,1,2,i1.csv
+      2,2,2,2,i2.csv
+    End
+  end
+
 end

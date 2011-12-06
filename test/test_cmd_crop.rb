@@ -62,6 +62,27 @@ class TestTbCmdCrop < Test::Unit::TestCase
     End
   end
 
+  def test_twofile
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      1,2
+      3,4
+    End
+    File.open(i2="i2.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      b,a
+      5,6
+      7,8
+    End
+    assert_equal(true, Tb::Cmd.main_crop(['-o', o="o.csv", '-r', 'B2:B4', i1, i2]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      2
+      4
+      a
+    End
+  end
+end
+
+class TestTbCmdCropNoTmpDir < Test::Unit::TestCase
   def test_invalid_range
     assert_raise(ArgumentError,) { Tb::Cmd.main_crop(['-r', 'foo']) }
   end

@@ -29,7 +29,7 @@ Tb::Cmd.default_option[:opt_cross_compact] = false
 
 def (Tb::Cmd).op_cross
   op = OptionParser.new
-  op.banner = 'Usage: tb cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE]'
+  op.banner = 'Usage: tb cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| Tb::Cmd.opt_cross_fields << arg }
@@ -52,9 +52,8 @@ def (Tb::Cmd).main_cross(argv)
       [agg_spec, new_field]
     }
   end
-  filename = argv.shift || '-'
-  warn "extra arguments: #{argv.join(" ")}" if !argv.empty?
-  tablereader_open(filename) {|tblreader|
+  argv = ['-'] if argv.empty?
+  Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     vkis = vkfs.map {|f| tblreader.index_from_field(f) }
     hkis = hkfs.map {|f| tblreader.index_from_field(f) }
     vset = {}

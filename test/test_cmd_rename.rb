@@ -51,4 +51,25 @@ class TestTbCmdRename < Test::Unit::TestCase
     End
   end
 
+  def test_twofile
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      1,2
+      3,4
+    End
+    File.open(i2="i2.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      b,a
+      5,6
+      7,8
+    End
+    assert_equal(true, Tb::Cmd.main_rename(['-o', o="o.csv", 'a,c', i1, i2]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      c,b
+      1,2
+      3,4
+      6,5
+      8,7
+    End
+  end
+
 end

@@ -37,12 +37,12 @@ end
 def (Tb::Cmd).main_yaml(argv)
   require 'yaml'
   op_yaml.parse!(argv)
-  each_table_file(argv) {|tbl|
-    ary = tbl.map {|rec| rec.to_h }
-    with_output {|out|
-      YAML.dump(ary, out)
-      out.puts
-    }
+  argv = ['-'] if argv.empty?
+  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
+  ary = tbl.map {|rec| rec.to_h }
+  with_output {|out|
+    YAML.dump(ary, out)
+    out.puts
   }
   true
 end

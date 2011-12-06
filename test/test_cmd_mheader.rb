@@ -62,4 +62,25 @@ class TestTbCmdMheader < Test::Unit::TestCase
     logf.close if logf && !logf.closed?
   end
 
+  def test_twofile
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      1,2
+      3,4
+    End
+    File.open(i2="i2.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      b,a
+      5,6
+      7,8
+    End
+    assert_equal(true, Tb::Cmd.main_mheader(['-o', o="o.csv", '-c', '2', i1, i2]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a 1,b 2
+      3,4
+      b,a
+      5,6
+      7,8
+    End
+  end
+
 end

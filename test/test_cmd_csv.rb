@@ -29,6 +29,34 @@ class TestTbCmdCSV < Test::Unit::TestCase
     End
   end
 
+  def test_complement_header
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      0,1,2
+      4,5,6
+    End
+    assert_equal(true, Tb::Cmd.main_csv(['-o', o="o.csv", i]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,b,1
+      0,1,2
+      4,5,6
+    End
+  end
+
+  def test_numeric
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a
+      0,1,2
+      4,5,6
+    End
+    assert_equal(true, Tb::Cmd.main_csv(['-o', o="o.csv", '-N', i]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,,
+      0,1,2
+      4,5,6
+    End
+  end
+
   def test_noarg
     File.open(i="i.tsv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c
@@ -76,6 +104,27 @@ class TestTbCmdCSV < Test::Unit::TestCase
     r.close if r && !r.closed?
     w.close if w && !w.closed?
     save.close if save && !save.closed?
+  end
+
+  def test_twofile
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      1,2
+      3,4
+    End
+    File.open(i2="i2.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      b,a
+      5,6
+      7,8
+    End
+    assert_equal(true, Tb::Cmd.main_csv(['-o', o="o.csv", i1, i2]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,b
+      1,2
+      3,4
+      6,5
+      8,7
+    End
   end
 
 end

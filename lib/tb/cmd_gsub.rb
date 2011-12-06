@@ -29,7 +29,7 @@ Tb::Cmd.default_option[:opt_gsub_f] = nil
 
 def (Tb::Cmd).op_gsub
   op = OptionParser.new
-  op.banner = 'Usage: tb gsub [OPTS] REGEXP STRING [TABLE]'
+  op.banner = 'Usage: tb gsub [OPTS] REGEXP STRING [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
   op.def_option('-f FIELD', 'target field') {|field| Tb::Cmd.opt_gsub_f = field }
@@ -47,9 +47,8 @@ def (Tb::Cmd).main_gsub(argv)
     re = Regexp.new(argv.shift)
   end
   repl = argv.shift
-  filename = argv.empty? ? '-' : argv.shift
-  warn "extra arguments: #{argv.join(" ")}" if !argv.empty?
-  tablereader_open(filename) {|tblreader|
+  argv = ['-'] if argv.empty?
+  Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     with_table_stream_output {|gen|
       gen.output_header tblreader.header
       tblreader.each {|ary|

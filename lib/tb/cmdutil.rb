@@ -220,19 +220,23 @@ def each_table_file(argv)
   end
 end
 
+def build_table(tblreader)
+  arys = []
+  tblreader.each {|ary|
+    arys << ary
+  }
+  header = tblreader.header
+  tbl = Tb.new(header)
+  arys.each {|ary|
+    ary << nil while ary.length < header.length
+    tbl.insert_values header, ary
+  }
+  tbl
+end
+
 def load_table(filename)
   tablereader_open(filename) {|tblreader|
-    arys = []
-    tblreader.each {|ary|
-      arys << ary
-    }
-    header = tblreader.header
-    tbl = Tb.new(header)
-    arys.each {|ary|
-      ary << nil while ary.length < header.length
-      tbl.insert_values header, ary
-    }
-    tbl
+    build_table(tblreader)
   }
 end
 

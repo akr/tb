@@ -29,4 +29,27 @@ class TestTbCmdYAML < Test::Unit::TestCase
       ],
       YAML.load(File.read(o)))
   end
+
+  def test_twofile
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      1,2
+      3,4
+    End
+    File.open(i2="i2.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      b,a
+      5,6
+      7,8
+    End
+    assert_equal(true, Tb::Cmd.main_yaml(['-o', o="o.csv", i1, i2]))
+    assert_equal(
+      [
+        {'a' => '1', 'b' => '2'},
+        {'a' => '3', 'b' => '4'},
+        {'a' => '6', 'b' => '5'},
+        {'a' => '8', 'b' => '7'},
+      ],
+      YAML.load(File.read(o)))
+  end
+
 end

@@ -40,9 +40,8 @@ end
 def (Tb::Cmd).main_select(argv)
   op_select.parse!(argv)
   fs = split_field_list_argument(argv.shift)
-  filename = argv.shift || '-'
-  warn "extra arguments: #{argv.join(" ")}" if !argv.empty?
-  tablereader_open(filename) {|tblreader|
+  argv = ['-'] if argv.empty?
+  Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     if Tb::Cmd.opt_select_v
       h = {}
       fs.each {|f| h[tblreader.index_from_field(f)] = true }

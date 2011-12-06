@@ -26,7 +26,7 @@ Tb::Cmd.subcommands << 'csv'
 
 def (Tb::Cmd).op_csv
   op = OptionParser.new
-  op.banner = 'Usage: tb csv [OPTS] [TABLE]'
+  op.banner = 'Usage: tb csv [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
   op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
@@ -36,10 +36,10 @@ end
 
 def (Tb::Cmd).main_csv(argv)
   op_csv.parse!(argv)
-  each_table_file(argv) {|tbl|
-    with_output {|out|
-      tbl_generate_csv(tbl, out)
-    }
+  argv = ['-'] if argv.empty?
+  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
+  with_output {|out|
+    tbl_generate_csv(tbl, out)
   }
   true
 end

@@ -39,14 +39,13 @@ end
 
 def (Tb::Cmd).main_sort(argv)
   op_sort.parse!(argv)
-  filename = argv.empty? ? '-' : argv.shift
-  warn "extra arguments: #{argv.join(" ")}" if !argv.empty?
+  argv = ['-'] if argv.empty?
   if Tb::Cmd.opt_sort_f
     fs = split_field_list_argument(Tb::Cmd.opt_sort_f)
   else
     fs = nil
   end
-  tbl = load_table(filename)
+  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|reader| build_table(reader) }
   if fs
     blk = lambda {|rec| fs.map {|f| smart_cmp_value(rec[f]) } }
   else

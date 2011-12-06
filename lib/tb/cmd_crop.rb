@@ -28,7 +28,7 @@ Tb::Cmd.default_option[:opt_crop_range] = nil
 
 def (Tb::Cmd).op_crop
   op = OptionParser.new
-  op.banner = 'Usage: tb crop [OPTS] [TABLE]'
+  op.banner = 'Usage: tb crop [OPTS] [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-r RANGE', 'range.  i.e. "2,1-4,3", "B1:D3"') {|arg| Tb::Cmd.opt_crop_range = arg }
   op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
@@ -42,8 +42,7 @@ end
 
 def (Tb::Cmd).main_crop(argv)
   op_crop.parse!(argv)
-  filename = argv.shift || '-'
-  warn "extra arguments: #{argv.join(" ")}" if !argv.empty?
+  argv = ['-'] if argv.empty?
   stream = false
   if Tb::Cmd.opt_crop_range
     case Tb::Cmd.opt_crop_range
@@ -65,7 +64,7 @@ def (Tb::Cmd).main_crop(argv)
   end
   if stream
     with_table_stream_output {|gen|
-      Tb::Reader.open(filename, {:numeric=>true}) {|tblreader|
+      Tb::CatReader.open(argv, true) {|tblreader|
         rownum = 1
         tblreader.each {|ary|
           if range_row2 < rownum
@@ -86,7 +85,7 @@ def (Tb::Cmd).main_crop(argv)
     }
   else
     arys = []
-    Tb::Reader.open(filename, {:numeric=>true}) {|tblreader|
+    Tb::CatReader.open(argv, true) {|tblreader|
       tblreader.each {|a|
         a.pop while !a.empty? && (a.last.nil? || a.last == '')
         arys << a

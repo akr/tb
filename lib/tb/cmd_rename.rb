@@ -36,11 +36,10 @@ end
 def (Tb::Cmd).main_rename(argv)
   op_rename.parse!(argv)
   fs = split_field_list_argument(argv.shift)
-  filename = argv.shift || '-'
-  warn "extra arguments: #{argv.join(" ")}" if !argv.empty?
+  argv = ['-'] if argv.empty?
   h = {}
   fs.each_slice(2) {|sf, df| h[sf] = df }
-  tablereader_open(filename) {|tblreader|
+  Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     header = tblreader.header
     h.each {|sf, df|
       unless header.include? sf

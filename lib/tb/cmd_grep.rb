@@ -31,7 +31,7 @@ Tb::Cmd.default_option[:opt_grep_v] = nil
 
 def (Tb::Cmd).op_grep
   op = OptionParser.new
-  op.banner = 'Usage: tb grep [OPTS] REGEXP [TABLE]'
+  op.banner = 'Usage: tb grep [OPTS] REGEXP [TABLE ...]'
   op.def_option('-h', 'show help message') { puts op; exit 0 }
   op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
   op.def_option('-f FIELD', 'search field') {|field| Tb::Cmd.opt_grep_f = field }
@@ -57,21 +57,19 @@ def (Tb::Cmd).main_grep(argv)
                                 lambda {|_| _.any? {|k, v| re =~ v.to_s } }
   end
   opt_v = Tb::Cmd.opt_grep_v ? true : false
-  argv.unshift '-' if argv.empty?
-  argv.each {|filename|
-    tablereader_open(filename) {|tblreader|
-      with_table_stream_output {|gen|
-        gen.output_header tblreader.header
-        tblreader.each {|ary|
-          h = {}
-          ary.each_with_index {|str, i|
-            f = tblreader.field_from_index_ex(i)
-            h[f] = str
-          }
-          found = pred.call(h)
-          found = opt_v ^ !!(found)
-          gen << ary if found
+  argv = ['-'] if argv.empty?
+  Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
+    with_table_stream_output {|gen|
+      gen.output_header tblreader.header
+      tblreader.each {|ary|
+        h = {}
+        ary.each_with_index {|str, i|
+          f = tblreader.field_from_index_ex(i)
+          h[f] = str
         }
+        found = pred.call(h)
+        found = opt_v ^ !!(found)
+        gen << ary if found
       }
     }
   }

@@ -28,4 +28,26 @@ class TestTbCmdNewfield < Test::Unit::TestCase
       7,3,4
     End
   end
+
+  def test_twofile
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      1,2
+      3,4
+    End
+    File.open(i2="i2.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      b,a
+      5,6
+      7,8
+    End
+    assert_equal(true, Tb::Cmd.main_newfield(['-o', o="o.csv", 'c', '_["a"].to_i - _["b"].to_i', i1, i2]))
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      c,a,b
+      -1,1,2
+      -1,3,4
+      1,6,5
+      1,8,7
+    End
+  end
+
 end
