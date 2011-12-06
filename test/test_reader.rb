@@ -94,6 +94,26 @@ class TestTbReader < Test::Unit::TestCase
     }
   end
 
+  def test_field_index
+    Dir.mktmpdir {|d|
+      open(i="#{d}/i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+        a,b
+        1,3
+      End
+      Tb::Reader.open(i) {|r|
+        assert_equal(%w[a b], r.header)
+        assert_equal([%w[1 3]], r.read_all)
+        assert_equal("a", r.field_from_index(0))
+        assert_equal("b", r.field_from_index(1))
+        assert_raise(ArgumentError) { r.field_from_index(2) }
+        assert_equal(0, r.index_from_field("a"))
+        assert_equal(1, r.index_from_field("b"))
+        assert_raise(ArgumentError) { r.index_from_field("c") }
+        assert_raise(ArgumentError) { r.index_from_field("2") }
+      }
+    }
+  end
+
   def test_header_ignore_empty
     csv = "\n" + <<-'End'.gsub(/^[ \t]+/, '')
     a,b
