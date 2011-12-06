@@ -110,6 +110,8 @@ class TestTbReader < Test::Unit::TestCase
         assert_equal(1, r.index_from_field("b"))
         assert_raise(ArgumentError) { r.index_from_field("c") }
         assert_raise(ArgumentError) { r.index_from_field("2") }
+        assert_equal("1", r.field_from_index_ex(2))
+        assert_equal(3, r.index_from_field_ex("2"))
       }
     }
   end
