@@ -37,46 +37,13 @@ end
 def (Tb::Cmd).main_cat(argv)
   op_cat.parse!(argv)
   argv = ['-'] if argv.empty?
-  if Tb::Cmd.opt_N
-    with_table_stream_output {|gen|
-      argv.each {|filename|
-        tablereader_open(filename) {|tblreader|
-          tblreader.each {|ary|
-            gen << ary
-          }
-        }
-      }
+  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
+  header = creader.header
+  with_table_stream_output {|gen|
+    gen << header if !Tb::Cmd.opt_N
+    creader.each {|ary|
+      gen << ary
     }
-  else
-    readers = []
-    h = {}
-    argv.each {|filename|
-      r = Tb::Reader.open(filename)
-      readers << r
-      r.header.each {|f|
-        h[f] = h.size if !h[f]
-      }
-    }
-    with_table_stream_output {|gen|
-      gen.output_header h.keys.sort_by {|k| h[k] }
-      readers.each {|r|
-        header = r.header.dup
-        r.each {|ary|
-          while header.length < ary.length
-            f = r.field_from_index_ex(header.length)
-            header << f
-            h[f] = h.size if !h[f]
-          end
-          ary2 = []
-          ary.each_with_index {|v, i|
-            f = r.field_from_index(i)
-            j = h.fetch(f)
-            ary2[j] = v
-          }
-          gen << ary2
-        }
-      }
-    }
-  end
+  }
   true
 end
