@@ -27,7 +27,7 @@ Tb::Cmd.subcommands << 'shape'
 def (Tb::Cmd).op_shape
   op = OptionParser.new
   op.banner = 'Usage: tb shape [OPTS] [TABLE ...]'
-  define_default_option(op, "hNo", "--no-pager")
+  define_common_option(op, "hNo", "--no-pager")
   op
 end
 

@@ -29,7 +29,7 @@ Tb::Cmd.default_option[:opt_select_v] = nil
 def (Tb::Cmd).op_select
   op = OptionParser.new
   op.banner = 'Usage: tb select [OPTS] FIELD,... [TABLE]'
-  define_default_option(op, "hNo", "--no-pager")
+  define_common_option(op, "hNo", "--no-pager")
   op.def_option('-v', 'invert match') { Tb::Cmd.opt_select_v = true }
   op
 end

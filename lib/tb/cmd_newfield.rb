@@ -27,7 +27,7 @@ Tb::Cmd.subcommands << 'newfield'
 def (Tb::Cmd).op_newfield
   op = OptionParser.new
   op.banner = 'Usage: tb newfield [OPTS] FIELD RUBY-EXP [TABLE]'
-  define_default_option(op, "ho", "--no-pager")
+  define_common_option(op, "ho", "--no-pager")
   op
 end
 

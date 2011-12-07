@@ -27,7 +27,7 @@ Tb::Cmd.subcommands << 'json'
 def (Tb::Cmd).op_json
   op = OptionParser.new
   op.banner = 'Usage: tb json [OPTS] [TABLE]'
-  define_default_option(op, "hNo", "--no-pager")
+  define_common_option(op, "hNo", "--no-pager")
   op
 end
 

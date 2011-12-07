@@ -27,7 +27,7 @@ Tb::Cmd.subcommands << 'rename'
 def (Tb::Cmd).op_rename
   op = OptionParser.new
   op.banner = 'Usage: tb rename [OPTS] SRC,DST,... [TABLE]'
-  define_default_option(op, "ho", "--no-pager")
+  define_common_option(op, "ho", "--no-pager")
   op
 end
 

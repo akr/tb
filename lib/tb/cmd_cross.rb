@@ -30,7 +30,7 @@ Tb::Cmd.default_option[:opt_cross_compact] = false
 def (Tb::Cmd).op_cross
   op = OptionParser.new
   op.banner = 'Usage: tb cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE ...]'
-  define_default_option(op, "ho", "--no-pager")
+  define_common_option(op, "ho", "--no-pager")
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| Tb::Cmd.opt_cross_fields << arg }
   op.def_option('-c', '--compact', 'compact format') { Tb::Cmd.opt_cross_compact = true }

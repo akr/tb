@@ -38,7 +38,7 @@ end
 def (Tb::Cmd).op_help
   op = OptionParser.new
   op.banner = 'Usage: tb help [OPTS] [SUBCOMMAND]'
-  define_default_option(op, "hvo", "--no-pager")
+  define_common_option(op, "hvo", "--no-pager")
   op
 end
 

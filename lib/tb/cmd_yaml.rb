@@ -27,7 +27,7 @@ Tb::Cmd.subcommands << 'yaml'
 def (Tb::Cmd).op_yaml
   op = OptionParser.new
   op.banner = 'Usage: tb yaml [OPTS] [TABLE]'
-  define_default_option(op, "hNo", "--no-pager")
+  define_common_option(op, "hNo", "--no-pager")
   op
 end
 

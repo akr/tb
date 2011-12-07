@@ -29,7 +29,7 @@ Tb::Cmd.default_option[:opt_mheader_count] = nil
 def (Tb::Cmd).op_mheader
   op = OptionParser.new
   op.banner = 'Usage: tb mheader [OPTS] [TABLE]'
-  define_default_option(op, "ho", "--no-pager")
+  define_common_option(op, "ho", "--no-pager")
   op.def_option('-c N', 'number of header records') {|arg| Tb::Cmd.opt_mheader_count = arg.to_i }
   op
 end

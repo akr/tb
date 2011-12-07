@@ -29,7 +29,7 @@ Tb::Cmd.default_option[:opt_crop_range] = nil
 def (Tb::Cmd).op_crop
   op = OptionParser.new
   op.banner = 'Usage: tb crop [OPTS] [TABLE ...]'
-  define_default_option(op, "ho", "--no-pager")
+  define_common_option(op, "ho", "--no-pager")
   op.def_option('-r RANGE', 'range.  i.e. "2,1-4,3", "B1:D3"') {|arg| Tb::Cmd.opt_crop_range = arg }
   op
 end

@@ -30,7 +30,7 @@ Tb::Cmd.default_option[:opt_join_outer_missing] = nil
 def (Tb::Cmd).op_join
   op = OptionParser.new
   op.banner = 'Usage: tb join [OPTS] [TABLE ...]'
-  define_default_option(op, "hNo", "--no-pager")
+  define_common_option(op, "hNo", "--no-pager")
   op.def_option('-d', '--debug', 'show debug message') { Tb::Cmd.opt_debug += 1 }
   op.def_option('--outer', 'outer join') { Tb::Cmd.opt_join_outer = :full }
   op.def_option('--left', 'left outer join') { Tb::Cmd.opt_join_outer = :left }

@@ -27,7 +27,7 @@ Tb::Cmd.subcommands << 'tsv'
 def (Tb::Cmd).op_tsv
   op = OptionParser.new
   op.banner = 'Usage: tb tsv [OPTS] [TABLE]'
-  define_default_option(op, "hNo", "--no-pager")
+  define_common_option(op, "hNo", "--no-pager")
   op
 end
 
