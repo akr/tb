@@ -85,8 +85,7 @@ class << Tb::Cmd
 end
 
 def err(msg)
-  STDERR.puts msg
-  exit 1
+  raise SystemExit.new(1, msg)
 end
 
 def smart_cmp_value(v)

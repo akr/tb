@@ -34,5 +34,8 @@ def (Tb::Cmd).main(argv)
   else
     err "unexpected subcommand: #{subcommand.inspect}"
   end
+rescue SystemExit
+  STDERR.puts $!.message if $!.message != 'exit'
+  raise
 end
 
