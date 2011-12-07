@@ -69,7 +69,7 @@ def (Tb::Cmd).show_help(subcommand)
     }
     true
   else
-    err "unexpected subcommand: #{subcommand.inspect}"
+    abort "unexpected subcommand: #{subcommand.inspect}"
   end
 end
 
