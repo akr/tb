@@ -44,7 +44,6 @@ def (Tb::Cmd).op_help
 end
 
 def (Tb::Cmd).main_help(argv)
-  Tb::Cmd.opt_no_pager = true
   op_help.parse!(argv)
   if Tb::Cmd.opt_help then puts op_help; return true end
   subcommand = argv.shift
