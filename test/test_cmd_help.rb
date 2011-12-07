@@ -15,6 +15,14 @@ class TestTbCmdHelp < Test::Unit::TestCase
     FileUtils.rmtree @tmpdir
   end
 
+  def test_h
+    assert_equal(true, Tb::Cmd.main(['-h', '-o', o="msg"]))
+    msg = File.read(o)
+    assert_match(/Usage:/, msg)
+    assert_match(/ tb csv /, msg)
+    assert_match(/ tb select /, msg)
+  end
+
   def test_help
     assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg"]))
     msg = File.read(o)
