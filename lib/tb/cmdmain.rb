@@ -32,7 +32,7 @@ def (Tb::Cmd).main(argv)
     usage_list_subcommands
     true
   else
-    abort "unexpected subcommand: #{subcommand.inspect}"
+    err "unexpected subcommand: #{subcommand.inspect}"
   end
 end
 

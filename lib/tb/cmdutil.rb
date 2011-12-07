@@ -84,6 +84,11 @@ class << Tb::Cmd
   attr_reader :verbose_help
 end
 
+def err(msg)
+  STDERR.puts msg
+  exit 1
+end
+
 def smart_cmp_value(v)
   case v
   when nil
