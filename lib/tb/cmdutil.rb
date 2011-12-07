@@ -71,6 +71,9 @@ class Tb::Cmd
 
   @verbose_help = {}
   def self.def_vhelp(subcommand, str)
+    if @verbose_help[subcommand]
+      raise ArgumentError, "verbose_help[#{subcommand.dump}] already defined."
+    end
     @verbose_help[subcommand] = str
   end
 end

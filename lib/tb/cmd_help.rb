@@ -24,7 +24,7 @@
 
 Tb::Cmd.subcommands << 'help'
 
-def (Tb::Cmd).usage
+def (Tb::Cmd).usage_list_subcommands
   with_output {|f|
     f.print <<'End'
 Usage:
@@ -42,6 +42,22 @@ def (Tb::Cmd).op_help
   op
 end
 
+Tb::Cmd.def_vhelp('help', <<'End')
+Example:
+
+  tb help               : list subcommands
+
+  tb cat -h             : succinct help of "cat" subcommand
+  tb cat -hh            : verbose help of "cat" subcommand
+  tb help cat           : succinct help of "cat" subcommand
+  tb help cat -h        : verbose help of "cat" subcommand
+
+  tb help -h            : succinct help of "help" subcommand
+  tb help -hh           : verbose help of "help" subcommand
+  tb help help          : succinct help of "help" subcommand
+  tb help -h help       : verbose help of "help" subcommand
+End
+
 def (Tb::Cmd).show_help(subcommand)
   if Tb::Cmd.subcommands.include?(subcommand)
     with_output {|f|
@@ -52,20 +68,23 @@ def (Tb::Cmd).show_help(subcommand)
       end
     }
     true
-  elsif subcommand == nil
-    usage
-    true
   else
     err "unexpected subcommand: #{subcommand.inspect}"
   end
 end
 
 def (Tb::Cmd).main_help(argv)
-  Tb::Cmd.opt_help += 1
   op_help.parse!(argv)
-  if argv.empty? && 2 <= Tb::Cmd.opt_help then
-    argv.unshift 'help'
+  if argv.empty?
+    if Tb::Cmd.opt_help == 0
+      usage_list_subcommands
+      return true
+    else
+      argv.unshift 'help'
+      Tb::Cmd.opt_help -= 1
+    end
   end
+  Tb::Cmd.opt_help += 1
   subcommand = argv.shift
   show_help(subcommand)
 end
