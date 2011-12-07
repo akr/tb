@@ -20,45 +20,91 @@ class TestTbCmdTTY < Test::Unit::TestCase
     FileUtils.rmtree @tmpdir
   end
 
-  def test_ttyout
-    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
-      a,b,c
-      0,1,2
-      4,5,6
-    End
-    save_pager = ENV['PAGER']
-    ENV['PAGER'] = 'cat'
-    m, s = PTY.open
-    s.raw!
-    th = Thread.new {
+  def with_env(k, v)
+    save = ENV[k]
+    begin
+      ENV[k] = v
+      yield
+    ensure
+      ENV[k] = save
+    end
+  end
+
+  def with_stdout(io)
+    save = STDOUT.dup
+    STDOUT.reopen(io)
+    begin
+      yield
+    ensure
+      STDOUT.reopen(save)
+      save.close
+    end
+  end
+
+  def reader_thread(io)
+    Thread.new {
       r = ''
       loop {
         begin
-          r << m.readpartial(4096)
+          r << io.readpartial(4096)
         rescue EOFError, Errno::EIO
           break
         end
       }
       r
     }
-    save = STDOUT.dup
-    STDOUT.reopen(s)
-    s.close
-    main_result = Tb::Cmd.main_csv([i])
-    STDOUT.reopen(save)
-    save.close
-    result = th.value
-    assert_equal(true, main_result)
-    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), result)
+  end
+
+  def test_ttyout_multiscreen
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c
       0,1,2
       4,5,6
     End
-  ensure
-    ENV['PAGER'] = save_pager
-    m.close if m && !m.closed?
-    s.close if s && !s.closed?
-    save.close if save && !save.closed?
+    with_env('PAGER', 'sed "s/^/foo:/"') {
+      PTY.open {|m, s|
+        s.raw!
+        s.winsize = [2, 80]
+        th = reader_thread(m)
+        main_result = with_stdout(s) {
+          Tb::Cmd.main_csv([i])
+        }
+        s.close
+        result = th.value
+        assert_equal(true, main_result)
+        assert_equal(<<-"End".gsub(/^[ \t]+/, ''), result)
+          foo:a,b,c
+          foo:0,1,2
+          foo:4,5,6
+        End
+      }
+    }
+  end
+
+  def test_ttyout_singlescreen
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      0,1,2
+      4,5,6
+    End
+    with_env('PAGER', 'sed "s/^/foo:/"') {
+      PTY.open {|m, s|
+        s.raw!
+        s.winsize = [24, 80]
+        th = reader_thread(m)
+        main_result = with_stdout(s) {
+          Tb::Cmd.main_csv([i])
+        }
+        s.close
+        result = th.value
+        assert_equal(true, main_result)
+        assert_equal(<<-"End".gsub(/^[ \t]+/, ''), result)
+          a,b,c
+          0,1,2
+          4,5,6
+        End
+      }
+    }
   end
 
 end if defined?(PTY) && defined?(PTY.open)

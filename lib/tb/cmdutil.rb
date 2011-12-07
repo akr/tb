@@ -287,7 +287,7 @@ def with_output
       yield f
     }
   elsif STDOUT.tty? && !Tb::Cmd.opt_no_pager
-    IO.popen(ENV['PAGER'] || 'more', 'w') {|pager|
+    Tb::Pager.open {|pager|
       yield pager
     }
   else

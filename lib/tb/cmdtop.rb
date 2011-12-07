@@ -25,6 +25,7 @@
 require 'tb'
 require 'optparse'
 require 'enumerator'
+require 'tb/pager'
 require 'tb/cmdutil'
 require 'tb/cmd_help'
 require 'tb/cmd_csv'
