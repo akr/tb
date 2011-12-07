@@ -15,7 +15,7 @@ class TestTbCmdHelp < Test::Unit::TestCase
     FileUtils.rmtree @tmpdir
   end
 
-  def test_basic
+  def test_list_subcommand
     assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg"]))
     msg = File.read(o)
     assert_match(/Usage:/, msg)
@@ -23,10 +23,30 @@ class TestTbCmdHelp < Test::Unit::TestCase
     assert_match(/ tb select /, msg)
   end
 
-  def test_subcommand
+  def test_help_subcommand
     assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", 'cat']))
     msg = File.read(o)
     assert_match(/tb cat /, msg)
+  end
+
+  def test_subcommand_helpoption
+    assert_equal(true, Tb::Cmd.main(['cat', '-o', o="msg", '-h']))
+    msg = File.read(o)
+    assert_match(/tb cat /, msg)
+  end
+
+  def test_help_subcommand_v
+    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", '-v', 'cat']))
+    msg = File.read(o)
+    assert_match(/tb cat /, msg)
+    assert_match(/Example:/, msg)
+  end
+
+  def test_subcommand_helpoption_v
+    assert_equal(true, Tb::Cmd.main(['cat', '-o', o="msg", '-hv']))
+    msg = File.read(o)
+    assert_match(/tb cat /, msg)
+    assert_match(/Example:/, msg)
   end
 
   def test_unexpected_subcommand

@@ -39,17 +39,19 @@ def (Tb::Cmd).op_help
   op = OptionParser.new
   op.banner = 'Usage: tb help [OPTS] [SUBCOMMAND]'
   op.def_option('-h', 'show help message') { Tb::Cmd.opt_help = true }
+  op.def_option('-v', 'verbose mode') { Tb::Cmd.opt_verbose = true }
   op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
   op
 end
 
-def (Tb::Cmd).main_help(argv)
-  op_help.parse!(argv)
-  if Tb::Cmd.opt_help then puts op_help; return true end
-  subcommand = argv.shift
+def (Tb::Cmd).show_help(subcommand)
   if Tb::Cmd.subcommands.include?(subcommand)
     with_output {|f|
       f.puts self.send("op_#{subcommand}")
+      if Tb::Cmd.opt_verbose && Tb::Cmd.verbose_help[subcommand]
+        f.puts
+        f.puts Tb::Cmd.verbose_help[subcommand]
+      end
     }
     true
   elsif subcommand == nil
@@ -58,4 +60,13 @@ def (Tb::Cmd).main_help(argv)
   else
     err "unexpected subcommand: #{subcommand.inspect}"
   end
+end
+
+def (Tb::Cmd).main_help(argv)
+  op_help.parse!(argv)
+  if argv.empty? && Tb::Cmd.opt_help then
+    argv.unshift 'help'
+  end
+  subcommand = argv.shift
+  show_help(subcommand)
 end

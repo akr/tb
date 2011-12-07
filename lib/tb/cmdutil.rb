@@ -27,6 +27,7 @@ class Tb::Cmd
 
   @default_option = {
     :opt_help => nil,
+    :opt_verbose => nil,
     :opt_N => nil,
     :opt_debug => 0,
     :opt_no_pager => nil,
@@ -47,11 +48,17 @@ class Tb::Cmd
     end
     reset_option
   end
+
+  @verbose_help = {}
+  def self.def_vhelp(subcommand, str)
+    @verbose_help[subcommand] = str
+  end
 end
 
 class << Tb::Cmd
   attr_reader :subcommands
   attr_reader :default_option
+  attr_reader :verbose_help
 end
 
 def err(msg)
