@@ -61,6 +61,12 @@ class Tb::Cmd
     if long_opts.include? "--no-pager"
       op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
     end
+    opts = []
+    opts << '-d' if short_opts.include?('d')
+    opts << '--debug' if long_opts.include?('--debug')
+    if !opts.empty?
+      op.def_option(*(opts + ['show debug message'])) { Tb::Cmd.opt_debug += 1 }
+    end
   end
 
   @verbose_help = {}
