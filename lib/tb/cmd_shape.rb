@@ -27,15 +27,13 @@ Tb::Cmd.subcommands << 'shape'
 def (Tb::Cmd).op_shape
   op = OptionParser.new
   op.banner = 'Usage: tb shape [OPTS] [TABLE ...]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
-  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
+  define_default_option(op, "hNo", "--no-pager")
   op
 end
 
 def (Tb::Cmd).main_shape(argv)
   op_shape.parse!(argv)
+  return show_help('shape') if 0 < Tb::Cmd.opt_help
   filenames = argv.empty? ? ['-'] : argv
   result = Tb.new(%w[header_fields min_fields max_fields records filename])
   filenames.each {|filename|

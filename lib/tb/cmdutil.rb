@@ -26,8 +26,7 @@ class Tb::Cmd
   @subcommands = []
 
   @default_option = {
-    :opt_help => nil,
-    :opt_verbose => nil,
+    :opt_help => 0,
     :opt_N => nil,
     :opt_debug => 0,
     :opt_no_pager => nil,
@@ -47,6 +46,21 @@ class Tb::Cmd
       }
     end
     reset_option
+  end
+
+  def self.define_default_option(op, short_opts, *long_opts)
+    if short_opts.include? "h"
+      op.def_option('-h', 'show help message') { Tb::Cmd.opt_help += 1 }
+    end
+    if short_opts.include? "N"
+      op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
+    end
+    if short_opts.include? "o"
+      op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
+    end
+    if long_opts.include? "--no-pager"
+      op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
+    end
   end
 
   @verbose_help = {}

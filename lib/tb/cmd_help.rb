@@ -38,9 +38,7 @@ end
 def (Tb::Cmd).op_help
   op = OptionParser.new
   op.banner = 'Usage: tb help [OPTS] [SUBCOMMAND]'
-  op.def_option('-h', 'show help message') { Tb::Cmd.opt_help = true }
-  op.def_option('-v', 'verbose mode') { Tb::Cmd.opt_verbose = true }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
+  define_default_option(op, "hvo", "--no-pager")
   op
 end
 
@@ -48,7 +46,7 @@ def (Tb::Cmd).show_help(subcommand)
   if Tb::Cmd.subcommands.include?(subcommand)
     with_output {|f|
       f.puts self.send("op_#{subcommand}")
-      if Tb::Cmd.opt_verbose && Tb::Cmd.verbose_help[subcommand]
+      if 2 <= Tb::Cmd.opt_help && Tb::Cmd.verbose_help[subcommand]
         f.puts
         f.puts Tb::Cmd.verbose_help[subcommand]
       end
@@ -63,8 +61,9 @@ def (Tb::Cmd).show_help(subcommand)
 end
 
 def (Tb::Cmd).main_help(argv)
+  Tb::Cmd.opt_help += 1
   op_help.parse!(argv)
-  if argv.empty? && Tb::Cmd.opt_help then
+  if argv.empty? && 2 <= Tb::Cmd.opt_help then
     argv.unshift 'help'
   end
   subcommand = argv.shift

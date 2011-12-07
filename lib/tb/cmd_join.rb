@@ -30,9 +30,8 @@ Tb::Cmd.default_option[:opt_join_outer_missing] = nil
 def (Tb::Cmd).op_join
   op = OptionParser.new
   op.banner = 'Usage: tb join [OPTS] [TABLE ...]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
+  define_default_option(op, "hNo", "--no-pager")
   op.def_option('-d', '--debug', 'show debug message') { Tb::Cmd.opt_debug += 1 }
-  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
   op.def_option('--outer', 'outer join') { Tb::Cmd.opt_join_outer = :full }
   op.def_option('--left', 'left outer join') { Tb::Cmd.opt_join_outer = :left }
   op.def_option('--right', 'right outer join') { Tb::Cmd.opt_join_outer = :right }
@@ -40,13 +39,12 @@ def (Tb::Cmd).op_join
     Tb::Cmd.opt_join_outer ||= :full
     Tb::Cmd.opt_join_outer_missing = missing
   }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
-  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 
 def (Tb::Cmd).main_join(argv)
   op_join.parse!(argv)
+  return show_help('join') if 0 < Tb::Cmd.opt_help
   result = Tb.new([], [])
   retain_left = false
   retain_right = false

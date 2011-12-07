@@ -29,16 +29,14 @@ Tb::Cmd.default_option[:opt_sort_f] = nil
 def (Tb::Cmd).op_sort
   op = OptionParser.new
   op.banner = 'Usage: tb sort [OPTS] [TABLE]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
+  define_default_option(op, "hNo", "--no-pager")
   op.def_option('-f FIELD,...', 'specify sort keys') {|fs| Tb::Cmd.opt_sort_f = fs }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
-  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 
 def (Tb::Cmd).main_sort(argv)
   op_sort.parse!(argv)
+  return show_help('sort') if 0 < Tb::Cmd.opt_help
   argv = ['-'] if argv.empty?
   if Tb::Cmd.opt_sort_f
     fs = split_field_list_argument(Tb::Cmd.opt_sort_f)

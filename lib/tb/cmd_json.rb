@@ -27,16 +27,14 @@ Tb::Cmd.subcommands << 'json'
 def (Tb::Cmd).op_json
   op = OptionParser.new
   op.banner = 'Usage: tb json [OPTS] [TABLE]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
-  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
+  define_default_option(op, "hNo", "--no-pager")
   op
 end
 
 def (Tb::Cmd).main_json(argv)
   require 'json'
   op_json.parse!(argv)
+  return show_help('json') if 0 < Tb::Cmd.opt_help
   argv = ['-'] if argv.empty?
   with_output {|out|
     out.print "["

@@ -27,11 +27,7 @@ Tb::Cmd.subcommands << 'cat'
 def (Tb::Cmd).op_cat
   op = OptionParser.new
   op.banner = 'Usage: tb cat [OPTS] [TABLE ...]'
-  op.def_option('-h', 'show help message') { Tb::Cmd.opt_help = true }
-  op.def_option('-v', 'verbose mode') { Tb::Cmd.opt_verbose = true }
-  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
-  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
+  define_default_option(op, "hNo", "--no-pager")
   op
 end
 
@@ -56,7 +52,7 @@ End
 
 def (Tb::Cmd).main_cat(argv)
   op_cat.parse!(argv)
-  return show_help('cat') if Tb::Cmd.opt_help
+  return show_help('cat') if 0 < Tb::Cmd.opt_help
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   header = creader.header

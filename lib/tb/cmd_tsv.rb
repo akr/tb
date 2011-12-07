@@ -27,15 +27,13 @@ Tb::Cmd.subcommands << 'tsv'
 def (Tb::Cmd).op_tsv
   op = OptionParser.new
   op.banner = 'Usage: tb tsv [OPTS] [TABLE]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
-  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
+  define_default_option(op, "hNo", "--no-pager")
   op
 end
 
 def (Tb::Cmd).main_tsv(argv)
   op_tsv.parse!(argv)
+  return show_help('tsv') if 0 < Tb::Cmd.opt_help
   argv = ['-'] if argv.empty?
   tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
   with_output {|out|

@@ -36,14 +36,14 @@ class TestTbCmdHelp < Test::Unit::TestCase
   end
 
   def test_help_subcommand_v
-    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", '-v', 'cat']))
+    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", '-h', 'cat']))
     msg = File.read(o)
     assert_match(/tb cat /, msg)
     assert_match(/Example:/, msg)
   end
 
   def test_subcommand_helpoption_v
-    assert_equal(true, Tb::Cmd.main(['cat', '-o', o="msg", '-hv']))
+    assert_equal(true, Tb::Cmd.main(['cat', '-o', o="msg", '-hh']))
     msg = File.read(o)
     assert_match(/tb cat /, msg)
     assert_match(/Example:/, msg)

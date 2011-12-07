@@ -30,17 +30,15 @@ Tb::Cmd.default_option[:opt_gsub_f] = nil
 def (Tb::Cmd).op_gsub
   op = OptionParser.new
   op.banner = 'Usage: tb gsub [OPTS] REGEXP STRING [TABLE ...]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
+  define_default_option(op, "hNo", "--no-pager")
   op.def_option('-f FIELD', 'target field') {|field| Tb::Cmd.opt_gsub_f = field }
   op.def_option('-e REGEXP', 'specify regexp, possibly begins with a hyphen') {|pattern| Tb::Cmd.opt_gsub_e = pattern }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
-  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 
 def (Tb::Cmd).main_gsub(argv)
   op_gsub.parse!(argv)
+  return show_help('gsub') if 0 < Tb::Cmd.opt_help
   if Tb::Cmd.opt_gsub_e
     re = Regexp.new(Tb::Cmd.opt_gsub_e)
   else

@@ -32,19 +32,17 @@ Tb::Cmd.default_option[:opt_grep_v] = nil
 def (Tb::Cmd).op_grep
   op = OptionParser.new
   op.banner = 'Usage: tb grep [OPTS] REGEXP [TABLE ...]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
+  define_default_option(op, "hNo", "--no-pager")
   op.def_option('-f FIELD', 'search field') {|field| Tb::Cmd.opt_grep_f = field }
   op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| Tb::Cmd.opt_grep_e = pattern }
   op.def_option('--ruby RUBY-EXP', 'specify a regexp.  no usual regexp argument.') {|ruby_exp| Tb::Cmd.opt_grep_ruby = ruby_exp }
   op.def_option('-v', 'ouput the records which doesn\'t match') { Tb::Cmd.opt_grep_v = true }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
-  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 
 def (Tb::Cmd).main_grep(argv)
   op_grep.parse!(argv)
+  return show_help('grep') if 0 < Tb::Cmd.opt_help
   if Tb::Cmd.opt_grep_ruby
     pred = eval("lambda {|_| #{Tb::Cmd.opt_grep_ruby} }")
   elsif Tb::Cmd.opt_grep_e

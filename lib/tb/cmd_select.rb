@@ -29,16 +29,14 @@ Tb::Cmd.default_option[:opt_select_v] = nil
 def (Tb::Cmd).op_select
   op = OptionParser.new
   op.banner = 'Usage: tb select [OPTS] FIELD,... [TABLE]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
-  op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
+  define_default_option(op, "hNo", "--no-pager")
   op.def_option('-v', 'invert match') { Tb::Cmd.opt_select_v = true }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
-  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 
 def (Tb::Cmd).main_select(argv)
   op_select.parse!(argv)
+  return show_help('select') if 0 < Tb::Cmd.opt_help
   fs = split_field_list_argument(argv.shift)
   argv = ['-'] if argv.empty?
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|

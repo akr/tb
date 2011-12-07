@@ -29,16 +29,16 @@ Tb::Cmd.default_option[:opt_group_fields] = []
 def (Tb::Cmd).op_group
   op = OptionParser.new
   op.banner = 'Usage: tb group [OPTS] KEY-FIELD1,... [TABLE ...]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
+  define_default_option(op, "hNo", "--no-pager")
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| Tb::Cmd.opt_group_fields << arg }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
   op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 
 def (Tb::Cmd).main_group(argv)
   op_group.parse!(argv)
+  return show_help('group') if 0 < Tb::Cmd.opt_help
   kfs = split_field_list_argument(argv.shift)
   opt_group_fields = Tb::Cmd.opt_group_fields.map {|arg|
     aggregation_spec, new_field = split_field_list_argument(arg)

@@ -30,17 +30,16 @@ Tb::Cmd.default_option[:opt_cross_compact] = false
 def (Tb::Cmd).op_cross
   op = OptionParser.new
   op.banner = 'Usage: tb cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE ...]'
-  op.def_option('-h', 'show help message') { puts op; exit 0 }
+  define_default_option(op, "ho", "--no-pager")
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| Tb::Cmd.opt_cross_fields << arg }
   op.def_option('-c', '--compact', 'compact format') { Tb::Cmd.opt_cross_compact = true }
-  op.def_option('-o filename', 'output to specified filename') {|filename| Tb::Cmd.opt_output = filename }
-  op.def_option('--no-pager', 'don\'t use pager') { Tb::Cmd.opt_no_pager = true }
   op
 end
 
 def (Tb::Cmd).main_cross(argv)
   op_cross.parse!(argv)
+  return show_help('cross') if 0 < Tb::Cmd.opt_help
   hkfs = split_field_list_argument(argv.shift)
   vkfs = split_field_list_argument(argv.shift)
   if Tb::Cmd.opt_cross_fields.empty?
