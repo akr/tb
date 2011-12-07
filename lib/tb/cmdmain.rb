@@ -22,7 +22,7 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-def (Tb::Cmd).main(argv)
+def (Tb::Cmd).main_body(argv)
   subcommand = argv.shift
   if subcommand == '-h'
     main_help(argv)
@@ -34,6 +34,10 @@ def (Tb::Cmd).main(argv)
   else
     err "unexpected subcommand: #{subcommand.inspect}"
   end
+end
+
+def (Tb::Cmd).main(argv)
+  main_body(argv)
 rescue SystemExit
   STDERR.puts $!.message if $!.message != 'exit'
   raise
