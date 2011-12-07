@@ -16,64 +16,64 @@ class TestTbCmdHelp < Test::Unit::TestCase
   end
 
   def test_help
-    assert_equal(true, Tb::Cmd.main(['-o', o="msg", 'help', '-o']))
-    msg = File.read(o)
-    assert_match(/Usage:/, msg)
-    assert_match(/ tb csv /, msg)
-    assert_match(/ tb select /, msg)
-  end
-
-  def test_help_h
-    assert_equal(true, Tb::Cmd.main(['-o', o="msg", 'help', '-h']))
-    msg = File.read(o)
+    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg"]))
+    msg = File.read(o)                       
+    assert_match(/Usage:/, msg)              
+    assert_match(/ tb csv /, msg)            
+    assert_match(/ tb select /, msg)         
+  end                                        
+                                             
+  def test_help_h                            
+    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", '-h']))
+    msg = File.read(o)                       
     assert_match(/Usage: tb help/, msg)
-    assert_not_match(/Example:/, msg)
-  end
-
-  def test_help_hh
-    assert_equal(true, Tb::Cmd.main(['-o', o="msg", 'help', '-hh']))
-    msg = File.read(o)
+    assert_not_match(/Example:/, msg)        
+  end                                        
+                                             
+  def test_help_hh                           
+    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", '-hh']))
+    msg = File.read(o)                       
     assert_match(/Usage: tb help/, msg)
-    assert_match(/Example:/, msg)
-  end
-
-  def test_help_help
-    assert_equal(true, Tb::Cmd.main(['-o', o="msg", 'help', 'help']))
-    msg = File.read(o)
+    assert_match(/Example:/, msg)            
+  end                                        
+                                             
+  def test_help_help                         
+    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", 'help']))
+    msg = File.read(o)                       
     assert_match(/Usage: tb help/, msg)
-    assert_not_match(/Example:/, msg)
-  end
-
-  def test_help_h_help
-    assert_equal(true, Tb::Cmd.main(['-o', o="msg", 'help', '-h', 'help']))
+    assert_not_match(/Example:/, msg)        
+  end                                        
+                                             
+  def test_help_h_help                       
+    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", '-h', 'help']))
     msg = File.read(o)
     assert_match(/Usage: tb help/, msg)
     assert_match(/Example:/, msg)
   end
 
   def test_cat_h
-    assert_equal(true, Tb::Cmd.main(['-o', o="msg", 'cat', '-h']))
+    assert_equal(true, Tb::Cmd.main(['cat', '-o', o="msg", '-h']))
     msg = File.read(o)
     assert_match(/tb cat /, msg)
     assert_not_match(/Example:/, msg)
   end
 
   def test_cat_hh
-    assert_equal(true, Tb::Cmd.main(['-o', o="msg", 'cat', '-hh']))
+    assert_equal(true, Tb::Cmd.main(['cat', '-o', o="msg", '-hh']))
     msg = File.read(o)
     assert_match(/tb cat /, msg)
     assert_match(/Example:/, msg)
   end
 
   def test_help_cat
-    assert_equal(true, Tb::Cmd.main(['-o', o="msg", 'help', 'cat']))
-    msg = File.read(o)
-    assert_match(/tb cat /, msg)
-    assert_not_match(/Example:/, msg)
-  end
-
-  def test_help_h_cat
-    assert_equal(true, Tb::Cmd.main(['-o', o="msg", 'help', '-h', 'cat']))
+    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", 'cat']))
+    msg = File.read(o)                       
+    assert_match(/tb cat /, msg)             
+    assert_not_match(/Example:/, msg)        
+  end                                        
+                                             
+  def test_help_h_cat                        
+    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", '-h', 'cat']))
     msg = File.read(o)
     assert_match(/tb cat /, msg)
     assert_match(/Example:/, msg)
