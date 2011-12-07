@@ -29,7 +29,8 @@ def (Tb::Cmd).main(argv)
   elsif Tb::Cmd.subcommands.include?(subcommand)
     self.send("main_#{subcommand}", argv)
   elsif subcommand == nil
-    err "Usage: tb subcommand args..."
+    usage_list_subcommands
+    true
   else
     err "unexpected subcommand: #{subcommand.inspect}"
   end

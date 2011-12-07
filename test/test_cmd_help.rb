@@ -15,6 +15,57 @@ class TestTbCmdHelp < Test::Unit::TestCase
     FileUtils.rmtree @tmpdir
   end
 
+  def with_stdout(io)
+    save = STDOUT.dup
+    STDOUT.reopen(io)
+    begin
+      yield
+    ensure
+      STDOUT.reopen(save)
+      save.close
+    end
+  end
+
+  def with_pipe
+    r, w = IO.pipe
+    begin
+      yield r, w
+    ensure
+      r.close if !r.closed?
+      w.close if !w.closed?
+    end
+  end
+
+  def reader_thread(io)
+    Thread.new {
+      r = ''
+      loop {
+        begin
+          r << io.readpartial(4096)
+        rescue EOFError, Errno::EIO
+          break
+        end
+      }
+      r
+    }
+  end
+
+  def test_noarg
+    with_pipe {|r, w|
+      th = reader_thread(r)
+      main_result = with_stdout(w) {
+        Tb::Cmd.main([])
+      }
+      w.close
+      assert_equal(true, main_result)
+      msg = th.value
+      r.close
+      assert_match(/Usage:/, msg)
+      assert_match(/ tb csv /, msg)
+      assert_match(/ tb select /, msg)
+    }
+  end
+
   def test_h
     assert_equal(true, Tb::Cmd.main(['-h', '-o', o="msg"]))
     msg = File.read(o)
@@ -35,7 +86,7 @@ class TestTbCmdHelp < Test::Unit::TestCase
     assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", '-h']))
     msg = File.read(o)
     assert_match(/Usage: tb help/, msg)
-    assert_not_match(/Example:/, msg)
+    assert_no_match(/Example:/, msg)
   end
 
   def test_help_hh
@@ -49,7 +100,7 @@ class TestTbCmdHelp < Test::Unit::TestCase
     assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", 'help']))
     msg = File.read(o)
     assert_match(/Usage: tb help/, msg)
-    assert_not_match(/Example:/, msg)
+    assert_no_match(/Example:/, msg)
   end
 
   def test_help_h_help
@@ -63,7 +114,7 @@ class TestTbCmdHelp < Test::Unit::TestCase
     assert_equal(true, Tb::Cmd.main(['cat', '-o', o="msg", '-h']))
     msg = File.read(o)
     assert_match(/tb cat /, msg)
-    assert_not_match(/Example:/, msg)
+    assert_no_match(/Example:/, msg)
   end
 
   def test_cat_hh
@@ -77,7 +128,7 @@ class TestTbCmdHelp < Test::Unit::TestCase
     assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", 'cat']))
     msg = File.read(o)
     assert_match(/tb cat /, msg)
-    assert_not_match(/Example:/, msg)
+    assert_no_match(/Example:/, msg)
   end
 
   def test_help_h_cat
