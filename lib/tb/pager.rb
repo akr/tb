@@ -46,11 +46,15 @@ class Tb::Pager
   end
 
   def puts(*objs)
-    objs.each {|o|
-      o = o.to_s
-      write o
-      write "\n" if /\n\z/ !~ o
-    }
+    if objs.empty?
+      write "\n"
+    else
+      objs.each {|o|
+        o = o.to_s
+        write o
+        write "\n" if /\n\z/ !~ o
+      }
+    end
   end
 
   def write_nonblock(str)
