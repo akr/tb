@@ -72,4 +72,14 @@ class TestTbCmdRename < Test::Unit::TestCase
     End
   end
 
+  def test_field_not_found
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      1,2
+      3,4
+    End
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_rename(['-o', o="o.csv", 'z,c', i]) }
+    assert_match(/field not found/, exc.message)
+  end
+
 end

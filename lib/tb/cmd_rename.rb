@@ -42,7 +42,7 @@ def (Tb::Cmd).main_rename(argv)
     header = tblreader.header
     h.each {|sf, df|
       unless header.include? sf
-        raise "field not defined: #{sf.inspect}"
+        err "field not found: #{sf.inspect}"
       end
     }
     renamed_header = tblreader.header.map {|f| h.fetch(f, f) }
