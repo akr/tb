@@ -39,12 +39,29 @@ def (Tb::Cmd).main_pp(argv)
     argv.each {|filename|
       tablereader_open(filename) {|tblreader|
         tblreader.each {|ary|
-          h = {}
+          a = []
           ary.each_with_index {|v, i|
             next if v.nil?
-            h[tblreader.field_from_index_ex(i)] = v
+            a << [tblreader.field_from_index_ex(i), v]
           }
-          PP.pp h, out
+          q = PP.new(out, 79)
+          q.guard_inspect_key {
+            q.group(1, '{', '}') {
+              q.seplist(a, nil, :each) {|kv|
+                k, v = kv
+                q.group {
+                  q.pp k
+                  q.text '=>'
+                  q.group(1) {
+                    q.breakable ''
+                    q.pp v
+                  }
+                }
+              }
+            }
+          }
+          q.flush
+          out << "\n"
         }
       }
     }
