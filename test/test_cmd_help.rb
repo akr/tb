@@ -143,9 +143,10 @@ class TestTbCmdHelp < Test::Unit::TestCase
     log = File.open("log", "w")
     STDERR.reopen(log)
     log.close
-    assert_raise(SystemExit) { Tb::Cmd.main(['help', '-o', "msg", 'foo']) }
+    exc = assert_raise(SystemExit) { Tb::Cmd.main(['help', '-o', "msg", 'foo']) }
     STDERR.reopen(save)
     save.close
+    assert(!exc.success?)
     assert_match(/unexpected subcommand/, File.read("log"))
   ensure
     save.close if save && !save.closed?
@@ -154,11 +155,13 @@ class TestTbCmdHelp < Test::Unit::TestCase
 
   def test_help_unexpected_subcommand2
     exc = assert_raise(SystemExit) { Tb::Cmd.main_help(['foo']) }
+    assert(!exc.success?)
     assert_match(/unexpected subcommand/, exc.message)
   end
 
   def test_top_unexpected_subcommand
     exc = assert_raise(SystemExit) { Tb::Cmd.main_body(['foo']) }
+    assert(!exc.success?)
     assert_match(/unexpected subcommand/, exc.message)
   end
 

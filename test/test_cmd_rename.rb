@@ -79,6 +79,7 @@ class TestTbCmdRename < Test::Unit::TestCase
       3,4
     End
     exc = assert_raise(SystemExit) { Tb::Cmd.main_rename(['-o', o="o.csv", 'z,c', i]) }
+    assert(!exc.success?)
     assert_match(/field not found/, exc.message)
   end
 
