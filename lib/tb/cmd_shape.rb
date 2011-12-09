@@ -33,7 +33,7 @@ end
 
 def (Tb::Cmd).main_shape(argv)
   op_shape.parse!(argv)
-  return show_help('shape') if 0 < Tb::Cmd.opt_help
+  exit_if_help('shape')
   filenames = argv.empty? ? ['-'] : argv
   result = Tb.new(%w[header_fields min_fields max_fields records filename])
   filenames.each {|filename|

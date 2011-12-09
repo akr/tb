@@ -33,7 +33,7 @@ end
 
 def (Tb::Cmd).main_pp(argv)
   op_pp.parse!(argv)
-  return show_help('pp') if 0 < Tb::Cmd.opt_help
+  exit_if_help('pp')
   argv.unshift '-' if argv.empty?
   with_output {|out|
     argv.each {|filename|

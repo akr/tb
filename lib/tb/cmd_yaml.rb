@@ -34,7 +34,7 @@ end
 def (Tb::Cmd).main_yaml(argv)
   require 'yaml'
   op_yaml.parse!(argv)
-  return show_help('yaml') if 0 < Tb::Cmd.opt_help
+  exit_if_help('yaml')
   argv = ['-'] if argv.empty?
   tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
   ary = tbl.map {|rec| rec.to_h }

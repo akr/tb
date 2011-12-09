@@ -40,7 +40,7 @@ end
 
 def (Tb::Cmd).main_crop(argv)
   op_crop.parse!(argv)
-  return show_help('crop') if 0 < Tb::Cmd.opt_help
+  exit_if_help('crop')
   argv = ['-'] if argv.empty?
   stream = false
   if Tb::Cmd.opt_crop_range

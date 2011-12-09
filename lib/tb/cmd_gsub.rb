@@ -38,7 +38,7 @@ end
 
 def (Tb::Cmd).main_gsub(argv)
   op_gsub.parse!(argv)
-  return show_help('gsub') if 0 < Tb::Cmd.opt_help
+  exit_if_help('gsub')
   if Tb::Cmd.opt_gsub_e
     re = Regexp.new(Tb::Cmd.opt_gsub_e)
   else

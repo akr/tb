@@ -56,7 +56,7 @@ end
 
 def (Tb::Cmd).main_join(argv)
   op_join.parse!(argv)
-  return show_help('join') if 0 < Tb::Cmd.opt_help
+  exit_if_help('join')
   result = Tb.new([], [])
   retain_left = Tb::Cmd.opt_join_retain_left
   retain_right = Tb::Cmd.opt_join_retain_right

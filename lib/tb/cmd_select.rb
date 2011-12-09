@@ -36,7 +36,7 @@ end
 
 def (Tb::Cmd).main_select(argv)
   op_select.parse!(argv)
-  return show_help('select') if 0 < Tb::Cmd.opt_help
+  exit_if_help('select')
   fs = split_field_list_argument(argv.shift)
   argv = ['-'] if argv.empty?
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|

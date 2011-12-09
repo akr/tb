@@ -36,7 +36,7 @@ end
 
 def (Tb::Cmd).main_sort(argv)
   op_sort.parse!(argv)
-  return show_help('sort') if 0 < Tb::Cmd.opt_help
+  exit_if_help('sort')
   argv = ['-'] if argv.empty?
   if Tb::Cmd.opt_sort_f
     fs = split_field_list_argument(Tb::Cmd.opt_sort_f)

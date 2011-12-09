@@ -82,57 +82,62 @@ class TestTbCmdHelp < Test::Unit::TestCase
     assert_match(/ tb select /, msg)
   end
 
+  def assert_exit_success(comanndline_words)
+    exc = assert_raise(SystemExit) { Tb::Cmd.main(comanndline_words)  }
+    assert(exc.success?)
+  end
+
   def test_help_h
-    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", '-h']))
+    assert_exit_success(['help', '-o', o="msg", '-h'])
     msg = File.read(o)
     assert_match(/Usage: tb help/, msg)
     assert_no_match(/Example:/, msg)
   end
 
   def test_help_hh
-    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", '-hh']))
+    assert_exit_success(['help', '-o', o="msg", '-hh'])
     msg = File.read(o)
     assert_match(/Usage: tb help/, msg)
     assert_match(/Example:/, msg)
   end
 
   def test_help_help
-    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", 'help']))
+    assert_exit_success(['help', '-o', o="msg", 'help'])
     msg = File.read(o)
     assert_match(/Usage: tb help/, msg)
     assert_no_match(/Example:/, msg)
   end
 
   def test_help_h_help
-    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", '-h', 'help']))
+    assert_exit_success(['help', '-o', o="msg", '-h', 'help'])
     msg = File.read(o)
     assert_match(/Usage: tb help/, msg)
     assert_match(/Example:/, msg)
   end
 
   def test_cat_h
-    assert_equal(true, Tb::Cmd.main(['cat', '-o', o="msg", '-h']))
+    assert_exit_success(['cat', '-o', o="msg", '-h'])
     msg = File.read(o)
     assert_match(/tb cat /, msg)
     assert_no_match(/Example:/, msg)
   end
 
   def test_cat_hh
-    assert_equal(true, Tb::Cmd.main(['cat', '-o', o="msg", '-hh']))
+    assert_exit_success(['cat', '-o', o="msg", '-hh'])
     msg = File.read(o)
     assert_match(/tb cat /, msg)
     assert_match(/Example:/, msg)
   end
 
   def test_help_cat
-    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", 'cat']))
+    assert_exit_success(['help', '-o', o="msg", 'cat'])
     msg = File.read(o)
     assert_match(/tb cat /, msg)
     assert_no_match(/Example:/, msg)
   end
 
   def test_help_h_cat
-    assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg", '-h', 'cat']))
+    assert_exit_success(['help', '-o', o="msg", '-h', 'cat'])
     msg = File.read(o)
     assert_match(/tb cat /, msg)
     assert_match(/Example:/, msg)

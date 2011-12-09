@@ -38,7 +38,7 @@ end
 
 def (Tb::Cmd).main_group(argv)
   op_group.parse!(argv)
-  return show_help('group') if 0 < Tb::Cmd.opt_help
+  exit_if_help('group')
   kfs = split_field_list_argument(argv.shift)
   opt_group_fields = Tb::Cmd.opt_group_fields.map {|arg|
     aggregation_spec, new_field = split_field_list_argument(arg)

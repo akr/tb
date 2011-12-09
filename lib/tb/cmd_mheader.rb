@@ -36,7 +36,7 @@ end
 
 def (Tb::Cmd).main_mheader(argv)
   op_mheader.parse!(argv)
-  return show_help('mheader') if 0 < Tb::Cmd.opt_help
+  exit_if_help('mheader')
   argv = ['-'] if argv.empty?
   header = []
   if Tb::Cmd.opt_mheader_count

@@ -33,7 +33,7 @@ end
 
 def (Tb::Cmd).main_csv(argv)
   op_csv.parse!(argv)
-  return show_help('csv') if 0 < Tb::Cmd.opt_help
+  exit_if_help('csv')
   argv = ['-'] if argv.empty?
   tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
   with_output {|out|

@@ -39,7 +39,7 @@ end
 
 def (Tb::Cmd).main_cross(argv)
   op_cross.parse!(argv)
-  return show_help('cross') if 0 < Tb::Cmd.opt_help
+  exit_if_help('cross')
   hkfs = split_field_list_argument(argv.shift)
   vkfs = split_field_list_argument(argv.shift)
   if Tb::Cmd.opt_cross_fields.empty?

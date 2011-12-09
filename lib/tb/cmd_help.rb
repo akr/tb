@@ -59,6 +59,13 @@ Example:
   tb help -h help       : verbose help of "help" subcommand
 End
 
+def (Tb::Cmd).exit_if_help(subcommand)
+  if 0 < Tb::Cmd.opt_help
+    show_help(subcommand)
+    exit
+  end
+end
+
 def (Tb::Cmd).show_help(subcommand)
   if Tb::Cmd.subcommands.include?(subcommand)
     with_output {|f|
@@ -87,5 +94,5 @@ def (Tb::Cmd).main_help(argv)
   end
   Tb::Cmd.opt_help += 1
   subcommand = argv.shift
-  show_help(subcommand)
+  exit_if_help(subcommand)
 end

@@ -34,7 +34,7 @@ end
 def (Tb::Cmd).main_json(argv)
   require 'json'
   op_json.parse!(argv)
-  return show_help('json') if 0 < Tb::Cmd.opt_help
+  exit_if_help('json')
   argv = ['-'] if argv.empty?
   with_output {|out|
     out.print "["

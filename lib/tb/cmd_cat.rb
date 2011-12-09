@@ -52,7 +52,7 @@ End
 
 def (Tb::Cmd).main_cat(argv)
   op_cat.parse!(argv)
-  return show_help('cat') if 0 < Tb::Cmd.opt_help
+  exit_if_help('cat')
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   header = creader.header

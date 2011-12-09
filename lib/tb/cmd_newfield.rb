@@ -33,7 +33,7 @@ end
 
 def (Tb::Cmd).main_newfield(argv)
   op_newfield.parse!(argv)
-  return show_help('newfield') if 0 < Tb::Cmd.opt_help
+  exit_if_help('newfield')
   field = argv.shift
   rubyexp = argv.shift
   pr = eval("lambda {|_| #{rubyexp} }")

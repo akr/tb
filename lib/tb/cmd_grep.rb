@@ -42,7 +42,7 @@ end
 
 def (Tb::Cmd).main_grep(argv)
   op_grep.parse!(argv)
-  return show_help('grep') if 0 < Tb::Cmd.opt_help
+  exit_if_help('grep')
   if Tb::Cmd.opt_grep_ruby
     pred = eval("lambda {|_| #{Tb::Cmd.opt_grep_ruby} }")
   elsif Tb::Cmd.opt_grep_e
