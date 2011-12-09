@@ -50,6 +50,11 @@ class TestTbCmdHelp < Test::Unit::TestCase
     }
   end
 
+  def assert_exit_success(comanndline_words)
+    exc = assert_raise(SystemExit) { Tb::Cmd.main(comanndline_words)  }
+    assert(exc.success?)
+  end
+
   def test_noarg
     with_pipe {|r, w|
       th = reader_thread(r)
@@ -80,11 +85,6 @@ class TestTbCmdHelp < Test::Unit::TestCase
     assert_match(/Usage:/, msg)
     assert_match(/ tb csv /, msg)
     assert_match(/ tb select /, msg)
-  end
-
-  def assert_exit_success(comanndline_words)
-    exc = assert_raise(SystemExit) { Tb::Cmd.main(comanndline_words)  }
-    assert(exc.success?)
   end
 
   def test_help_h
