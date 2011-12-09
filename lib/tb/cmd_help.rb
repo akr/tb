@@ -51,7 +51,7 @@ Example:
   tb cat -h             : succinct help of "cat" subcommand
   tb cat -hh            : verbose help of "cat" subcommand
   tb help cat           : succinct help of "cat" subcommand
-  tb help cat -h        : verbose help of "cat" subcommand
+  tb help -h cat        : verbose help of "cat" subcommand
 
   tb help -h            : succinct help of "help" subcommand
   tb help -hh           : verbose help of "help" subcommand
