@@ -45,6 +45,7 @@ end
 Tb::Cmd.def_vhelp('help', <<'End')
 Example:
 
+  tb -h                 : list subcommands
   tb help               : list subcommands
 
   tb cat -h             : succinct help of "cat" subcommand

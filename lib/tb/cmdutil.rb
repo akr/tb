@@ -50,7 +50,7 @@ class Tb::Cmd
 
   def self.define_common_option(op, short_opts, *long_opts)
     if short_opts.include? "h"
-      op.def_option('-h', 'show help message') { Tb::Cmd.opt_help += 1 }
+      op.def_option('-h', 'show help message (-hh for verbose help)') { Tb::Cmd.opt_help += 1 }
     end
     if short_opts.include? "N"
       op.def_option('-N', 'use numeric field name') { Tb::Cmd.opt_N = true }
