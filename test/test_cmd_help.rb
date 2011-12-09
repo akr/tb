@@ -95,6 +95,14 @@ class TestTbCmdHelp < Test::Unit::TestCase
     assert_match(/ tb select /, msg)
   end
 
+  def test_ohelp
+    assert_equal(true, Tb::Cmd.main(['--help', '-o', o="msg"]))
+    msg = File.read(o)
+    assert_match(/Usage:/, msg)
+    assert_match(/ tb csv /, msg)
+    assert_match(/ tb select /, msg)
+  end
+
   def test_help
     assert_equal(true, Tb::Cmd.main(['help', '-o', o="msg"]))
     msg = File.read(o)

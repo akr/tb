@@ -24,7 +24,7 @@
 
 def (Tb::Cmd).main_body(argv)
   subcommand = argv.shift
-  if subcommand == '-h'
+  if subcommand == '-h' || subcommand == '--help'
     main_help(argv)
   elsif Tb::Cmd.subcommands.include?(subcommand)
     self.send("main_#{subcommand}", argv)
