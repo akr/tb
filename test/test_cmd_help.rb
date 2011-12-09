@@ -26,6 +26,17 @@ class TestTbCmdHelp < Test::Unit::TestCase
     end
   end
 
+  def with_stderr(io)
+    save = STDERR.dup
+    STDERR.reopen(io)
+    begin
+      yield
+    ensure
+      STDERR.reopen(save)
+      save.close
+    end
+  end
+
   def with_pipe
     r, w = IO.pipe
     begin
@@ -53,6 +64,11 @@ class TestTbCmdHelp < Test::Unit::TestCase
   def assert_exit_success(comanndline_words)
     exc = assert_raise(SystemExit) { Tb::Cmd.main(comanndline_words)  }
     assert(exc.success?)
+  end
+
+  def assert_exit_fail(comanndline_words)
+    exc = assert_raise(SystemExit) { Tb::Cmd.main(comanndline_words)  }
+    assert(!exc.success?)
   end
 
   def test_noarg
@@ -144,18 +160,12 @@ class TestTbCmdHelp < Test::Unit::TestCase
   end
 
   def test_help_unexpected_subcommand1
-    save = STDERR.dup
-    log = File.open("log", "w")
-    STDERR.reopen(log)
-    log.close
-    exc = assert_raise(SystemExit) { Tb::Cmd.main(['help', '-o', "msg", 'foo']) }
-    STDERR.reopen(save)
-    save.close
-    assert(!exc.success?)
+    File.open("log", "w") {|log|
+      with_stderr(log) {
+        assert_exit_fail(['help', '-o', "msg", 'foo'])
+      }
+    }
     assert_match(/unexpected subcommand/, File.read("log"))
-  ensure
-    save.close if save && !save.closed?
-    log.close if log && !log.closed?
   end
 
   def test_help_unexpected_subcommand2
