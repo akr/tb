@@ -34,6 +34,11 @@ class TestTbCmdGroup < Test::Unit::TestCase
     End
   end
 
+  def test_no_keyfields
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_group([]) }
+    assert(!exc.success?)
+  end
+
   def test_sum
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c,d

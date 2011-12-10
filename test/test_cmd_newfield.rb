@@ -29,6 +29,16 @@ class TestTbCmdNewfield < Test::Unit::TestCase
     End
   end
 
+  def test_no_new_field_name
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_newfield([]) }
+    assert(!exc.success?)
+  end
+
+  def test_no_newfield_ruby_exp
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_newfield(['foo']) }
+    assert(!exc.success?)
+  end
+
   def test_twofile
     File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b

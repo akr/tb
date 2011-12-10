@@ -42,8 +42,10 @@ def (Tb::Cmd).main_gsub(argv)
   if Tb::Cmd.opt_gsub_e
     re = Regexp.new(Tb::Cmd.opt_gsub_e)
   else
+    err('no regexp given.') if argv.empty?
     re = Regexp.new(argv.shift)
   end
+  err('no substitution given.') if argv.empty?
   repl = argv.shift
   argv = ['-'] if argv.empty?
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|

@@ -50,6 +50,7 @@ def (Tb::Cmd).main_grep(argv)
     pred = Tb::Cmd.opt_grep_f ? lambda {|_| re =~ _[Tb::Cmd.opt_grep_f] } :
                                 lambda {|_| _.any? {|k, v| re =~ v.to_s } }
   else
+    err("no regexp given.") if argv.empty?
     re = Regexp.new(argv.shift)
     pred = Tb::Cmd.opt_grep_f ? lambda {|_| re =~ _[Tb::Cmd.opt_grep_f] } :
                                 lambda {|_| _.any? {|k, v| re =~ v.to_s } }

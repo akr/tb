@@ -34,7 +34,9 @@ end
 def (Tb::Cmd).main_newfield(argv)
   op_newfield.parse!(argv)
   exit_if_help('newfield')
+  err('no new field name given.') if argv.empty?
   field = argv.shift
+  err('no ruby expression given.') if argv.empty?
   rubyexp = argv.shift
   pr = eval("lambda {|_| #{rubyexp} }")
   argv = ['-'] if argv.empty?

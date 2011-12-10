@@ -37,6 +37,7 @@ end
 def (Tb::Cmd).main_select(argv)
   op_select.parse!(argv)
   exit_if_help('select')
+  err('no select fields given.') if argv.empty?
   fs = split_field_list_argument(argv.shift)
   argv = ['-'] if argv.empty?
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|

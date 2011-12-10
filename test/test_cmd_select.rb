@@ -33,6 +33,11 @@ class TestTbCmdSelect < Test::Unit::TestCase
     End
   end
 
+  def test_no_select_fields
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_select([]) }
+    assert(!exc.success?)
+  end
+
   def test_opt_v
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c,d

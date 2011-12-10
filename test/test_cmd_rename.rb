@@ -33,6 +33,11 @@ class TestTbCmdRename < Test::Unit::TestCase
     End
   end
 
+  def test_no_rename_fields
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_rename([]) }
+    assert(!exc.success?)
+  end
+
   def test_empty
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c,d
@@ -78,7 +83,7 @@ class TestTbCmdRename < Test::Unit::TestCase
       1,2
       3,4
     End
-    exc = assert_raise(SystemExit) { Tb::Cmd.main_rename(['-o', o="o.csv", 'z,c', i]) }
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_rename(['-o', "o.csv", 'z,c', i]) }
     assert(!exc.success?)
     assert_match(/field not found/, exc.message)
   end

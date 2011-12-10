@@ -29,6 +29,16 @@ class TestTbCmdGsub < Test::Unit::TestCase
     End
   end
 
+  def test_no_regexp
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_gsub([]) }
+    assert(!exc.success?)
+  end
+
+  def test_no_subst
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_gsub(['foo']) }
+    assert(!exc.success?)
+  end
+
   def test_opt_e
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c

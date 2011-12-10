@@ -40,7 +40,9 @@ end
 def (Tb::Cmd).main_cross(argv)
   op_cross.parse!(argv)
   exit_if_help('cross')
+  err('no hkey-fields given.') if argv.empty?
   hkfs = split_field_list_argument(argv.shift)
+  err('no vkey-fields given.') if argv.empty?
   vkfs = split_field_list_argument(argv.shift)
   if Tb::Cmd.opt_cross_fields.empty?
     opt_cross_fields = [['count', 'count']]

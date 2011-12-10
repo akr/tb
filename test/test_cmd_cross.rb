@@ -33,6 +33,16 @@ class TestTbCmdCross < Test::Unit::TestCase
     End
   end
 
+  def test_no_hkey_fields
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_cross([]) }
+    assert(!exc.success?)
+  end
+
+  def test_no_vkey_fields
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_cross(['hk']) }
+    assert(!exc.success?)
+  end
+
   def test_compact
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       name,year,observ

@@ -34,6 +34,7 @@ end
 def (Tb::Cmd).main_rename(argv)
   op_rename.parse!(argv)
   exit_if_help('rename')
+  err('rename fields not given.') if argv.empty?
   fs = split_field_list_argument(argv.shift)
   argv = ['-'] if argv.empty?
   h = {}
