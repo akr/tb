@@ -91,6 +91,7 @@ class TestTbReader < Test::Unit::TestCase
         assert_equal(%w[a b], r.header)
         assert_equal([%w[1 3]], r.read_all)
       }
+      assert_raise(ArgumentError) { Tb::Reader.open(Object.new) }
     }
   end
 
