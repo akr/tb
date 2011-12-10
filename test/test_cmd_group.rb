@@ -168,4 +168,14 @@ class TestTbCmdGroup < Test::Unit::TestCase
     End
   end
 
+  def test_invalid_aggregator
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      1,2
+      3,4
+    End
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_group(['-o', "o.csv", 'a', '-a', 'foo', i]) }
+    assert(!exc.success?)
+  end
+
 end

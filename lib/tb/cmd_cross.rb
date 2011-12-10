@@ -67,7 +67,11 @@ def (Tb::Cmd).main_cross(argv)
       hset[hkvs] = true if !hset.include?(hkvs)
       if !set.include?([vkvs, hkvs])
         set[[vkvs, hkvs]] = opt_cross_fields.map {|agg_spec, nf|
-          ag = make_aggregator(agg_spec, tblreader.header)
+          begin
+            ag = make_aggregator(agg_spec, tblreader.header)
+          rescue ArgumentError
+            err($!.message)
+          end
           ag.update(ary)
           ag
         }
