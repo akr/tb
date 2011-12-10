@@ -39,6 +39,5 @@ def (Tb::Cmd).main_tsv(argv)
   with_output {|out|
     tbl_generate_tsv(tbl, out)
   }
-  true
 end
 

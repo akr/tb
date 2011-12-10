@@ -109,6 +109,5 @@ def (Tb::Cmd).main_cross(argv)
       }
     }
   }
-  true
 end
 

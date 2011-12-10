@@ -23,7 +23,7 @@ class TestTbCmdGrep < Test::Unit::TestCase
       8,9,a,b
       c,d,e,f
     End
-    assert_equal(true, Tb::Cmd.main_grep(['-o', o="o.csv", '[6f]', i]))
+    Tb::Cmd.main_grep(['-o', o="o.csv", '[6f]', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b,c,d
       4,5,6,7
@@ -73,7 +73,7 @@ class TestTbCmdGrep < Test::Unit::TestCase
       5,6
       7,8
     End
-    assert_equal(true, Tb::Cmd.main_grep(['-o', o="o.csv", '[46]', i1, i2]))
+    Tb::Cmd.main_grep(['-o', o="o.csv", '[46]', i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b
       3,4

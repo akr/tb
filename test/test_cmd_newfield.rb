@@ -21,7 +21,7 @@ class TestTbCmdNewfield < Test::Unit::TestCase
       1,2
       3,4
     End
-    assert_equal(true, Tb::Cmd.main_newfield(['-o', o="o.csv", 'c', '_["a"].to_i + _["b"].to_i', i]))
+    Tb::Cmd.main_newfield(['-o', o="o.csv", 'c', '_["a"].to_i + _["b"].to_i', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       c,a,b
       3,1,2
@@ -40,7 +40,7 @@ class TestTbCmdNewfield < Test::Unit::TestCase
       5,6
       7,8
     End
-    assert_equal(true, Tb::Cmd.main_newfield(['-o', o="o.csv", 'c', '_["a"].to_i - _["b"].to_i', i1, i2]))
+    Tb::Cmd.main_newfield(['-o', o="o.csv", 'c', '_["a"].to_i - _["b"].to_i', i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       c,a,b
       -1,1,2

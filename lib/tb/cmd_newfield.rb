@@ -52,7 +52,6 @@ def (Tb::Cmd).main_newfield(argv)
       }
     }
   }
-  true
 end
 
 

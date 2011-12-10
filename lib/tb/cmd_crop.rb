@@ -101,6 +101,5 @@ def (Tb::Cmd).main_crop(argv)
       arys.each {|a| gen << a }
     }
   end
-  true
 end
 

@@ -23,7 +23,7 @@ class TestTbCmdCross < Test::Unit::TestCase
       bbbb,2000,4
       cccc,2002,5
     End
-    assert_equal(true, Tb::Cmd.main_cross(['-o', o="o.csv", 'name', 'year', i]))
+    Tb::Cmd.main_cross(['-o', o="o.csv", 'name', 'year', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       name,aaaa,bbbb,cccc
       year,count,count,count
@@ -80,7 +80,7 @@ class TestTbCmdCross < Test::Unit::TestCase
       5,6
       7,8
     End
-    assert_equal(true, Tb::Cmd.main_cross(['-o', o="o.csv", 'a', 'b', i1, i2]))
+    Tb::Cmd.main_cross(['-o', o="o.csv", 'a', 'b', i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,1,3,6,8
       b,count,count,count,count

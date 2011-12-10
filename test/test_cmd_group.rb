@@ -24,7 +24,7 @@ class TestTbCmdGroup < Test::Unit::TestCase
       c,d,e,f
       x,5,6,y
     End
-    assert_equal(true, Tb::Cmd.main_group(['-o', o="o.csv", 'b,c', '-a', 'count', i]))
+    Tb::Cmd.main_group(['-o', o="o.csv", 'b,c', '-a', 'count', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       b,c,count
       1,2,1
@@ -43,7 +43,7 @@ class TestTbCmdGroup < Test::Unit::TestCase
       c,d,5,2.5
       x,5,6,3
     End
-    assert_equal(true, Tb::Cmd.main_group(['-o', o="o.csv", 'b', '-a', 'sum(d)', i]))
+    Tb::Cmd.main_group(['-o', o="o.csv", 'b', '-a', 'sum(d)', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       b,sum(d)
       1,3
@@ -62,7 +62,7 @@ class TestTbCmdGroup < Test::Unit::TestCase
       c,d,5,2.5
       x,5,6,3
     End
-    assert_equal(true, Tb::Cmd.main_group(['-o', o="o.csv", 'b', '-a', 'max(d)', i]))
+    Tb::Cmd.main_group(['-o', o="o.csv", 'b', '-a', 'max(d)', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       b,max(d)
       1,3
@@ -81,7 +81,7 @@ class TestTbCmdGroup < Test::Unit::TestCase
       c,d,5,2.5
       x,5,6,3
     End
-    assert_equal(true, Tb::Cmd.main_group(['-o', o="o.csv", 'b', '-a', 'min(d)', i]))
+    Tb::Cmd.main_group(['-o', o="o.csv", 'b', '-a', 'min(d)', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       b,min(d)
       1,3
@@ -100,7 +100,7 @@ class TestTbCmdGroup < Test::Unit::TestCase
       c,d,5,2.5
       x,5,6,3
     End
-    assert_equal(true, Tb::Cmd.main_group(['-o', o="o.csv", 'b', '-a', 'avg(d)', i]))
+    Tb::Cmd.main_group(['-o', o="o.csv", 'b', '-a', 'avg(d)', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       b,avg(d)
       1,3.0
@@ -118,7 +118,7 @@ class TestTbCmdGroup < Test::Unit::TestCase
       B,3
       A,1
     End
-    assert_equal(true, Tb::Cmd.main_group(['-o', o="o.csv", 'a', '-a', 'values(b)', i]))
+    Tb::Cmd.main_group(['-o', o="o.csv", 'a', '-a', 'values(b)', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,values(b)
       A,"1,2,1"
@@ -134,7 +134,7 @@ class TestTbCmdGroup < Test::Unit::TestCase
       B,3
       A,1
     End
-    assert_equal(true, Tb::Cmd.main_group(['-o', o="o.csv", 'a', '-a', 'uniquevalues(b)', i]))
+    Tb::Cmd.main_group(['-o', o="o.csv", 'a', '-a', 'uniquevalues(b)', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,uniquevalues(b)
       A,"1,2"
@@ -153,7 +153,7 @@ class TestTbCmdGroup < Test::Unit::TestCase
       5,6
       7,8
     End
-    assert_equal(true, Tb::Cmd.main_group(['-o', o="o.csv", 'a', '-a', 'count', i1, i2]))
+    Tb::Cmd.main_group(['-o', o="o.csv", 'a', '-a', 'count', i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,count
       1,1

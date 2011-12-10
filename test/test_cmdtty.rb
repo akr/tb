@@ -66,12 +66,11 @@ class TestTbCmdTTY < Test::Unit::TestCase
         s.raw!
         s.winsize = [2, 80]
         th = reader_thread(m)
-        main_result = with_stdout(s) {
+        with_stdout(s) {
           Tb::Cmd.main_csv([i])
         }
         s.close
         result = th.value
-        assert_equal(true, main_result)
         assert_equal(<<-"End".gsub(/^[ \t]+/, ''), result)
           foo:a,b,c
           foo:0,1,2
@@ -92,12 +91,11 @@ class TestTbCmdTTY < Test::Unit::TestCase
         s.raw!
         s.winsize = [24, 80]
         th = reader_thread(m)
-        main_result = with_stdout(s) {
+        with_stdout(s) {
           Tb::Cmd.main_csv([i])
         }
         s.close
         result = th.value
-        assert_equal(true, main_result)
         assert_equal(<<-"End".gsub(/^[ \t]+/, ''), result)
           a,b,c
           0,1,2

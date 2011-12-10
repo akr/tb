@@ -66,6 +66,5 @@ def (Tb::Cmd).main_pp(argv)
       }
     }
   }
-  true
 end
 

@@ -21,7 +21,7 @@ class TestTbCmdPP < Test::Unit::TestCase
       0,1,2
       4,5,6
     End
-    assert_equal(true, Tb::Cmd.main_pp(['-o', o="o.pp", i]))
+    Tb::Cmd.main_pp(['-o', o="o.pp", i])
     assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, ''))
       { "a" => "0", "b" => "1", "c" => "2" }
       { "a" => "4", "b" => "5", "c" => "6" }
@@ -33,7 +33,7 @@ class TestTbCmdPP < Test::Unit::TestCase
       a,b
       0,1,2,3
     End
-    assert_equal(true, Tb::Cmd.main_pp(['-o', o="o.pp", i]))
+    Tb::Cmd.main_pp(['-o', o="o.pp", i])
     assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, ''))
       { "a" => "0", "b" => "1", "1" => "2", "2" => "3" }
     End
@@ -50,7 +50,7 @@ class TestTbCmdPP < Test::Unit::TestCase
       5,6
       7,8
     End
-    assert_equal(true, Tb::Cmd.main_pp(['-o', o="o.csv", i1, i2]))
+    Tb::Cmd.main_pp(['-o', o="o.csv", i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       {"a"=>"1", "b"=>"2"}
       {"a"=>"3", "b"=>"4"}

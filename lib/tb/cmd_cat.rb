@@ -62,5 +62,4 @@ def (Tb::Cmd).main_cat(argv)
       gen << ary
     }
   }
-  true
 end

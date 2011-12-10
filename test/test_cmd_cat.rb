@@ -26,7 +26,7 @@ class TestTbCmdCat < Test::Unit::TestCase
       5,6
       7,8
     End
-    assert_equal(true, Tb::Cmd.main_cat(['-o', o="o.csv", i1, i2]))
+    Tb::Cmd.main_cat(['-o', o="o.csv", i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b,c
       1,2

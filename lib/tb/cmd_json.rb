@@ -56,6 +56,5 @@ def (Tb::Cmd).main_json(argv)
     }
     out.puts "]"
   }
-  true
 end
 

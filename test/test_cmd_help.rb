@@ -74,11 +74,10 @@ class TestTbCmdHelp < Test::Unit::TestCase
   def test_noarg
     with_pipe {|r, w|
       th = reader_thread(r)
-      main_result = with_stdout(w) {
+      with_stdout(w) {
         Tb::Cmd.main([])
       }
       w.close
-      assert_equal(true, main_result)
       msg = th.value
       r.close
       assert_match(/Usage:/, msg)

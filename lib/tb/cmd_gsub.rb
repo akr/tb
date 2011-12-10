@@ -71,6 +71,5 @@ def (Tb::Cmd).main_gsub(argv)
       }
     }
   }
-  true
 end
 

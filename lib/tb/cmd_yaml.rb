@@ -42,7 +42,6 @@ def (Tb::Cmd).main_yaml(argv)
     YAML.dump(ary, out)
     out.puts
   }
-  true
 end
 
 

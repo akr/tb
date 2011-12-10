@@ -53,7 +53,6 @@ def (Tb::Cmd).main_sort(argv)
   with_output {|out|
     tbl_generate_csv(tbl2, out)
   }
-  true
 end
 
 

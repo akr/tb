@@ -22,7 +22,7 @@ class TestTbCmdMheader < Test::Unit::TestCase
       x,1,2,3,4
       y,5,6,7,8
     End
-    assert_equal(true, Tb::Cmd.main_mheader(['-o', o="o.csv", i]))
+    Tb::Cmd.main_mheader(['-o', o="o.csv", i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       name,2000 aaaa,2000 bbbb,2001 aaaa,2001 bbbb
       x,1,2,3,4
@@ -36,7 +36,7 @@ class TestTbCmdMheader < Test::Unit::TestCase
       1,2,3
       4,5,6
     End
-    assert_equal(true, Tb::Cmd.main_mheader(['-o', o="o.csv", '-c', '2', i]))
+    Tb::Cmd.main_mheader(['-o', o="o.csv", '-c', '2', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a 1,b 2,c 3
       4,5,6
@@ -52,7 +52,7 @@ class TestTbCmdMheader < Test::Unit::TestCase
     logf = File.open(log="log", "w")
     STDERR.reopen(logf)
     logf.close
-    assert_equal(true, Tb::Cmd.main_mheader(['-o', o="o.csv", i]))
+    Tb::Cmd.main_mheader(['-o', o="o.csv", i])
     STDERR.reopen(save)
     save.close
     assert_equal('', File.read(o))
@@ -73,7 +73,7 @@ class TestTbCmdMheader < Test::Unit::TestCase
       5,6
       7,8
     End
-    assert_equal(true, Tb::Cmd.main_mheader(['-o', o="o.csv", '-c', '2', i1, i2]))
+    Tb::Cmd.main_mheader(['-o', o="o.csv", '-c', '2', i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a 1,b 2
       3,4

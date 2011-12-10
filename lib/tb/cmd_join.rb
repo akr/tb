@@ -74,6 +74,5 @@ def (Tb::Cmd).main_join(argv)
   with_output {|out|
     tbl_generate_csv(result, out)
   }
-  true
 end
 

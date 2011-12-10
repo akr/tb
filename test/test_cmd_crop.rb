@@ -24,7 +24,7 @@ class TestTbCmdCrop < Test::Unit::TestCase
       ,,,
 
     End
-    assert_equal(true, Tb::Cmd.main_crop(['-o', o="o.csv", i]))
+    Tb::Cmd.main_crop(['-o', o="o.csv", i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b
       0,1
@@ -73,7 +73,7 @@ class TestTbCmdCrop < Test::Unit::TestCase
       5,6
       7,8
     End
-    assert_equal(true, Tb::Cmd.main_crop(['-o', o="o.csv", '-r', 'B2:B4', i1, i2]))
+    Tb::Cmd.main_crop(['-o', o="o.csv", '-r', 'B2:B4', i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       2
       4
@@ -84,7 +84,7 @@ end
 
 class TestTbCmdCropNoTmpDir < Test::Unit::TestCase
   def test_invalid_range
-    assert_raise(ArgumentError,) { Tb::Cmd.main_crop(['-r', 'foo']) }
+    assert_raise(ArgumentError) { Tb::Cmd.main_crop(['-r', 'foo']) }
   end
 
   def test_decode_a1_addressing_col
