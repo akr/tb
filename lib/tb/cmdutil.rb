@@ -123,7 +123,7 @@ def conv_to_numeric(v)
   elsif /\A-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\z/ =~ v
     v = v.to_f
   else
-    raise "numeric value expected: #{v.inspect}"
+    raise ArgumentError, "number string expected: #{v.inspect}"
   end
   v
 end
