@@ -30,7 +30,7 @@ Tb::Cmd.default_option[:opt_join_retain_right] = nil
 
 def (Tb::Cmd).op_join
   op = OptionParser.new
-  op.banner = 'Usage: tb join [OPTS] [TABLE ...]'
+  op.banner = 'Usage: tb join [OPTS] [TABLE1 TABLE2 ...]'
   define_common_option(op, 'hNod', '--no-pager', '--debug')
   op.def_option('--outer', 'outer join') {
     Tb::Cmd.opt_join_retain_left = true
@@ -57,16 +57,19 @@ end
 def (Tb::Cmd).main_join(argv)
   op_join.parse!(argv)
   exit_if_help('join')
-  result = Tb.new([], [])
   retain_left = Tb::Cmd.opt_join_retain_left
   retain_right = Tb::Cmd.opt_join_retain_right
+  err('two tables required at least.') if argv.length < 2
+  result = load_table(argv.shift)
   if retain_left || retain_right
-    each_table_file(argv) {|tbl|
+    argv.each {|filename|
+      tbl = load_table(filename)
       STDERR.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= Tb::Cmd.opt_debug
       result = result.natjoin2_outer(tbl, Tb::Cmd.opt_join_outer_missing, retain_left, retain_right)
     }
   else
-    each_table_file(argv) {|tbl|
+    argv.each {|filename|
+      tbl = load_table(filename)
       STDERR.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= Tb::Cmd.opt_debug
       result = result.natjoin2(tbl)
     }

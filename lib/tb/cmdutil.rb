@@ -238,17 +238,6 @@ def split_csv_argument(arg)
   return []
 end
 
-def each_table_file(argv)
-  if argv.empty?
-    yield load_table('-')
-  else
-    argv.each {|filename|
-      tbl = load_table(filename)
-      yield tbl
-    }
-  end
-end
-
 def build_table(tblreader)
   arys = []
   tblreader.each {|ary|

@@ -34,6 +34,16 @@ class TestTbCmdJoin < Test::Unit::TestCase
     End
   end
 
+  def test_noarg
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_join(['-o', o="o.csv"]) }
+    assert(!exc.success?)
+  end
+
+  def test_onearg
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_join(['-o', o="o.csv", 'foo.csv']) }
+    assert(!exc.success?)
+  end
+
   def test_outer
     File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b
