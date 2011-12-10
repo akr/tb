@@ -118,7 +118,8 @@ class Tb::Pager
     if !@io
       STDOUT.print @buf
     else
-      @io.close
+      # don't need to ouput @buf because @buf is nil.
+      @io.close if @io != STDOUT
     end
   end
 end
