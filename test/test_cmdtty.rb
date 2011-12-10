@@ -105,4 +105,50 @@ class TestTbCmdTTY < Test::Unit::TestCase
     }
   end
 
+  def test_ttyout_tab
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      0,\t,2
+    End
+    with_env('PAGER', 'sed "s/^/foo:/"') {
+      PTY.open {|m, s|
+        s.raw!
+        s.winsize = [3, 10]
+        th = reader_thread(m)
+        with_stdout(s) {
+          Tb::Cmd.main_csv([i])
+        }
+        s.close
+        result = th.value
+        assert_equal(<<-"End".gsub(/^[ \t]+/, ''), result)
+          foo:a,b,c
+          foo:0,\t,2
+        End
+      }
+    }
+  end
+
+  def test_ttyout_nottysize
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      0,1,2
+    End
+    with_env('PAGER', 'sed "s/^/foo:/"') {
+      PTY.open {|m, s|
+        s.raw!
+        s.winsize = [0, 0]
+        th = reader_thread(m)
+        with_stdout(s) {
+          Tb::Cmd.main_csv([i])
+        }
+        s.close
+        result = th.value
+        assert_equal(<<-"End".gsub(/^[ \t]+/, ''), result)
+          a,b,c
+          0,1,2
+        End
+      }
+    }
+  end
+
 end if defined?(PTY) && defined?(PTY.open)
