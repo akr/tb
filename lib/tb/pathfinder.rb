@@ -416,6 +416,10 @@ module Tb::Pathfinder::EmptyState
   def each
   end
 
+  def to_h
+    {}
+  end
+
   def fetch(k, *rest)
     if block_given?
       yield k
@@ -456,6 +460,10 @@ module Tb::Pathfinder::EmptyState
 end
 
 class Tb::Pathfinder::State
+  def self.make(hash)
+    Tb::Pathfinder::EmptyState.merge(hash)
+  end
+
   def initialize(key, val, tail=nil)
     @key = key
     @val = val
@@ -474,6 +482,21 @@ class Tb::Pathfinder::State
       pairs = pairs.tail
     end
     nil
+  end
+
+  def to_h
+    res = {}
+    each {|k, v|
+      if !res.include? k
+        res[k] = v
+      end
+    }
+    res
+  end
+
+  def ==(other)
+    other.kind_of?(Tb::Pathfinder::State) &&
+    self.to_h == other.to_h
   end
 
   def fetch(k, *rest)

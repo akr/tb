@@ -73,6 +73,7 @@ Gem::Specification.new do |s|
     test/test_csv.rb
     test/test_enumerable.rb
     test/test_fieldset.rb
+    test/test_pathfinder.rb
     test/test_reader.rb
     test/test_record.rb
     test/test_tsv.rb
