@@ -60,6 +60,7 @@ Gem::Specification.new do |s|
     test/test_cmd_help.rb
     test/test_cmd_join.rb
     test/test_cmd_json.rb
+    test/test_cmd_ls.rb
     test/test_cmd_mheader.rb
     test/test_cmd_newfield.rb
     test/test_cmd_pp.rb
