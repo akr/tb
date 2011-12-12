@@ -95,6 +95,9 @@ def smart_cmp_value(v)
   when Numeric
     [0, v]
   when String
+    if v.respond_to? :force_encoding
+      v = v.dup.force_encoding("ASCII-8BIT")
+    end
     case v
     when /\A\s*-?\d+\s*\z/
       [0, v.to_i(10)]

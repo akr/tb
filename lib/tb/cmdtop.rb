@@ -24,6 +24,9 @@
 
 require 'tb'
 require 'optparse'
+require 'pathname'
+require 'etc'
+require 'time'
 require 'enumerator'
 require 'tb/pager'
 require 'tb/cmdutil'
@@ -46,6 +49,7 @@ require 'tb/cmd_cross'
 require 'tb/cmd_shape'
 require 'tb/cmd_mheader'
 require 'tb/cmd_crop'
+require 'tb/cmd_ls'
 require 'tb/cmdmain'
 
 Tb::Cmd.init_option
