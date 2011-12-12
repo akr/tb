@@ -1,4 +1,4 @@
-# lib/tb/pathfinder.rb - pattern matcher for two-dimensional array.
+# lib/tb/search.rb - pattern matcher for two-dimensional array.
 #
 # Copyright (C) 2011 Tanaka Akira  <akr@fsij.org>
 # 
@@ -24,7 +24,7 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-module Tb::Pathfinder
+module Tb::Search
   module_function
 
   def strary_to_aa(strary)
@@ -47,7 +47,7 @@ module Tb::Pathfinder
   def each_match(pat, aa, spos=nil)
     if spos
       run {
-        try(pat, aa, Tb::Pathfinder::EmptyState.merge(:pos => spos)) {|st2|
+        try(pat, aa, Tb::Search::EmptyState.merge(:pos => spos)) {|st2|
           yield spos, st2.fetch(:pos), st2.reject {|k,v| k == :pos }
           nil
         }
@@ -57,7 +57,7 @@ module Tb::Pathfinder
         a.each_index {|x|
           spos = [x,y]
           run {
-            try(pat, aa, Tb::Pathfinder::EmptyState.merge(:pos => spos)) {|st2|
+            try(pat, aa, Tb::Search::EmptyState.merge(:pos => spos)) {|st2|
               yield spos, st2.fetch(:pos), st2.reject {|k,v| k == :pos }
               nil
             }
@@ -413,7 +413,7 @@ module Tb::Pathfinder
   end
 end
 
-module Tb::Pathfinder::EmptyState
+module Tb::Search::EmptyState
   module_function
 
   def empty?
@@ -453,7 +453,7 @@ module Tb::Pathfinder::EmptyState
   def merge(h)
     pairs = self
     h.reverse_each {|k, v|
-      pairs = Tb::Pathfinder::State.new(k, v, pairs)
+      pairs = Tb::Search::State.new(k, v, pairs)
     }
     pairs
   end
@@ -463,13 +463,13 @@ module Tb::Pathfinder::EmptyState
   end
 
   def inspect
-    "\#<Tb::Pathfinder::EmptyState>"
+    "\#<Tb::Search::EmptyState>"
   end
 end
 
-class Tb::Pathfinder::State
+class Tb::Search::State
   def self.make(hash)
-    Tb::Pathfinder::EmptyState.merge(hash)
+    Tb::Search::EmptyState.merge(hash)
   end
 
   def initialize(key, val, tail=nil)
@@ -503,7 +503,7 @@ class Tb::Pathfinder::State
   end
 
   def ==(other)
-    other.kind_of?(Tb::Pathfinder::State) &&
+    other.kind_of?(Tb::Search::State) &&
     self.to_h == other.to_h
   end
 
@@ -561,10 +561,10 @@ class Tb::Pathfinder::State
     end
     (needs_copy-1).downto(0) {|i|
       pairs = ary[i]
-      result = Tb::Pathfinder::State.new(pairs.key, pairs.val, result)
+      result = Tb::Search::State.new(pairs.key, pairs.val, result)
     }
     h.reverse_each {|k, v|
-      result = Tb::Pathfinder::State.new(k, v, result)
+      result = Tb::Search::State.new(k, v, result)
     }
     result
   end
@@ -578,9 +578,9 @@ class Tb::Pathfinder::State
       end
       pairs = pairs.tail
     end
-    result = Tb::Pathfinder::EmptyState
+    result = Tb::Search::EmptyState
     ary.reverse_each {|pairs2|
-      result = Tb::Pathfinder::State.new(pairs2.key, pairs2.val, result)
+      result = Tb::Search::State.new(pairs2.key, pairs2.val, result)
     }
     result
   end

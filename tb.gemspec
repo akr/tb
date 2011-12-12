@@ -35,10 +35,9 @@ Gem::Specification.new do |s|
     lib/tb/csv.rb
     lib/tb/enumerable.rb
     lib/tb/fieldset.rb
-    lib/tb/pathfinder.rb
-    lib/tb/qtsv.rb
     lib/tb/reader.rb
     lib/tb/record.rb
+    lib/tb/search.rb
     lib/tb/tsv.rb
     sample/excel2csv
     sample/langs.csv
@@ -73,9 +72,9 @@ Gem::Specification.new do |s|
     test/test_csv.rb
     test/test_enumerable.rb
     test/test_fieldset.rb
-    test/test_pathfinder.rb
     test/test_reader.rb
     test/test_record.rb
+    test/test_search.rb
     test/test_tsv.rb
   ]
   s.has_rdoc = true
