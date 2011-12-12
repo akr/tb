@@ -124,6 +124,19 @@ class TestTbPathFinder < Test::Unit::TestCase
     assert_equal([[1,0], [1,0]], res[0][0..1])
   end
 
+  def test_pat_direction8
+    res = []
+    Tb::Search.each_match(
+      [:cat, "b", :se, "f", :sw, "h", :nw, "d", :ne, "b"],
+      [%w[a b c],
+       %w[d e f],
+       %w[g h i]]) {|spos, epos, cap|
+      res << [spos, epos, cap]
+    }
+    assert_equal(1, res.size)
+    assert_equal([[1,0], [1,0]], res[0][0..1])
+  end
+
   def test_pat_rmove
     res = []
     Tb::Search.each_match(

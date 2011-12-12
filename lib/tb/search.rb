@@ -97,6 +97,10 @@ module Tb::Search
     when :s, :south; try_rmove(0, 1, aa, st, &b)
     when :e, :east; try_rmove(1, 0, aa, st, &b)
     when :w, :west; try_rmove(-1, 0, aa, st, &b)
+    when :ne, :north; try_rmove(1, -1, aa, st, &b)
+    when :nw, :south; try_rmove(-1, -1, aa, st, &b)
+    when :se, :east; try_rmove(1, 1, aa, st, &b)
+    when :sw, :west; try_rmove(-1, 1, aa, st, &b)
     when :debug_print_state; p st; yield st
     when Array
       case pat[0]
