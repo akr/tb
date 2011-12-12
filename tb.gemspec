@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
     lib/tb/cmd_crop.rb
     lib/tb/cmd_cross.rb
     lib/tb/cmd_csv.rb
+    lib/tb/cmd_cut.rb
     lib/tb/cmd_grep.rb
     lib/tb/cmd_group.rb
     lib/tb/cmd_gsub.rb
@@ -24,7 +25,6 @@ Gem::Specification.new do |s|
     lib/tb/cmd_newfield.rb
     lib/tb/cmd_pp.rb
     lib/tb/cmd_rename.rb
-    lib/tb/cmd_select.rb
     lib/tb/cmd_shape.rb
     lib/tb/cmd_sort.rb
     lib/tb/cmd_tsv.rb
@@ -53,6 +53,7 @@ Gem::Specification.new do |s|
     test/test_cmd_crop.rb
     test/test_cmd_cross.rb
     test/test_cmd_csv.rb
+    test/test_cmd_cut.rb
     test/test_cmd_grep.rb
     test/test_cmd_group.rb
     test/test_cmd_gsub.rb
@@ -63,7 +64,6 @@ Gem::Specification.new do |s|
     test/test_cmd_newfield.rb
     test/test_cmd_pp.rb
     test/test_cmd_rename.rb
-    test/test_cmd_select.rb
     test/test_cmd_shape.rb
     test/test_cmd_sort.rb
     test/test_cmd_tsv.rb

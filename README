@@ -1,7 +1,7 @@
 = tb - manipulation tool for table: CSV, TSV, etc.
 
 tb provides a command and a library for manipulating tables:
-Unix filter like operations (grep, sort, cat, etc.),
+Unix filter like operations (grep, sort, cat, cut, etc.),
 SQL like operations (join, group, etc.),
 and more.
 
@@ -92,10 +92,10 @@ Following example searches languages which name contains a non-alphabet characte
   PHP,1995
   D,1999
 
-"select" subcommand extract one or more fields.
+"cut" subcommand extract one or more fields.
 This is similar to "cut" command of Unix and projection of relational algebra.
 
-  % tb select language sample/langs.csv |head
+  % tb cut language sample/langs.csv |head
   language
   FORTRAN
   LISP
@@ -136,7 +136,7 @@ There are more subcommands.
     tb grep [OPTS] REGEXP [TABLE]
     tb gsub [OPTS] REGEXP STRING [TABLE]
     tb sort [OPTS] [TABLE]
-    tb select [OPTS] FIELD,... [TABLE]
+    tb cut [OPTS] FIELD,... [TABLE]
     tb rename [OPTS] SRC,DST,... [TABLE]
     tb newfield [OPTS] FIELD RUBY-EXP [TABLE]
     tb cat [OPTS] [TABLE ...]
@@ -160,7 +160,7 @@ tb command has many subcommands.
   grep     : search rows using regexp or ruby expression.
   gsub     : substitute cells.
   sort     : sort rows.
-  select   : select columns.
+  cut      : select columns.
   rename   : rename field names.
   newfield : add a field.
   cat      : concatenate tables vertically.

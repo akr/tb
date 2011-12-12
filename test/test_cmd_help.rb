@@ -82,7 +82,7 @@ class TestTbCmdHelp < Test::Unit::TestCase
       r.close
       assert_match(/Usage:/, msg)
       assert_match(/ tb csv /, msg)
-      assert_match(/ tb select /, msg)
+      assert_match(/ tb cut /, msg)
     }
   end
 
@@ -91,7 +91,7 @@ class TestTbCmdHelp < Test::Unit::TestCase
     msg = File.read(o)
     assert_match(/Usage:/, msg)
     assert_match(/ tb csv /, msg)
-    assert_match(/ tb select /, msg)
+    assert_match(/ tb cut /, msg)
   end
 
   def test_ohelp
@@ -99,7 +99,7 @@ class TestTbCmdHelp < Test::Unit::TestCase
     msg = File.read(o)
     assert_match(/Usage:/, msg)
     assert_match(/ tb csv /, msg)
-    assert_match(/ tb select /, msg)
+    assert_match(/ tb cut /, msg)
   end
 
   def test_help
@@ -107,7 +107,7 @@ class TestTbCmdHelp < Test::Unit::TestCase
     msg = File.read(o)
     assert_match(/Usage:/, msg)
     assert_match(/ tb csv /, msg)
-    assert_match(/ tb select /, msg)
+    assert_match(/ tb cut /, msg)
   end
 
   def test_help_h

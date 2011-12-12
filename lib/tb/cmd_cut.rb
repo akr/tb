@@ -22,26 +22,26 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-Tb::Cmd.subcommands << 'select'
+Tb::Cmd.subcommands << 'cut'
 
-Tb::Cmd.default_option[:opt_select_v] = nil
+Tb::Cmd.default_option[:opt_cut_v] = nil
 
-def (Tb::Cmd).op_select
+def (Tb::Cmd).op_cut
   op = OptionParser.new
-  op.banner = 'Usage: tb select [OPTS] FIELD,... [TABLE]'
+  op.banner = 'Usage: tb cut [OPTS] FIELD,... [TABLE]'
   define_common_option(op, "hNo", "--no-pager")
-  op.def_option('-v', 'invert match') { Tb::Cmd.opt_select_v = true }
+  op.def_option('-v', 'invert match') { Tb::Cmd.opt_cut_v = true }
   op
 end
 
-def (Tb::Cmd).main_select(argv)
-  op_select.parse!(argv)
-  exit_if_help('select')
-  err('no select fields given.') if argv.empty?
+def (Tb::Cmd).main_cut(argv)
+  op_cut.parse!(argv)
+  exit_if_help('cut')
+  err('no fields given.') if argv.empty?
   fs = split_field_list_argument(argv.shift)
   argv = ['-'] if argv.empty?
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
-    if Tb::Cmd.opt_select_v
+    if Tb::Cmd.opt_cut_v
       h = {}
       fs.each {|f| h[tblreader.index_from_field(f)] = true }
       header = nil

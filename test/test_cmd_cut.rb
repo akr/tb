@@ -23,7 +23,7 @@ class TestTbCmdSelect < Test::Unit::TestCase
       8,9,a,b
       c,d,e,f
     End
-    Tb::Cmd.main_select(['-o', o="o.csv", 'b,d', i])
+    Tb::Cmd.main_cut(['-o', o="o.csv", 'b,d', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       b,d
       1,3
@@ -33,8 +33,8 @@ class TestTbCmdSelect < Test::Unit::TestCase
     End
   end
 
-  def test_no_select_fields
-    exc = assert_raise(SystemExit) { Tb::Cmd.main_select([]) }
+  def test_no_cut_fields
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_cut([]) }
     assert(!exc.success?)
   end
 
@@ -46,7 +46,7 @@ class TestTbCmdSelect < Test::Unit::TestCase
       8,9,a,b
       c,d,e,f
     End
-    Tb::Cmd.main_select(['-o', o="o.csv", '-v', 'b,d', i])
+    Tb::Cmd.main_cut(['-o', o="o.csv", '-v', 'b,d', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,c
       0,2
@@ -61,7 +61,7 @@ class TestTbCmdSelect < Test::Unit::TestCase
       a,b
       0,1,2,3
     End
-    Tb::Cmd.main_select(['-o', o="o.csv", 'a,2,1', i])
+    Tb::Cmd.main_cut(['-o', o="o.csv", 'a,2,1', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,2,1
       0,3,2
@@ -73,7 +73,7 @@ class TestTbCmdSelect < Test::Unit::TestCase
       a,b
       0,1,2,3
     End
-    assert_raise(ArgumentError) { Tb::Cmd.main_select(['-o', "o.csv", '0', i]) }
+    assert_raise(ArgumentError) { Tb::Cmd.main_cut(['-o', "o.csv", '0', i]) }
   end
 
   def test_twofile
@@ -87,7 +87,7 @@ class TestTbCmdSelect < Test::Unit::TestCase
       5,6
       7,8
     End
-    Tb::Cmd.main_select(['-o', o="o.csv", 'a', i1, i2])
+    Tb::Cmd.main_cut(['-o', o="o.csv", 'a', i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a
       1
