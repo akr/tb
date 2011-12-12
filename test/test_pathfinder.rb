@@ -376,6 +376,18 @@ class TestTbPathFinder < Test::Unit::TestCase
     assert_equal([[1, 0], [1, 0], Tb::Search::State.make(:name => "b")], res[1])
   end
 
+  def test_pat_capval_outside
+    res = []
+    Tb::Search.each_match(
+      [:cat, :n, [:capval, :name]],
+      [%w[a b]],
+      [0,0]) {|spos, epos, cap|
+      res << [spos, epos, cap]
+    }
+    assert_equal(1, res.size)
+    assert_equal([[0, 0], [0, -1], Tb::Search::State.make(:name => nil)], res[0])
+  end
+
   def test_pat_refval
     res = []
     Tb::Search.each_match(
