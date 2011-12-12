@@ -2,7 +2,7 @@ require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
 
-class TestTbCmdSelect < Test::Unit::TestCase
+class TestTbCmdCut < Test::Unit::TestCase
   def setup
     Tb::Cmd.reset_option
     @curdir = Dir.pwd
