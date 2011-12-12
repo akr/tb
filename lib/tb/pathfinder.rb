@@ -93,14 +93,14 @@ module Tb::Pathfinder
     when nil; lambda { yield st }
     when String; try_lit(pat, aa, st, &b)
     when Regexp; try_regexp(pat, aa, st, &b)
-    when :n, :north; try_rmove(:north, aa, st, &b)
-    when :s, :south; try_rmove(:south, aa, st, &b)
-    when :e, :east; try_rmove(:east, aa, st, &b)
-    when :w, :west; try_rmove(:west, aa, st, &b)
+    when :n, :north; try_rmove(0, -1, aa, st, &b)
+    when :s, :south; try_rmove(0, 1, aa, st, &b)
+    when :e, :east; try_rmove(1, 0, aa, st, &b)
+    when :w, :west; try_rmove(-1, 0, aa, st, &b)
     when :debug_print_state; p st; yield st
     when Array
       case pat[0]
-      when :rmove; _, dir = pat; try_rmove(dir, aa, st, &b)
+      when :rmove; _, dx, dy = pat; try_rmove(dx, dy, aa, st, &b)
       when :lit; _, val = pat; try_lit(val, aa, st, &b)
       when :regexp; _, re = pat; try_regexp(re, aa, st, &b)
       when :cat; _, *ps = pat; try_cat(ps, aa, st, &b)
@@ -130,17 +130,13 @@ module Tb::Pathfinder
     end
   end
 
-  def try_rmove(dir, aa, st)
-    x, y = st.fetch(:pos)
-    case dir
-    when :east then x += 1
-    when :west then x -= 1
-    when :north then y -= 1
-    when :south then y += 1
-    end
-    if 0 <= y && y < aa.length &&
-       0 <= x && x < aa[y].length
-      lambda { yield st.merge(:pos => [x,y]) }
+  def try_rmove(dx, dy, aa, st)
+    x1, y1 = st.fetch(:pos)
+    x2 = x1 + dx
+    y2 = y1 + dy
+    if (0 <= y2 && y2 < aa.length &&
+        0 <= x2 && x2 < aa[y2].length)
+      lambda { yield st.merge(:pos => [x2,y2]) }
     else
       nil
     end

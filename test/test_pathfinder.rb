@@ -128,10 +128,10 @@ class TestTbPathFinder < Test::Unit::TestCase
     res = []
     Tb::Pathfinder.each_match(
       [:cat, "b",
-        [:rmove, :south], "d",
-        [:rmove, :west], "c",
-        [:rmove, :north], "a",
-        [:rmove, :east], "b"],
+        [:rmove, 0, 1], "d",
+        [:rmove, -1, 0], "c",
+        [:rmove, 0, -1], "a",
+        [:rmove, 1, 0], "b"],
       [%w[a b],
        %w[c d]]) {|spos, epos, cap|
       res << [spos, epos, cap]
