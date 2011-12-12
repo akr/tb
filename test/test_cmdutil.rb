@@ -32,6 +32,7 @@ class TestTbCmdUtil < Test::Unit::TestCase
     assert_equal(0, smart_cmp_value("a") <=> smart_cmp_value("a"))
     assert_equal(1, smart_cmp_value("z") <=> smart_cmp_value("a"))
     assert_equal(-1, smart_cmp_value("a") <=> smart_cmp_value("b"))
+    assert_equal(1, smart_cmp_value("08") <=> smart_cmp_value("7"))
     assert_raise(ArgumentError) { smart_cmp_value(Object.new) }
   end
 
