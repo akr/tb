@@ -247,6 +247,21 @@ class TestTbPathFinder < Test::Unit::TestCase
     assert_equal(1, res[1][2][:v])
   end
 
+  def test_pat_repeat_empty
+    res = []
+    Tb::Pathfinder.each_match(
+      [:rep, [:rep, "a", :e]],
+      [%w[a a b]],
+      [0,0]) {|spos, epos, cap|
+      res << [spos, epos, cap]
+    }
+    assert_equal(4, res.size)
+    assert_equal([[0,0], [2,0]], res[0][0..1])
+    assert_equal([[0,0], [2,0]], res[1][0..1])
+    assert_equal([[0,0], [1,0]], res[2][0..1])
+    assert_equal([[0,0], [0,0]], res[3][0..1])
+  end
+
   def test_pat_bfs
     res = []
     Tb::Pathfinder.each_match(
@@ -345,6 +360,177 @@ class TestTbPathFinder < Test::Unit::TestCase
     assert_equal(2, res.size)
     assert_equal([[0, 0], [0, 0], Tb::Pathfinder::State.make(:name => "a")], res[0])
     assert_equal([[1, 0], [1, 0], Tb::Pathfinder::State.make(:name => "b")], res[1])
+  end
+
+  def test_pat_refval
+    res = []
+    Tb::Pathfinder.each_match(
+      [:cat, [:capval, :name], [:rep1, :e, [:refval, :name]]],
+      [%w[a a b b b c]]) {|spos, epos, cap|
+      res << [spos, epos, cap]
+    }
+    assert_equal(4, res.size)
+    assert_equal([[0, 0], [1, 0], Tb::Pathfinder::State.make(:name => "a")], res[0])
+    assert_equal([[2, 0], [4, 0], Tb::Pathfinder::State.make(:name => "b")], res[1])
+    assert_equal([[2, 0], [3, 0], Tb::Pathfinder::State.make(:name => "b")], res[2])
+    assert_equal([[3, 0], [4, 0], Tb::Pathfinder::State.make(:name => "b")], res[3])
+  end
+
+  def test_pat_tmp_pos
+    res = []
+    Tb::Pathfinder.each_match(
+      [:cat, "a", [:tmp_pos, 1, 0, "b"]],
+      [%w[a b a a b b]]) {|spos, epos, cap|
+      res << [spos, epos, cap]
+    }
+    assert_equal(2, res.size)
+    assert_equal([[0, 0], [0, 0], Tb::Pathfinder::EmptyState], res[0])
+    assert_equal([[3, 0], [3, 0], Tb::Pathfinder::EmptyState], res[1])
+  end
+
+  def test_pat_save_pos
+    res = []
+    Tb::Pathfinder.each_match(
+      [:cat, "a", [:save_pos, :n]],
+      [%w[a b a a b b]]) {|spos, epos, cap|
+      res << [spos, epos, cap]
+    }
+    assert_equal(3, res.size)
+    assert_equal([[0, 0], [0, 0], Tb::Pathfinder::State.make(:n => [0,0])], res[0])
+    assert_equal([[2, 0], [2, 0], Tb::Pathfinder::State.make(:n => [2,0])], res[1])
+    assert_equal([[3, 0], [3, 0], Tb::Pathfinder::State.make(:n => [3,0])], res[2])
+  end
+
+  def test_pat_push_pos
+    res = []
+    Tb::Pathfinder.each_match(
+      [:rep1, "a", [:push_pos, :n], :e],
+      [%w[a b a a b b]]) {|spos, epos, cap|
+      res << [spos, epos, cap]
+    }
+    assert_equal(4, res.size)
+    assert_equal([[0, 0], [1, 0], Tb::Pathfinder::State.make(:n => [[0,0]])], res[0])
+    assert_equal([[2, 0], [4, 0], Tb::Pathfinder::State.make(:n => [[2,0],[3,0]])], res[1])
+    assert_equal([[2, 0], [3, 0], Tb::Pathfinder::State.make(:n => [[2,0]])], res[2])
+    assert_equal([[3, 0], [4, 0], Tb::Pathfinder::State.make(:n => [[3,0]])], res[3])
+  end
+
+  def test_pat_pop_pos
+    res = []
+    Tb::Pathfinder.each_match(
+      [:cat, [:push_pos, :n], "a", :e, "b", [:pop_pos, :n]],
+      [%w[a b a a b b]]) {|spos, epos, cap|
+      res << [spos, epos, cap]
+    }
+    assert_equal(2, res.size)
+    assert_equal([[0, 0], [0, 0], Tb::Pathfinder::State.make(:n => [])], res[0])
+    assert_equal([[3, 0], [3, 0], Tb::Pathfinder::State.make(:n => [])], res[1])
+  end
+
+  def test_pat_update
+    res = []
+    Tb::Pathfinder.each_match(
+      [:cat,
+        [:capval, :n],
+        [:update, lambda {|st| st.merge(:n => st[:n].succ) }],
+        :e,
+        [:refval, :n]],
+      [%w[a a b b b c]]) {|spos, epos, cap|
+      res << [spos, epos, cap]
+    }
+    assert_equal(2, res.size)
+    assert_equal([[1, 0], [2, 0], Tb::Pathfinder::State.make(:n => "b")], res[0])
+    assert_equal([[4, 0], [5, 0], Tb::Pathfinder::State.make(:n => "c")], res[1])
+  end
+
+  def test_pat_assert
+    res = []
+    Tb::Pathfinder.each_match(
+      [:cat,
+        [:capval, :n],
+        [:assert, lambda {|st| st[:n] == 'a' }]],
+      [%w[a a b b b c]]) {|spos, epos, cap|
+      res << [spos, epos, cap]
+    }
+    assert_equal(2, res.size)
+    assert_equal([[0, 0], [0, 0], Tb::Pathfinder::State.make(:n => "a")], res[0])
+    assert_equal([[1, 0], [1, 0], Tb::Pathfinder::State.make(:n => "a")], res[1])
+  end
+
+  def test_pat_invalid_tag_in_array
+    assert_raise(ArgumentError) {
+      Tb::Pathfinder.each_match(
+        [:foo],
+        [%w[a b c]]) {|spos, epos, cap|
+      }
+    }
+  end
+
+  def test_pat_invalid
+    assert_raise(ArgumentError) {
+      Tb::Pathfinder.each_match(
+        Object.new,
+        [%w[a b c]]) {|spos, epos, cap|
+      }
+    }
+  end
+
+  def test_emptystate_to_h
+    s = Tb::Pathfinder::EmptyState
+    assert_equal({}, s.to_h)
+  end
+
+  def test_emptystate_fetch
+    s = Tb::Pathfinder::EmptyState
+    assert_equal("foo", s.fetch(:k) {|k| assert_equal(:k, k); "foo" })
+    assert_equal("bar", s.fetch(:k, "bar"))
+    if defined? KeyError
+      assert_raise(KeyError) { s.fetch(:k) } # Ruby 1.9
+    else
+      assert_raise(IndexError) { s.fetch(:k) } # Ruby 1.8
+    end
+  end
+
+  def test_emptystate_values_at
+    s = Tb::Pathfinder::EmptyState
+    assert_equal([], s.values_at())
+    assert_equal([nil, nil, nil], s.values_at(:x, :y, :z))
+  end
+
+  def test_emptystate_keys
+    s = Tb::Pathfinder::EmptyState
+    assert_equal([], s.keys)
+  end
+
+  def test_emptystate_reject
+    s = Tb::Pathfinder::EmptyState
+    assert_equal(Tb::Pathfinder::EmptyState, s.reject {|k, v| flunk })
+  end
+
+  def test_emptystate_inspect
+    s = Tb::Pathfinder::EmptyState
+    assert_kind_of(String, s.inspect)
+  end
+
+  def test_state_fetch
+    s = Tb::Pathfinder::State.make(:k => 1)
+    assert_equal(1, s.fetch(:k))
+    assert_equal(:foo, s.fetch(:x) {|k| assert_equal(:x, k); :foo })
+    if defined? KeyError
+      assert_raise(KeyError) { s.fetch(:x) } # Ruby 1.9
+    else
+      assert_raise(IndexError) { s.fetch(:x) } # Ruby 1.8
+    end
+  end
+
+  def test_state_keys
+    s = Tb::Pathfinder::State.make(:k => 1)
+    assert_equal([:k], s.keys)
+  end
+
+  def test_state_inspect
+    s = Tb::Pathfinder::State.make(:k => 1)
+    assert_kind_of(String, s.inspect)
   end
 
 end

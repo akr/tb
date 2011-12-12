@@ -123,10 +123,10 @@ module Tb::Pathfinder
       when :pop_pos; _, n = pat; try_pop_pos(n, aa, st, &b)
       when :update; _, pr = pat; try_update(pr, aa, st, &b)
       when :assert; _, pr = pat; try_assert(pr, aa, st, &b)
-      else raise "unexpected: #{pat.inspect}"
+      else raise ArgumentError, "unexpected: #{pat.inspect}"
       end
     else
-      raise TypeError, "unexpected pattern: #{pat.inspect}"
+      raise ArgumentError, "unexpected pattern: #{pat.inspect}"
     end
   end
 
@@ -426,7 +426,8 @@ module Tb::Pathfinder::EmptyState
     elsif !rest.empty?
       return rest[0]
     else
-      raise KeyError, "key not found: #{k}"
+      exc = defined?(KeyError) ? KeyError : IndexError # 1.9 v.s. 1.8
+      raise exc, "key not found: #{k}"
     end
   end
 
@@ -510,7 +511,8 @@ class Tb::Pathfinder::State
     elsif !rest.empty?
       return rest[0]
     else
-      raise KeyError, "key not found: #{k}"
+      exc = defined?(KeyError) ? KeyError : IndexError # 1.9 v.s. 1.8
+      raise exc, "key not found: #{k}"
     end
   end
 
