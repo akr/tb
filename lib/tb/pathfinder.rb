@@ -131,10 +131,21 @@ module Tb::Pathfinder
   end
 
   def try_rmove(dx, dy, aa, st)
+    # Basically, try_rmove restricts movement inside of _aa_ to avoid
+    # unintentional infinite loop such as [:rep, :e].
+    #
+    # However try_rmove permits movement to/from outside of _aa_.
+    # It don't permit between two position outside of _aa_, though.
+    # This make match [:rep, "a", :e] to %w[a a a] with three "a"s. 
+    # If try_rmove don't permit movement to outside of _aa_,
+    # the last movement is forbidden.
+    #
     x1, y1 = st.fetch(:pos)
     x2 = x1 + dx
     y2 = y1 + dy
-    if (0 <= y2 && y2 < aa.length &&
+    if (0 <= y1 && y1 < aa.length &&
+        0 <= x1 && x1 < aa[y1].length) ||
+       (0 <= y2 && y2 < aa.length &&
         0 <= x2 && x2 < aa[y2].length)
       lambda { yield st.merge(:pos => [x2,y2]) }
     else

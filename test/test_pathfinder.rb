@@ -154,6 +154,20 @@ class TestTbPathFinder < Test::Unit::TestCase
     assert_equal([[0,0], [1,0]], res[2][0..1])
   end
 
+  def test_pat_rep_to_boundary
+    res = []
+    Tb::Pathfinder.each_match(
+      [:rep, "a", :e],
+      [%w[a a]],
+      [0,0]) {|spos, epos, cap|
+      res << [spos, epos, cap]
+    }
+    assert_equal(3, res.size)
+    assert_equal([[0,0], [2,0]], res[0][0..1])
+    assert_equal([[0,0], [1,0]], res[1][0..1])
+    assert_equal([[0,0], [0,0]], res[2][0..1])
+  end
+
   def test_pat_rep1
     res = []
     Tb::Pathfinder.each_match(
