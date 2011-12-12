@@ -30,7 +30,7 @@ Tb::Cmd.default_option[:opt_ls_R] = nil
 
 def (Tb::Cmd).op_ls
   op = OptionParser.new
-  op.banner = 'Usage: tb ls [OPTS] [TABLE]'
+  op.banner = 'Usage: tb ls [OPTS] [FILE ...]'
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-a', 'don\'t ignore filenames beginning with a period.') {|fs| Tb::Cmd.opt_ls_a = true }
   op.def_option('-l', 'show attributes.  -ll for more attributes.') {|fs| Tb::Cmd.opt_ls_l += 1 }
