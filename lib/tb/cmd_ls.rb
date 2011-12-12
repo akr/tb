@@ -25,6 +25,7 @@
 Tb::Cmd.subcommands << 'ls'
 
 Tb::Cmd.default_option[:opt_ls_a] = nil
+Tb::Cmd.default_option[:opt_ls_A] = nil
 Tb::Cmd.default_option[:opt_ls_l] = 0
 Tb::Cmd.default_option[:opt_ls_R] = nil
 
@@ -33,6 +34,7 @@ def (Tb::Cmd).op_ls
   op.banner = 'Usage: tb ls [OPTS] [FILE ...]'
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-a', 'don\'t ignore filenames beginning with a period.') {|fs| Tb::Cmd.opt_ls_a = true }
+  op.def_option('-A', 'don\'t ignore filenames beginning with a period, except "." and "..".') {|fs| Tb::Cmd.opt_ls_A = true }
   op.def_option('-l', 'show attributes.  -ll for more attributes.') {|fs| Tb::Cmd.opt_ls_l += 1 }
   op.def_option('-R', 'recursive.') {|fs| Tb::Cmd.opt_ls_R = true }
   op
@@ -78,11 +80,15 @@ def (Tb::Cmd).ls_dir(gen, dir, st)
   end
   entries.map! {|filename| real_pathname_string(filename) }
   entries = entries.sort_by {|filename| smart_cmp_value(filename) }
-  if Tb::Cmd.opt_ls_a
+  if Tb::Cmd.opt_ls_a || Tb::Cmd.opt_ls_A
     entries1, entries2 = entries.partition {|filename| /\A\./ =~ filename }
     entries0, entries1 = entries1.partition {|filename| filename == '.' || filename == '..' }
     entries0.sort!
-    entries = entries0 + entries1 + entries2
+    if Tb::Cmd.opt_ls_A
+      entries = entries1 + entries2
+    else
+      entries = entries0 + entries1 + entries2
+    end
   else
     entries.reject! {|filename| /\A\./ =~ filename }
   end

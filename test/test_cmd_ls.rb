@@ -116,11 +116,22 @@ class TestTbCmdLs < Test::Unit::TestCase
 
   def test_opt_a
     Dir.mkdir("d")
+    File.open("d/.foo", "w") {}
     Tb::Cmd.main_ls(['-o', o="o.csv", '-a', 'd'])
     tb = Tb.load_csv(o)
-    assert_equal(2, tb.size)
+    assert_equal(3, tb.size)
     assert_equal("d", tb.get_record(0)["filename"]) # d/.
     assert_equal(".", tb.get_record(1)["filename"]) # d/..
+    assert_equal("d/.foo", tb.get_record(2)["filename"])
+  end
+
+  def test_opt_A
+    Dir.mkdir("d")
+    File.open("d/.foo", "w") {}
+    Tb::Cmd.main_ls(['-o', o="o.csv", '-A', 'd'])
+    tb = Tb.load_csv(o)
+    assert_equal(1, tb.size)
+    assert_equal("d/.foo", tb.get_record(0)["filename"])
   end
 
   def test_opt_R
