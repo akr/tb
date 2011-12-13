@@ -51,13 +51,12 @@ class TestTbCmdLs < Test::Unit::TestCase
   end
 
   def test_basic
-    File.open("a", "w") {}
-    File.open("o.csv", "w") {}
-    Tb::Cmd.main_ls(['-o', o="o.csv"])
+    Dir.mkdir("d")
+    File.open("d/a", "w") {}
+    Tb::Cmd.main_ls(['-o', o="o.csv", "d"])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       filename
-      a
-      o.csv
+      d/a
     End
   end
 

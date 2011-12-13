@@ -304,9 +304,15 @@ end
 
 def with_output
   if Tb::Cmd.opt_output
-    File.open(Tb::Cmd.opt_output, 'w') {|f|
-      yield f
-    }
+    tmp = Tb::Cmd.opt_output + ".part"
+    begin
+      File.open(tmp, 'w') {|f|
+        yield f
+      }
+      File.rename tmp, Tb::Cmd.opt_output
+    ensure
+      File.unlink tmp if File.exist? tmp
+    end
   elsif STDOUT.tty? && !Tb::Cmd.opt_no_pager
     Tb::Pager.open {|pager|
       yield pager
