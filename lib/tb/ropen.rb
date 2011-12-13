@@ -1,6 +1,6 @@
-# lib/tb.rb - entry file for table library
+# lib/tb/ropen.rb - Tb::Reader.open
 #
-# Copyright (C) 2010-2011 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2011 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -24,13 +24,48 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-require 'tb/basic'
-require 'tb/record'
-require 'tb/csv'
-require 'tb/tsv'
-require 'tb/reader'
-require 'tb/ropen'
-require 'tb/catreader'
-require 'tb/fieldset'
-require 'tb/search'
-require 'tb/enumerable'
+class Tb::Reader
+  def self.open(filename, opts={})
+    io = nil
+    opts = opts.dup
+    case filename
+    when /\Acsv:/
+      io = File.open($')
+      opts[:close] = io
+      rawreader = Tb::CSVReader.new(io)
+    when /\Atsv:/
+      io = File.open($')
+      opts[:close] = io
+      rawreader = Tb::TSVReader.new(io)
+    when /\.csv\z/
+      io = File.open(filename)
+      opts[:close] = io
+      rawreader = Tb::CSVReader.new(io)
+    when /\.tsv\z/
+      io = File.open(filename)
+      opts[:close] = io
+      rawreader = Tb::TSVReader.new(io)
+    else
+      if filename == '-'
+        rawreader = Tb::CSVReader.new(STDIN)
+      elsif filename.respond_to? :to_str
+        # guess table format?
+        io = File.open(filename)
+        opts[:close] = io
+        rawreader = Tb::CSVReader.new(io)
+      else
+        raise ArgumentError, "unexpected filename: #{filename.inspect}"
+      end
+    end
+    reader = self.new(rawreader, opts)
+    if block_given?
+      begin
+        yield reader
+      ensure
+        reader.close
+      end
+    else
+      reader
+    end
+  end
+end
