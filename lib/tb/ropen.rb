@@ -26,44 +26,35 @@
 
 class Tb::Reader
   def self.open(filename, opts={})
-    io = nil
     opts = opts.dup
     case filename
     when /\Acsv:/
-      io = File.open($')
-      opts[:close] = io
-      rawreader = Tb::CSVReader.new(io)
+      filename = $'
+      rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
     when /\Atsv:/
-      io = File.open($')
-      opts[:close] = io
-      rawreader = Tb::TSVReader.new(io)
+      filename = $'
+      rawreader_maker = lambda {|io| Tb::TSVReader.new(io) }
     when /\Ap[pgbn]m:/
-      io = File.open($')
-      opts[:close] = io
-      rawreader = Tb.pnm_stream_input(io)
+      filename = $'
+      rawreader_maker = lambda {|io| Tb.pnm_stream_input(io) }
     when /\.csv\z/
-      io = File.open(filename)
-      opts[:close] = io
-      rawreader = Tb::CSVReader.new(io)
+      rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
     when /\.tsv\z/
-      io = File.open(filename)
-      opts[:close] = io
-      rawreader = Tb::TSVReader.new(io)
+      rawreader_maker = lambda {|io| Tb::TSVReader.new(io) }
     when /\.p[pgbn]m\z/
+      rawreader_maker = lambda {|io| Tb.pnm_stream_input(io) }
+    else
+      rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
+    end
+    unless filename.respond_to? :to_str
+      raise ArgumentError, "unexpected filename: #{filename.inspect}"
+    end
+    if filename == '-'
+      rawreader = rawreader_maker.call(STDIN)
+    else
       io = File.open(filename)
       opts[:close] = io
-      rawreader = Tb.pnm_stream_input(io)
-    else
-      if filename == '-'
-        rawreader = Tb::CSVReader.new(STDIN)
-      elsif filename.respond_to? :to_str
-        # guess table format?
-        io = File.open(filename)
-        opts[:close] = io
-        rawreader = Tb::CSVReader.new(io)
-      else
-        raise ArgumentError, "unexpected filename: #{filename.inspect}"
-      end
+      rawreader = rawreader_maker.call(io)
     end
     reader = self.new(rawreader, opts)
     if block_given?
