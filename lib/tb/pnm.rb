@@ -63,15 +63,15 @@ class Tb
       pnm_content.force_encoding("ASCII-8BIT") if pnm_content.respond_to? :force_encoding
       if /\A(P[63])(#{WSP})(\d+)(#{WSP})(\d+)(#{WSP})(\d+)[ \t\r\n]/on =~ pnm_content
         magic, wsp1, w, wsp2, h, wsp3, max, raster = $1, $2, $3.to_i, $4, $5.to_i, $6, $7.to_i, $'
-        pixel_component = %w[r g b]
+        pixel_component = %w[R G B]
       elsif /\A(P[52])(#{WSP})(\d+)(#{WSP})(\d+)(#{WSP})(\d+)[ \t\r\n]/on =~ pnm_content
         magic, wsp1, w, wsp2, h, wsp3, max, raster = $1, $2, $3.to_i, $4, $5.to_i, $6, $7.to_i, $'
-        pixel_component = %w[v]
+        pixel_component = %w[V]
       elsif /\A(P[41])(#{WSP})(\d+)(#{WSP})(\d+)[ \t\r\n]/on =~ pnm_content
         magic, wsp1, w, wsp2, h, raster = $1, $2, $3.to_i, $4, $5.to_i, $'
         wsp3 = nil
         max = 1
-        pixel_component = %w[v]
+        pixel_component = %w[V]
       else
         raise ArgumentError, "not PNM format"
       end
@@ -207,7 +207,7 @@ class Tb
         max_value = rec['value'].to_i
       when 'comment'
         comments << rec['value']
-      when 'r', 'g', 'b', 'v'
+      when 'R', 'G', 'B', 'V'
         components[rec['component']] = true
         x = rec['x'].to_i
         y = rec['y'].to_i
@@ -217,14 +217,14 @@ class Tb
       end
 
     }
-    if !(components.keys - %w[v]).empty? &&
-       !(components.keys - %w[r g b]).empty?
+    if !(components.keys - %w[V]).empty? &&
+       !(components.keys - %w[R G B]).empty?
       raise ArgumentError, "inconsistent color component: #{components.keys.sort.inspect[1...-1]}"
     end
     case pnm_type
-    when 'P1', 'P4' then raise ArgumentError, "unexpected compoenent for PBM: #{components.keys.sort.inspect[1...-1]}" if !(components.keys - %w[v]).empty?
-    when 'P2', 'P5' then raise ArgumentError, "unexpected compoenent for PGM: #{components.keys.sort.inspect[1...-1]}" if !(components.keys - %w[v]).empty?
-    when 'P3', 'P6' then raise ArgumentError, "unexpected compoenent for PPM: #{components.keys.sort.inspect[1...-1]}" if !(components.keys - %w[r g b]).empty?
+    when 'P1', 'P4' then raise ArgumentError, "unexpected compoenent for PBM: #{components.keys.sort.inspect[1...-1]}" if !(components.keys - %w[V]).empty?
+    when 'P2', 'P5' then raise ArgumentError, "unexpected compoenent for PGM: #{components.keys.sort.inspect[1...-1]}" if !(components.keys - %w[V]).empty?
+    when 'P3', 'P6' then raise ArgumentError, "unexpected compoenent for PPM: #{components.keys.sort.inspect[1...-1]}" if !(components.keys - %w[R G B]).empty?
     end
     comments.each {|c|
       if /[\r\n]/ =~ c
@@ -245,7 +245,7 @@ class Tb
       }
       if min_interval < 0.0039 # 1/255 = 0.00392156862745098...
         max_value = 0xffff
-      elsif min_interval < 1.0 || !(components.keys & %w[r g b]).empty?
+      elsif min_interval < 1.0 || !(components.keys & %w[R G B]).empty?
         max_value = 0xff
       else
         max_value = 1
@@ -256,7 +256,7 @@ class Tb
         raise ArgumentError, "unexpected PNM type: #{pnm_type.inspect}"
       end
     else
-      if (components.keys - ['v']).empty?
+      if (components.keys - ['V']).empty?
         if max_value == 1
           pnm_type = 'P4' # PBM
         else
@@ -287,7 +287,7 @@ class Tb
     raster.force_encoding("ASCII-8BIT") if raster.respond_to? :force_encoding
     self.each {|rec|
       c = rec['component']
-      next if /\A[rgbv]\z/ !~ c
+      next if /\A[RGBV]\z/ !~ c
       x = rec['x'].to_i
       y = rec['y'].to_i
       next if x < 0 || width <= x
@@ -321,15 +321,15 @@ class Tb
       when 'P3'
         v = (v * max_value).round
         i = (y * width + x) * 3
-        if c == 'g' then i += 1
-        elsif c == 'b' then i += 2
+        if c == 'G' then i += 1
+        elsif c == 'B' then i += 2
         end
         raster[i * bytes_per_component, bytes_per_component] = component_fmt % v
       when 'P6'
         v = (v * max_value).round
         i = (y * width + x) * 3
-        if c == 'g' then i += 1
-        elsif c == 'b' then i += 2
+        if c == 'G' then i += 1
+        elsif c == 'B' then i += 2
         end
         raster[i * bytes_per_component, bytes_per_component] = [v].pack(component_template)
       else

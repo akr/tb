@@ -11,12 +11,12 @@ class TestTbPNM < Test::Unit::TestCase
         {"component"=>"width", "value"=>2},
         {"component"=>"height", "value"=>3},
         {"component"=>"max", "value"=>1},
-        {"x"=>0, "y"=>0, "component"=>"v", "value"=>0.0},
-        {"x"=>1, "y"=>0, "component"=>"v", "value"=>1.0},
-        {"x"=>0, "y"=>1, "component"=>"v", "value"=>0.0},
-        {"x"=>1, "y"=>1, "component"=>"v", "value"=>0.0},
-        {"x"=>0, "y"=>2, "component"=>"v", "value"=>1.0},
-        {"x"=>1, "y"=>2, "component"=>"v", "value"=>0.0}
+        {"x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
+        {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
+        {"x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
+        {"x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
+        {"x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
+        {"x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
       ], t.map {|rec| rec.to_h })
     assert_equal("P1\n2 3\n10\n11\n01\n", t.generate_pnm)
   end
@@ -30,12 +30,12 @@ class TestTbPNM < Test::Unit::TestCase
         {"component"=>"width", "value"=>2},
         {"component"=>"height", "value"=>3},
         {"component"=>"max", "value"=>1},
-        {"x"=>0, "y"=>0, "component"=>"v", "value"=>0.0},
-        {"x"=>1, "y"=>0, "component"=>"v", "value"=>1.0},
-        {"x"=>0, "y"=>1, "component"=>"v", "value"=>0.0},
-        {"x"=>1, "y"=>1, "component"=>"v", "value"=>0.0},
-        {"x"=>0, "y"=>2, "component"=>"v", "value"=>1.0},
-        {"x"=>1, "y"=>2, "component"=>"v", "value"=>0.0}
+        {"x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
+        {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
+        {"x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
+        {"x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
+        {"x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
+        {"x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
       ], t.map {|rec| rec.to_h })
     assert_equal(pbm, t.generate_pnm)
   end
@@ -49,12 +49,12 @@ class TestTbPNM < Test::Unit::TestCase
         {"component"=>"width", "value"=>2},
         {"component"=>"height", "value"=>3},
         {"component"=>"max", "value"=>255},
-        {"x"=>0, "y"=>0, "component"=>"v", "value"=>0.0},
-        {"x"=>1, "y"=>0, "component"=>"v", "value"=>1.0/255},
-        {"x"=>0, "y"=>1, "component"=>"v", "value"=>100.0/255},
-        {"x"=>1, "y"=>1, "component"=>"v", "value"=>101.0/255},
-        {"x"=>0, "y"=>2, "component"=>"v", "value"=>254.0/255},
-        {"x"=>1, "y"=>2, "component"=>"v", "value"=>255.0/255}
+        {"x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
+        {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0/255},
+        {"x"=>0, "y"=>1, "component"=>"V", "value"=>100.0/255},
+        {"x"=>1, "y"=>1, "component"=>"V", "value"=>101.0/255},
+        {"x"=>0, "y"=>2, "component"=>"V", "value"=>254.0/255},
+        {"x"=>1, "y"=>2, "component"=>"V", "value"=>255.0/255}
       ], t.map {|rec| rec.to_h })
     assert_equal(pgm, t.generate_pnm)
   end
@@ -68,12 +68,12 @@ class TestTbPNM < Test::Unit::TestCase
         {"component"=>"width", "value"=>2},
         {"component"=>"height", "value"=>3},
         {"component"=>"max", "value"=>255},
-        {"x"=>0, "y"=>0, "component"=>"v", "value"=>0.0},
-        {"x"=>1, "y"=>0, "component"=>"v", "value"=>1.0/255},
-        {"x"=>0, "y"=>1, "component"=>"v", "value"=>100.0/255},
-        {"x"=>1, "y"=>1, "component"=>"v", "value"=>101.0/255},
-        {"x"=>0, "y"=>2, "component"=>"v", "value"=>254.0/255},
-        {"x"=>1, "y"=>2, "component"=>"v", "value"=>255.0/255}
+        {"x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
+        {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0/255},
+        {"x"=>0, "y"=>1, "component"=>"V", "value"=>100.0/255},
+        {"x"=>1, "y"=>1, "component"=>"V", "value"=>101.0/255},
+        {"x"=>0, "y"=>2, "component"=>"V", "value"=>254.0/255},
+        {"x"=>1, "y"=>2, "component"=>"V", "value"=>255.0/255}
       ], t.map {|rec| rec.to_h })
     assert_equal(pgm, t.generate_pnm)
   end
@@ -87,24 +87,24 @@ class TestTbPNM < Test::Unit::TestCase
         {"component"=>"width", "value"=>2},
         {"component"=>"height", "value"=>3},
         {"component"=>"max", "value"=>255},
-        {"x"=>0, "y"=>0, "component"=>"r", "value"=>0.0},
-        {"x"=>0, "y"=>0, "component"=>"g", "value"=>1.0/255},
-        {"x"=>0, "y"=>0, "component"=>"b", "value"=>2.0/255},
-        {"x"=>1, "y"=>0, "component"=>"r", "value"=>3.0/255},
-        {"x"=>1, "y"=>0, "component"=>"g", "value"=>4.0/255},
-        {"x"=>1, "y"=>0, "component"=>"b", "value"=>5.0/255},
-        {"x"=>0, "y"=>1, "component"=>"r", "value"=>100.0/255},
-        {"x"=>0, "y"=>1, "component"=>"g", "value"=>101.0/255},
-        {"x"=>0, "y"=>1, "component"=>"b", "value"=>102.0/255},
-        {"x"=>1, "y"=>1, "component"=>"r", "value"=>103.0/255},
-        {"x"=>1, "y"=>1, "component"=>"g", "value"=>104.0/255},
-        {"x"=>1, "y"=>1, "component"=>"b", "value"=>105.0/255},
-        {"x"=>0, "y"=>2, "component"=>"r", "value"=>250.0/255},
-        {"x"=>0, "y"=>2, "component"=>"g", "value"=>251.0/255},
-        {"x"=>0, "y"=>2, "component"=>"b", "value"=>252.0/255},
-        {"x"=>1, "y"=>2, "component"=>"r", "value"=>253.0/255},
-        {"x"=>1, "y"=>2, "component"=>"g", "value"=>254.0/255},
-        {"x"=>1, "y"=>2, "component"=>"b", "value"=>255.0/255}
+        {"x"=>0, "y"=>0, "component"=>"R", "value"=>0.0},
+        {"x"=>0, "y"=>0, "component"=>"G", "value"=>1.0/255},
+        {"x"=>0, "y"=>0, "component"=>"B", "value"=>2.0/255},
+        {"x"=>1, "y"=>0, "component"=>"R", "value"=>3.0/255},
+        {"x"=>1, "y"=>0, "component"=>"G", "value"=>4.0/255},
+        {"x"=>1, "y"=>0, "component"=>"B", "value"=>5.0/255},
+        {"x"=>0, "y"=>1, "component"=>"R", "value"=>100.0/255},
+        {"x"=>0, "y"=>1, "component"=>"G", "value"=>101.0/255},
+        {"x"=>0, "y"=>1, "component"=>"B", "value"=>102.0/255},
+        {"x"=>1, "y"=>1, "component"=>"R", "value"=>103.0/255},
+        {"x"=>1, "y"=>1, "component"=>"G", "value"=>104.0/255},
+        {"x"=>1, "y"=>1, "component"=>"B", "value"=>105.0/255},
+        {"x"=>0, "y"=>2, "component"=>"R", "value"=>250.0/255},
+        {"x"=>0, "y"=>2, "component"=>"G", "value"=>251.0/255},
+        {"x"=>0, "y"=>2, "component"=>"B", "value"=>252.0/255},
+        {"x"=>1, "y"=>2, "component"=>"R", "value"=>253.0/255},
+        {"x"=>1, "y"=>2, "component"=>"G", "value"=>254.0/255},
+        {"x"=>1, "y"=>2, "component"=>"B", "value"=>255.0/255}
       ], t.map {|rec| rec.to_h })
     assert_equal(ppm, t.generate_pnm)
   end
@@ -118,24 +118,24 @@ class TestTbPNM < Test::Unit::TestCase
         {"component"=>"width", "value"=>2},
         {"component"=>"height", "value"=>3},
         {"component"=>"max", "value"=>255},
-        {"x"=>0, "y"=>0, "component"=>"r", "value"=>0.0},
-        {"x"=>0, "y"=>0, "component"=>"g", "value"=>1.0/255},
-        {"x"=>0, "y"=>0, "component"=>"b", "value"=>2.0/255},
-        {"x"=>1, "y"=>0, "component"=>"r", "value"=>3.0/255},
-        {"x"=>1, "y"=>0, "component"=>"g", "value"=>4.0/255},
-        {"x"=>1, "y"=>0, "component"=>"b", "value"=>5.0/255},
-        {"x"=>0, "y"=>1, "component"=>"r", "value"=>100.0/255},
-        {"x"=>0, "y"=>1, "component"=>"g", "value"=>101.0/255},
-        {"x"=>0, "y"=>1, "component"=>"b", "value"=>102.0/255},
-        {"x"=>1, "y"=>1, "component"=>"r", "value"=>103.0/255},
-        {"x"=>1, "y"=>1, "component"=>"g", "value"=>104.0/255},
-        {"x"=>1, "y"=>1, "component"=>"b", "value"=>105.0/255},
-        {"x"=>0, "y"=>2, "component"=>"r", "value"=>250.0/255},
-        {"x"=>0, "y"=>2, "component"=>"g", "value"=>251.0/255},
-        {"x"=>0, "y"=>2, "component"=>"b", "value"=>252.0/255},
-        {"x"=>1, "y"=>2, "component"=>"r", "value"=>253.0/255},
-        {"x"=>1, "y"=>2, "component"=>"g", "value"=>254.0/255},
-        {"x"=>1, "y"=>2, "component"=>"b", "value"=>255.0/255}
+        {"x"=>0, "y"=>0, "component"=>"R", "value"=>0.0},
+        {"x"=>0, "y"=>0, "component"=>"G", "value"=>1.0/255},
+        {"x"=>0, "y"=>0, "component"=>"B", "value"=>2.0/255},
+        {"x"=>1, "y"=>0, "component"=>"R", "value"=>3.0/255},
+        {"x"=>1, "y"=>0, "component"=>"G", "value"=>4.0/255},
+        {"x"=>1, "y"=>0, "component"=>"B", "value"=>5.0/255},
+        {"x"=>0, "y"=>1, "component"=>"R", "value"=>100.0/255},
+        {"x"=>0, "y"=>1, "component"=>"G", "value"=>101.0/255},
+        {"x"=>0, "y"=>1, "component"=>"B", "value"=>102.0/255},
+        {"x"=>1, "y"=>1, "component"=>"R", "value"=>103.0/255},
+        {"x"=>1, "y"=>1, "component"=>"G", "value"=>104.0/255},
+        {"x"=>1, "y"=>1, "component"=>"B", "value"=>105.0/255},
+        {"x"=>0, "y"=>2, "component"=>"R", "value"=>250.0/255},
+        {"x"=>0, "y"=>2, "component"=>"G", "value"=>251.0/255},
+        {"x"=>0, "y"=>2, "component"=>"B", "value"=>252.0/255},
+        {"x"=>1, "y"=>2, "component"=>"R", "value"=>253.0/255},
+        {"x"=>1, "y"=>2, "component"=>"G", "value"=>254.0/255},
+        {"x"=>1, "y"=>2, "component"=>"B", "value"=>255.0/255}
       ], t.map {|rec| rec.to_h })
     assert_equal(ppm, t.generate_pnm)
   end
@@ -149,24 +149,24 @@ class TestTbPNM < Test::Unit::TestCase
         {"component"=>"width", "value"=>2},
         {"component"=>"height", "value"=>3},
         {"component"=>"max", "value"=>65535},
-        {"x"=>0, "y"=>0, "component"=>"r", "value"=>0.0},
-        {"x"=>0, "y"=>0, "component"=>"g", "value"=>1.0/65535},
-        {"x"=>0, "y"=>0, "component"=>"b", "value"=>2.0/65535},
-        {"x"=>1, "y"=>0, "component"=>"r", "value"=>3.0/65535},
-        {"x"=>1, "y"=>0, "component"=>"g", "value"=>4.0/65535},
-        {"x"=>1, "y"=>0, "component"=>"b", "value"=>5.0/65535},
-        {"x"=>0, "y"=>1, "component"=>"r", "value"=>100.0/65535},
-        {"x"=>0, "y"=>1, "component"=>"g", "value"=>101.0/65535},
-        {"x"=>0, "y"=>1, "component"=>"b", "value"=>102.0/65535},
-        {"x"=>1, "y"=>1, "component"=>"r", "value"=>103.0/65535},
-        {"x"=>1, "y"=>1, "component"=>"g", "value"=>104.0/65535},
-        {"x"=>1, "y"=>1, "component"=>"b", "value"=>105.0/65535},
-        {"x"=>0, "y"=>2, "component"=>"r", "value"=>250.0/65535},
-        {"x"=>0, "y"=>2, "component"=>"g", "value"=>251.0/65535},
-        {"x"=>0, "y"=>2, "component"=>"b", "value"=>252.0/65535},
-        {"x"=>1, "y"=>2, "component"=>"r", "value"=>253.0/65535},
-        {"x"=>1, "y"=>2, "component"=>"g", "value"=>254.0/65535},
-        {"x"=>1, "y"=>2, "component"=>"b", "value"=>255.0/65535}
+        {"x"=>0, "y"=>0, "component"=>"R", "value"=>0.0},
+        {"x"=>0, "y"=>0, "component"=>"G", "value"=>1.0/65535},
+        {"x"=>0, "y"=>0, "component"=>"B", "value"=>2.0/65535},
+        {"x"=>1, "y"=>0, "component"=>"R", "value"=>3.0/65535},
+        {"x"=>1, "y"=>0, "component"=>"G", "value"=>4.0/65535},
+        {"x"=>1, "y"=>0, "component"=>"B", "value"=>5.0/65535},
+        {"x"=>0, "y"=>1, "component"=>"R", "value"=>100.0/65535},
+        {"x"=>0, "y"=>1, "component"=>"G", "value"=>101.0/65535},
+        {"x"=>0, "y"=>1, "component"=>"B", "value"=>102.0/65535},
+        {"x"=>1, "y"=>1, "component"=>"R", "value"=>103.0/65535},
+        {"x"=>1, "y"=>1, "component"=>"G", "value"=>104.0/65535},
+        {"x"=>1, "y"=>1, "component"=>"B", "value"=>105.0/65535},
+        {"x"=>0, "y"=>2, "component"=>"R", "value"=>250.0/65535},
+        {"x"=>0, "y"=>2, "component"=>"G", "value"=>251.0/65535},
+        {"x"=>0, "y"=>2, "component"=>"B", "value"=>252.0/65535},
+        {"x"=>1, "y"=>2, "component"=>"R", "value"=>253.0/65535},
+        {"x"=>1, "y"=>2, "component"=>"G", "value"=>254.0/65535},
+        {"x"=>1, "y"=>2, "component"=>"B", "value"=>255.0/65535}
       ], t.map {|rec| rec.to_h })
     assert_equal(ppm, t.generate_pnm)
   end
@@ -181,12 +181,12 @@ class TestTbPNM < Test::Unit::TestCase
         {"component"=>"height", "value"=>3},
         {"component"=>"max", "value"=>1},
         {"component"=>"comment", "value"=>"foo"},
-        {"x"=>0, "y"=>0, "component"=>"v", "value"=>0.0},
-        {"x"=>1, "y"=>0, "component"=>"v", "value"=>1.0},
-        {"x"=>0, "y"=>1, "component"=>"v", "value"=>0.0},
-        {"x"=>1, "y"=>1, "component"=>"v", "value"=>0.0},
-        {"x"=>0, "y"=>2, "component"=>"v", "value"=>1.0},
-        {"x"=>1, "y"=>2, "component"=>"v", "value"=>0.0}
+        {"x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
+        {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
+        {"x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
+        {"x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
+        {"x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
+        {"x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
       ], t.map {|rec| rec.to_h })
     assert_equal("P1\n\#foo\n2 3\n10\n11\n01\n", t.generate_pnm)
   end
@@ -219,19 +219,19 @@ class TestTbPNM < Test::Unit::TestCase
   end
 
   def test_generate_inconsistent_color_component
-    t = Tb.new %w[x y component value], [nil, nil, 'v', 1.0], [nil, nil, 'r', 1.0]
+    t = Tb.new %w[x y component value], [nil, nil, 'V', 1.0], [nil, nil, 'R', 1.0]
     assert_raise(ArgumentError) { t.generate_pnm }
   end
 
   def test_generate_complement
     t = Tb.new %w[x y component value]
     [
-      {"x"=>0, "y"=>0, "component"=>"v", "value"=>0.0},
-      {"x"=>1, "y"=>0, "component"=>"v", "value"=>1.0},
-      {"x"=>0, "y"=>1, "component"=>"v", "value"=>0.0},
-      {"x"=>1, "y"=>1, "component"=>"v", "value"=>0.0},
-      {"x"=>0, "y"=>2, "component"=>"v", "value"=>1.0},
-      {"x"=>1, "y"=>2, "component"=>"v", "value"=>0.0}
+      {"x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
+      {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
+      {"x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
+      {"x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
+      {"x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
+      {"x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
     ].each {|h| t.insert h }
     assert_equal("P4\n2 3\n\x80\xc0\x40", t.generate_pnm)
   end
@@ -239,12 +239,12 @@ class TestTbPNM < Test::Unit::TestCase
   def test_generate_complement2
     t = Tb.new %w[x y component value]
     [
-      {"x"=>0, "y"=>0, "component"=>"v", "value"=>1.0/65535},
-      {"x"=>1, "y"=>0, "component"=>"v", "value"=>1.0},
-      {"x"=>0, "y"=>1, "component"=>"v", "value"=>0.0},
-      {"x"=>1, "y"=>1, "component"=>"v", "value"=>0.0},
-      {"x"=>0, "y"=>2, "component"=>"v", "value"=>1.0},
-      {"x"=>1, "y"=>2, "component"=>"v", "value"=>0.0}
+      {"x"=>0, "y"=>0, "component"=>"V", "value"=>1.0/65535},
+      {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
+      {"x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
+      {"x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
+      {"x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
+      {"x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
     ].each {|h| t.insert h }
     assert_equal("P5\n2 3\n65535\n\x00\x01\xff\xff\x00\x00\x00\x00\xff\xff\x00\x00", t.generate_pnm)
   end
@@ -252,12 +252,12 @@ class TestTbPNM < Test::Unit::TestCase
   def test_generate_complement1
     t = Tb.new %w[x y component value]
     [
-      {"x"=>0, "y"=>0, "component"=>"v", "value"=>1.0/255},
-      {"x"=>1, "y"=>0, "component"=>"v", "value"=>1.0},
-      {"x"=>0, "y"=>1, "component"=>"v", "value"=>0.0},
-      {"x"=>1, "y"=>1, "component"=>"v", "value"=>0.0},
-      {"x"=>0, "y"=>2, "component"=>"v", "value"=>1.0},
-      {"x"=>1, "y"=>2, "component"=>"v", "value"=>0.0}
+      {"x"=>0, "y"=>0, "component"=>"V", "value"=>1.0/255},
+      {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
+      {"x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
+      {"x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
+      {"x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
+      {"x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
     ].each {|h| t.insert h }
     assert_equal("P5\n2 3\n255\n\x01\xff\x00\x00\xff\x00", t.generate_pnm)
   end
@@ -265,9 +265,9 @@ class TestTbPNM < Test::Unit::TestCase
   def test_generate_complement_ppm
     t = Tb.new %w[x y component value]
     [
-      {"x"=>0, "y"=>0, "component"=>"r", "value"=>0.0},
-      {"x"=>0, "y"=>0, "component"=>"g", "value"=>1.0},
-      {"x"=>0, "y"=>0, "component"=>"b", "value"=>1.0},
+      {"x"=>0, "y"=>0, "component"=>"R", "value"=>0.0},
+      {"x"=>0, "y"=>0, "component"=>"G", "value"=>1.0},
+      {"x"=>0, "y"=>0, "component"=>"B", "value"=>1.0},
     ].each {|h| t.insert h }
     assert_equal("P6\n1 1\n255\n\x00\xff\xff", t.generate_pnm)
   end
@@ -275,8 +275,8 @@ class TestTbPNM < Test::Unit::TestCase
   def test_generate_overrange
     t = Tb.new %w[x y component value]
     [
-      {"x"=>0, "y"=>0, "component"=>"v", "value"=>-0.5},
-      {"x"=>0, "y"=>1, "component"=>"v", "value"=>1.5},
+      {"x"=>0, "y"=>0, "component"=>"V", "value"=>-0.5},
+      {"x"=>0, "y"=>1, "component"=>"V", "value"=>1.5},
     ].each {|h| t.insert h }
     assert_equal("P5\n1 2\n255\n\x00\xff", t.generate_pnm)
   end
@@ -308,12 +308,12 @@ class TestTbPNM < Test::Unit::TestCase
        [nil, nil, "width", 2],
        [nil, nil, "height", 3],
        [nil, nil, "max", 1],
-       [0, 0, "v", 0.0],
-       [1, 0, "v", 1.0],
-       [0, 1, "v", 0.0],
-       [1, 1, "v", 0.0],
-       [0, 2, "v", 1.0],
-       [1, 2, "v", 0.0]],
+       [0, 0, "V", 0.0],
+       [1, 0, "V", 1.0],
+       [0, 1, "V", 0.0],
+       [1, 1, "V", 0.0],
+       [0, 2, "V", 1.0],
+       [1, 2, "V", 0.0]],
        r.to_a)
   end
 
