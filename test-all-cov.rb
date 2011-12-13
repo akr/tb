@@ -17,6 +17,11 @@ at_exit {
     %r{lib/tb[/.]} !~ f
   }
   if !fs.empty?
+    if STDOUT.tty?
+      out = IO.popen(['less', '-S', '-j20', '+/ 0:'], 'w')
+    else
+      out = STDOUT
+    end
     pat = nil
     fs[0].chars.to_a.reverse_each {|ch|
       if !pat
@@ -44,12 +49,15 @@ at_exit {
       File.foreach(f).with_index {|line, i|
         line = expand_tab(line)
         if ns[i]
-          puts fmt1 % [f0, ns[i], line]
+          out.puts fmt1 % [f0, ns[i], line]
         else
-          puts fmt2 % [f0, line]
+          out.puts fmt2 % [f0, line]
         end
       }
     }
+    if out != STDOUT
+      out.close
+    end
   end
 }
 Coverage.start
