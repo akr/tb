@@ -1,5 +1,3 @@
-# lib/tb/ropen.rb - Tb::Reader.open
-#
 # Copyright (C) 2011 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -24,56 +22,22 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-class Tb::Reader
-  def self.open(filename, opts={})
-    io = nil
-    opts = opts.dup
-    case filename
-    when /\Acsv:/
-      io = File.open($')
-      opts[:close] = io
-      rawreader = Tb::CSVReader.new(io)
-    when /\Atsv:/
-      io = File.open($')
-      opts[:close] = io
-      rawreader = Tb::TSVReader.new(io)
-    when /\Ap[pgbn]m:/
-      io = File.open($')
-      opts[:close] = io
-      rawreader = Tb.pnm_stream_input(io)
-    when /\.csv\z/
-      io = File.open(filename)
-      opts[:close] = io
-      rawreader = Tb::CSVReader.new(io)
-    when /\.tsv\z/
-      io = File.open(filename)
-      opts[:close] = io
-      rawreader = Tb::TSVReader.new(io)
-    when /\.p[pgbn]m\z/
-      io = File.open(filename)
-      opts[:close] = io
-      rawreader = Tb.pnm_stream_input(io)
-    else
-      if filename == '-'
-        rawreader = Tb::CSVReader.new(STDIN)
-      elsif filename.respond_to? :to_str
-        # guess table format?
-        io = File.open(filename)
-        opts[:close] = io
-        rawreader = Tb::CSVReader.new(io)
-      else
-        raise ArgumentError, "unexpected filename: #{filename.inspect}"
-      end
-    end
-    reader = self.new(rawreader, opts)
-    if block_given?
-      begin
-        yield reader
-      ensure
-        reader.close
-      end
-    else
-      reader
-    end
-  end
+Tb::Cmd.subcommands << 'pnm'
+
+def (Tb::Cmd).op_pnm
+  op = OptionParser.new
+  op.banner = 'Usage: tb pnm [OPTS] [TABLE]'
+  define_common_option(op, "hNo", "--no-pager")
+  op
 end
+
+def (Tb::Cmd).main_pnm(argv)
+  op_pnm.parse!(argv)
+  exit_if_help('pnm')
+  argv = ['-'] if argv.empty?
+  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
+  with_output {|out|
+    tbl.generate_pnm(out)
+  }
+end
+
