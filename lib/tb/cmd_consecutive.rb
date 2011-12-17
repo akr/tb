@@ -22,37 +22,61 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-require 'tb'
-require 'optparse'
-require 'pathname'
-require 'etc'
-require 'time'
-require 'enumerator'
-require 'tb/pager'
-require 'tb/cmdutil'
-require 'tb/cmd_help'
-require 'tb/cmd_csv'
-require 'tb/cmd_tsv'
-require 'tb/cmd_pnm'
-require 'tb/cmd_json'
-require 'tb/cmd_yaml'
-require 'tb/cmd_pp'
-require 'tb/cmd_grep'
-require 'tb/cmd_gsub'
-require 'tb/cmd_sort'
-require 'tb/cmd_cut'
-require 'tb/cmd_rename'
-require 'tb/cmd_newfield'
-require 'tb/cmd_cat'
-require 'tb/cmd_join'
-require 'tb/cmd_consecutive'
-require 'tb/cmd_group'
-require 'tb/cmd_cross'
-require 'tb/cmd_shape'
-require 'tb/cmd_mheader'
-require 'tb/cmd_crop'
-require 'tb/cmd_ls'
-require 'tb/cmd_svn_log'
-require 'tb/cmdmain'
+Tb::Cmd.subcommands << 'consecutive'
 
-Tb::Cmd.init_option
+Tb::Cmd.default_option[:opt_consecutive_n] = 2
+
+def (Tb::Cmd).op_consecutive
+  op = OptionParser.new
+  op.banner = 'Usage: tb consecutive [OPTS] [TABLE ...]'
+  define_common_option(op, "ho", "--no-pager")
+  op.def_option('-n NUM', 'gather NUM records.  (default: 2)') {|n| Tb::Cmd.opt_consecutive_n = n.to_i }
+  op
+end
+
+Tb::Cmd.def_vhelp('consecutive', <<'End')
+Example:
+
+  % cat tst.csv 
+  a,b,c
+  0,1,2
+  4,5,6
+  7,8,9
+  % tb consecutive tstcsv
+  a_1,b_1,c_1,a_2,b_2,c_2
+  0,1,2,4,5,6
+  4,5,6,7,8,9
+
+Note:
+* Header fields must exist.  A fields which don't have header is ignored.
+End
+
+def (Tb::Cmd).main_consecutive(argv)
+  op_consecutive.parse!(argv)
+  exit_if_help('consecutive')
+  argv = ['-'] if argv.empty?
+  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
+  header = creader.header
+  consecutive_header = []
+  Tb::Cmd.opt_consecutive_n.times {|i|
+    consecutive_header.concat header.map {|f| "#{f}_#{i+1}" }
+  }
+  with_table_stream_output {|gen|
+    if !Tb::Cmd.opt_N
+      gen << consecutive_header
+    end
+    buf = []
+    creader.each {|ary|
+      if header.length < ary.length
+        ary = ary[0, header.length]
+      elsif ary.length < header.length
+        ary.concat([nil]*(header.length-ary.length))
+      end
+      buf << ary
+      if buf.length == Tb::Cmd.opt_consecutive_n
+        gen << buf.flatten
+        buf.shift
+      end
+    }
+  }
+end
