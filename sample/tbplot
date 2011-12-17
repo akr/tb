@@ -58,10 +58,11 @@ class ValueChecker
 
   def check(val)
     ret = val
-    if /\A\s*-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\s*\z/ =~ val
+    if val.kind_of? Numeric
       @numeric += 1
-    end
-    if /\A\s*-?\d+-\d\d(-\d\d(T\d\d(:\d\d(:\d\d(\.\d+)?(Z|[+-]\d\d:?\d\d)?)?)?)?)?\s*\z/ =~ val ||
+    elsif /\A\s*-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\s*\z/ =~ val
+      @numeric += 1
+    elsif /\A\s*-?\d+-\d\d(-\d\d(T\d\d(:\d\d(:\d\d(\.\d+)?(Z|[+-]\d\d:?\d\d)?)?)?)?)?\s*\z/ =~ val ||
        /\A\s*-?\d+\d\d\d\dT\d\d(\d\d(\d\d(\.\d+)?(Z|[+-]\d\d:?\d\d)?)?)?\s*\z/ =~ val
       @time += 1
       t = Time.parse(val).utc
