@@ -197,7 +197,7 @@ Tb::CatReader.open(argv) {|r|
   tmps.each {|(shape_value, color_value), tmp|
     shape = shapes[shape_value]
     color = colors[color_value]
-    gnuplot_command << ", " if !first
+    gnuplot_command << ",\\\n" if !first
     gnuplot_command << gnuplot_escape_string(tmp.path)
     gnuplot_command << ' using 1:2 '
     title = []
