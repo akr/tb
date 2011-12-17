@@ -30,7 +30,7 @@ def (Tb::Cmd).usage_list_subcommands
 Usage:
 End
     Tb::Cmd.subcommands.each {|subcommand|
-      f.puts "  " + self.send("op_#{subcommand}").banner.sub(/\AUsage: /, '')
+      f.puts "  " + self.subcommand_send("op", subcommand).banner.sub(/\AUsage: /, '')
     }
   }
 end
@@ -69,7 +69,7 @@ end
 def (Tb::Cmd).show_help(subcommand)
   if Tb::Cmd.subcommands.include?(subcommand)
     with_output {|f|
-      f.puts self.send("op_#{subcommand}")
+      f.puts self.subcommand_send("op", subcommand)
       if 2 <= Tb::Cmd.opt_help && Tb::Cmd.verbose_help[subcommand]
         f.puts
         f.puts Tb::Cmd.verbose_help[subcommand]

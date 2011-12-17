@@ -76,6 +76,10 @@ class Tb::Cmd
     end
     @verbose_help[subcommand] = str
   end
+
+  def self.subcommand_send(prefix, subcommand, *args, &block)
+    self.send(prefix + "_" + subcommand.gsub(/-/, '_'), *args, &block)
+  end
 end
 
 class << Tb::Cmd

@@ -27,7 +27,7 @@ def (Tb::Cmd).main_body(argv)
   if subcommand == '-h' || subcommand == '--help'
     main_help(argv)
   elsif Tb::Cmd.subcommands.include?(subcommand)
-    self.send("main_#{subcommand}", argv)
+    self.subcommand_send("main", subcommand, argv)
   elsif subcommand == nil
     usage_list_subcommands
     true
