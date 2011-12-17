@@ -1,0 +1,230 @@
+#!/usr/bin/env ruby
+#
+# Copyright (C) 2011 Tanaka Akira  <akr@fsij.org>
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+#  1. Redistributions of source code must retain the above copyright notice, this
+#     list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
+#     and/or other materials provided with the distribution.
+#  3. The name of the author may not be used to endorse or promote products
+#     derived from this software without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+# OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+# OF SUCH DAMAGE.
+
+# plot a graph using gnuplot.
+
+# usage:
+#   tbplot [-x x-field] [-y y-field] [--shape shape-field] [--color color-field] filename 
+
+$:.unshift '/home/akr/ruby/tb/lib'
+
+require 'optparse'
+require 'tempfile'
+require 'time'
+require 'tb'
+
+def err(msg)
+  STDERR.puts msg
+  exit false
+end
+
+def gnuplot_escape_string(string)
+  string = string.dup.force_encoding("ascii-8bit") if string.respond_to? :force_encoding
+  '"' + string.gsub(/[^A-Za-z]/) {|c| sprintf("\\%03o", c.ord) } + '"'
+end
+
+class ValueChecker
+  def initialize
+    @total = 0
+    @numeric = 0
+    @time = 0
+    @time_min = @time_max = nil
+  end
+  attr_reader :total, :numeric, :time
+  attr_reader :time_min, :time_max
+
+  def check(val)
+    ret = val
+    if /\A\s*-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\s*\z/ =~ val
+      @numeric += 1
+    end
+    if /\A\s*-?\d+-\d\d(-\d\d(T\d\d(:\d\d(:\d\d(\.\d+)?(Z|[+-]\d\d:?\d\d)?)?)?)?)?\s*\z/ =~ val ||
+       /\A\s*-?\d+\d\d\d\dT\d\d(\d\d(\d\d(\.\d+)?(Z|[+-]\d\d:?\d\d)?)?)?\s*\z/ =~ val
+      @time += 1
+      t = Time.parse(val).utc
+      t = tweak_timezone(t)
+      if @time == 1
+        @time_min = @time_max = t
+      else
+        @time_min = t if t < @time_min
+        @time_max = t if @time_max < t
+      end
+      ret = t.iso8601
+    end
+    ret
+  end
+
+  def tweak_timezone(t)
+    # gnuplot supports UTC only.
+    # So this (not-so-valid) tweak is required.
+    unless defined? @time_offset
+      @time_offset = Time.now.utc_offset
+    end
+    t + @time_offset
+  end
+
+  def tic_format
+    if 0 < @time
+      if @time_min.year == @time_max.year &&
+         @time_min.mon  == @time_max.mon &&
+         @time_min.day  == @time_max.day
+        "%H:%M"
+      else
+        "%Y\n%m-%d"
+      end
+    else
+      "% g"
+    end
+  end
+end
+
+$x_field = nil
+$y_field = nil
+$shape_field = nil
+$color_field = nil
+
+op = OptionParser.new
+op.def_option('-x FIELD', 'x-field') {|f| $x_field = f }
+op.def_option('-y FIELD', 'y-field') {|f| $y_field = f }
+op.def_option('--shape=FIELD', 'shape-field') {|f| $shape_field = f }
+op.def_option('--color=FIELD', 'color-field') {|f| $color_field = f }
+op.def_option('--shapecolor=FIELD', 'shape-field and color-field') {|f| $shape_field = $color_field = f }
+
+op.parse!(ARGV)
+
+tmps = {}
+shapes = {}
+colors = {}
+argv = ARGV.empty? ? ['-'] : ARGV
+Tb::CatReader.open(argv) {|r|
+  header0 = r.header
+  header = header0.dup
+  if $x_field && !header.include?($x_field)
+    err("field not found: #{$x_field.inspect}")
+  end
+  if $y_field && !header.include?($y_field)
+    err("field not found: #{$y_field.inspect}")
+  end
+  if $shape_field && !header.include?($shape_field)
+    err("field not found: #{$shape_field.inspect}")
+  end
+  if $color_field && !header.include?($color_field)
+    err("field not found: #{$color_field.inspect}")
+  end
+  header.delete($x_field)
+  header.delete($y_field)
+  header.delete($shape_field)
+  header.delete($color_field)
+  if !$x_field
+    if header.empty?
+      err("x-field not found")
+    end
+    $x_field = header.shift
+  end
+  if !$y_field
+    if header.empty?
+      err("y-field not found")
+    end
+    $y_field = header.shift
+  end
+  x_checker = ValueChecker.new
+  y_checker = ValueChecker.new
+  r.each {|ary|
+    x = ary[r.index_from_field($x_field)]
+    x = x_checker.check(x)
+    y = ary[r.index_from_field($y_field)]
+    y = y_checker.check(y)
+    shape_value = color_value = nil
+    if $shape_field
+      shape_value = ary[r.index_from_field($shape_field)]
+      if !shapes[shape_value]
+        shapes[shape_value] = shapes.size + 1
+      end
+      shape = shapes[shape_value]
+    end
+    if $color_field
+      color_value = ary[r.index_from_field($color_field)]
+      if !colors[color_value]
+        colors[color_value] = colors.size + 1
+      end
+      color = colors[color_value]
+    end
+    key = [shape_value, color_value]
+    tmps[key] ||= Tempfile.new('tbplot')
+    tmps[key].puts "#{x} #{y}"
+  }
+  tmps.each {|k, v| v.close }
+  gnuplot_command = ''
+  if 0 < x_checker.time || 0 < y_checker.time
+    gnuplot_command << 'set timefmt "%Y-%m-%dT%H:%M:%SZ"' << "\n"
+  end
+  if 0 < x_checker.time
+    gnuplot_command << "set xdata time\n"
+    gnuplot_command << "set format x #{gnuplot_escape_string(x_checker.tic_format)}\n"
+  end
+  if 0 < y_checker.time
+    gnuplot_command << "set ydata time\n"
+    gnuplot_command << "set format y #{gnuplot_escape_string(y_checker.tic_format)}\n"
+  end
+  gnuplot_command << "set xlabel #{gnuplot_escape_string($x_field)}\n"
+  gnuplot_command << "set ylabel #{gnuplot_escape_string($y_field)}\n"
+  gnuplot_command << 'plot '
+  first = true
+  tmps.each {|(shape_value, color_value), tmp|
+    shape = shapes[shape_value]
+    color = colors[color_value]
+    gnuplot_command << ", " if !first
+    gnuplot_command << gnuplot_escape_string(tmp.path)
+    gnuplot_command << ' using 1:2 '
+    title = []
+    if shape_value
+      title << " #{$shape_field}=#{shape_value.to_s}"
+    end
+    if color_value
+      title << " #{$color_field}=#{color_value.to_s}"
+    end
+    title = title.uniq.join(' ')
+    gnuplot_command << ' title ' << gnuplot_escape_string(title)
+    gnuplot_command << ' with points'
+    if shape
+      gnuplot_command << " pointtype " << shape.to_s # xxx: some mapping
+    else
+      gnuplot_command << " pointtype 1"
+    end
+    if color
+      gnuplot_command << " linecolor " << color.to_s # xxx: some mapping
+    else
+      gnuplot_command << " linecolor 1"
+    end
+    first = false
+  }
+  gnuplot_command << "\n"
+  gnuplot_command << "pause mouse any\n"
+  tmp_gnuplot_command = Tempfile.new(['tbplot', '.gp'])
+  tmp_gnuplot_command << gnuplot_command
+  tmp_gnuplot_command.close
+  system('gnuplot', tmp_gnuplot_command.path)
+}
