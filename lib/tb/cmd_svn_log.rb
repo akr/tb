@@ -26,10 +26,15 @@ require 'rexml/document'
 
 Tb::Cmd.subcommands << 'svn-log'
 
+Tb::Cmd.default_option[:opt_svn_log_svn_command] = nil
+Tb::Cmd.default_option[:opt_svn_log_xml] = nil
+
 def (Tb::Cmd).op_svn_log
   op = OptionParser.new
   op.banner = 'Usage: tb svn-log [OPTS] -- [SVN-LOG-ARGS]'
   define_common_option(op, "hNo", "--no-pager")
+  op.def_option('--svn-command COMMAND', 'specify the svn command (default: svn)') {|command| Tb::Cmd.opt_svn_log_svn_command = command }
+  op.def_option('--svn-log-xml FILE', 'specify the result svn log --xml') {|filename| Tb::Cmd.opt_svn_log_xml = filename }
   op
 end
 
@@ -127,11 +132,24 @@ class Tb::Cmd::SVNLOGListener
   end
 end
 
+def (Tb::Cmd).svn_log_with_svn_log(argv)
+  if Tb::Cmd.opt_svn_log_xml
+    File.open(Tb::Cmd.opt_svn_log_xml) {|f|
+      yield f
+    }
+  else
+    svn = Tb::Cmd.opt_svn_log_svn_command || 'svn'
+    IO.popen(['svn', 'log', '--xml', *argv]) {|f|
+      yield f
+    }
+  end
+end
+
 def (Tb::Cmd).main_svn_log(argv)
-  op_ls.parse!(argv)
+  op_svn_log.parse!(argv)
   exit_if_help('svn-log')
   with_table_stream_output {|gen|
-    IO.popen(['svn', 'log', '--xml', *argv]) {|f|
+    svn_log_with_svn_log(argv) {|f|
       listener = Tb::Cmd::SVNLOGListener.new(gen)
       REXML::Parsers::StreamParser.new(f, listener).parse
     }
