@@ -155,12 +155,15 @@ Tb::CatReader.open(argv) {|r|
   y_checker = ValueChecker.new
   r.each {|ary|
     x = ary[r.index_from_field($x_field)]
+    next if x.nil?
     x = x_checker.check(x)
     y = ary[r.index_from_field($y_field)]
+    next if y.nil?
     y = y_checker.check(y)
     shape_value = color_value = nil
     if $shape_field
       shape_value = ary[r.index_from_field($shape_field)]
+      next if shape_value.nil?
       if !shapes[shape_value]
         shapes[shape_value] = shapes.size + 1
       end
@@ -168,6 +171,7 @@ Tb::CatReader.open(argv) {|r|
     end
     if $color_field
       color_value = ary[r.index_from_field($color_field)]
+      next if color_value.nil?
       if !colors[color_value]
         colors[color_value] = colors.size + 1
       end
