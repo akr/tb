@@ -25,16 +25,19 @@ class Tb::Pager
 
   def <<(obj)
     write obj.to_s
+    self
   end
 
   def print(*args)
     s = ''
     args.map {|a| s << a.to_s }
     write s
+    nil
   end
 
   def printf(format, *args)
     write sprintf(format, *args)
+    nil
   end
 
   def putc(ch)
@@ -43,6 +46,7 @@ class Tb::Pager
     else
       write ch.to_s
     end
+    ch
   end
 
   def puts(*objs)
@@ -55,6 +59,7 @@ class Tb::Pager
         write "\n" if /\n\z/ !~ o
       }
     end
+    nil
   end
 
   def write_nonblock(str)
@@ -112,6 +117,7 @@ class Tb::Pager
 
   def flush
     @io.flush if @io
+    self
   end
 
   def close
@@ -121,5 +127,6 @@ class Tb::Pager
       # don't need to ouput @buf because @buf is nil.
       @io.close if @io != STDOUT
     end
+    nil
   end
 end
