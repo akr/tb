@@ -1,4 +1,5 @@
 require 'tb'
+require 'tmpdir'
 require 'test/unit'
 
 class TestTbPNM < Test::Unit::TestCase
@@ -7,16 +8,16 @@ class TestTbPNM < Test::Unit::TestCase
     t = Tb.parse_pnm(pbm)
     assert_equal(
       [
-        {"component"=>"pnm_type", "value"=>"P1"},
-        {"component"=>"width", "value"=>2},
-        {"component"=>"height", "value"=>3},
-        {"component"=>"max", "value"=>1},
-        {"x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
-        {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
-        {"x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
-        {"x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
-        {"x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
-        {"x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
+        {"type"=>"meta", "component"=>"pnm_type", "value"=>"P1"},
+        {"type"=>"meta", "component"=>"width", "value"=>2},
+        {"type"=>"meta", "component"=>"height", "value"=>3},
+        {"type"=>"meta", "component"=>"max", "value"=>1},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
       ], t.map {|rec| rec.to_h })
     assert_equal("P1\n2 3\n10\n11\n01\n", t.generate_pnm)
   end
@@ -26,16 +27,16 @@ class TestTbPNM < Test::Unit::TestCase
     t = Tb.parse_pnm(pbm)
     assert_equal(
       [
-        {"component"=>"pnm_type", "value"=>"P4"},
-        {"component"=>"width", "value"=>2},
-        {"component"=>"height", "value"=>3},
-        {"component"=>"max", "value"=>1},
-        {"x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
-        {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
-        {"x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
-        {"x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
-        {"x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
-        {"x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
+        {"type"=>"meta", "component"=>"pnm_type", "value"=>"P4"},
+        {"type"=>"meta", "component"=>"width", "value"=>2},
+        {"type"=>"meta", "component"=>"height", "value"=>3},
+        {"type"=>"meta", "component"=>"max", "value"=>1},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
       ], t.map {|rec| rec.to_h })
     assert_equal(pbm, t.generate_pnm)
   end
@@ -45,16 +46,16 @@ class TestTbPNM < Test::Unit::TestCase
     t = Tb.parse_pnm(pgm)
     assert_equal(
       [
-        {"component"=>"pnm_type", "value"=>"P2"},
-        {"component"=>"width", "value"=>2},
-        {"component"=>"height", "value"=>3},
-        {"component"=>"max", "value"=>255},
-        {"x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
-        {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0/255},
-        {"x"=>0, "y"=>1, "component"=>"V", "value"=>100.0/255},
-        {"x"=>1, "y"=>1, "component"=>"V", "value"=>101.0/255},
-        {"x"=>0, "y"=>2, "component"=>"V", "value"=>254.0/255},
-        {"x"=>1, "y"=>2, "component"=>"V", "value"=>255.0/255}
+        {"type"=>"meta", "component"=>"pnm_type", "value"=>"P2"},
+        {"type"=>"meta", "component"=>"width", "value"=>2},
+        {"type"=>"meta", "component"=>"height", "value"=>3},
+        {"type"=>"meta", "component"=>"max", "value"=>255},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"V", "value"=>1.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"V", "value"=>100.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"V", "value"=>101.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"V", "value"=>254.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"V", "value"=>255.0/255}
       ], t.map {|rec| rec.to_h })
     assert_equal(pgm, t.generate_pnm)
   end
@@ -64,16 +65,16 @@ class TestTbPNM < Test::Unit::TestCase
     t = Tb.parse_pnm(pgm)
     assert_equal(
       [
-        {"component"=>"pnm_type", "value"=>"P5"},
-        {"component"=>"width", "value"=>2},
-        {"component"=>"height", "value"=>3},
-        {"component"=>"max", "value"=>255},
-        {"x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
-        {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0/255},
-        {"x"=>0, "y"=>1, "component"=>"V", "value"=>100.0/255},
-        {"x"=>1, "y"=>1, "component"=>"V", "value"=>101.0/255},
-        {"x"=>0, "y"=>2, "component"=>"V", "value"=>254.0/255},
-        {"x"=>1, "y"=>2, "component"=>"V", "value"=>255.0/255}
+        {"type"=>"meta", "component"=>"pnm_type", "value"=>"P5"},
+        {"type"=>"meta", "component"=>"width", "value"=>2},
+        {"type"=>"meta", "component"=>"height", "value"=>3},
+        {"type"=>"meta", "component"=>"max", "value"=>255},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"V", "value"=>1.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"V", "value"=>100.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"V", "value"=>101.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"V", "value"=>254.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"V", "value"=>255.0/255}
       ], t.map {|rec| rec.to_h })
     assert_equal(pgm, t.generate_pnm)
   end
@@ -83,28 +84,28 @@ class TestTbPNM < Test::Unit::TestCase
     t = Tb.parse_pnm(ppm)
     assert_equal(
       [
-        {"component"=>"pnm_type", "value"=>"P3"},
-        {"component"=>"width", "value"=>2},
-        {"component"=>"height", "value"=>3},
-        {"component"=>"max", "value"=>255},
-        {"x"=>0, "y"=>0, "component"=>"R", "value"=>0.0},
-        {"x"=>0, "y"=>0, "component"=>"G", "value"=>1.0/255},
-        {"x"=>0, "y"=>0, "component"=>"B", "value"=>2.0/255},
-        {"x"=>1, "y"=>0, "component"=>"R", "value"=>3.0/255},
-        {"x"=>1, "y"=>0, "component"=>"G", "value"=>4.0/255},
-        {"x"=>1, "y"=>0, "component"=>"B", "value"=>5.0/255},
-        {"x"=>0, "y"=>1, "component"=>"R", "value"=>100.0/255},
-        {"x"=>0, "y"=>1, "component"=>"G", "value"=>101.0/255},
-        {"x"=>0, "y"=>1, "component"=>"B", "value"=>102.0/255},
-        {"x"=>1, "y"=>1, "component"=>"R", "value"=>103.0/255},
-        {"x"=>1, "y"=>1, "component"=>"G", "value"=>104.0/255},
-        {"x"=>1, "y"=>1, "component"=>"B", "value"=>105.0/255},
-        {"x"=>0, "y"=>2, "component"=>"R", "value"=>250.0/255},
-        {"x"=>0, "y"=>2, "component"=>"G", "value"=>251.0/255},
-        {"x"=>0, "y"=>2, "component"=>"B", "value"=>252.0/255},
-        {"x"=>1, "y"=>2, "component"=>"R", "value"=>253.0/255},
-        {"x"=>1, "y"=>2, "component"=>"G", "value"=>254.0/255},
-        {"x"=>1, "y"=>2, "component"=>"B", "value"=>255.0/255}
+        {"type"=>"meta", "component"=>"pnm_type", "value"=>"P3"},
+        {"type"=>"meta", "component"=>"width", "value"=>2},
+        {"type"=>"meta", "component"=>"height", "value"=>3},
+        {"type"=>"meta", "component"=>"max", "value"=>255},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"R", "value"=>0.0},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"G", "value"=>1.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"B", "value"=>2.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"R", "value"=>3.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"G", "value"=>4.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"B", "value"=>5.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"R", "value"=>100.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"G", "value"=>101.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"B", "value"=>102.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"R", "value"=>103.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"G", "value"=>104.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"B", "value"=>105.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"R", "value"=>250.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"G", "value"=>251.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"B", "value"=>252.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"R", "value"=>253.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"G", "value"=>254.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"B", "value"=>255.0/255}
       ], t.map {|rec| rec.to_h })
     assert_equal(ppm, t.generate_pnm)
   end
@@ -114,28 +115,28 @@ class TestTbPNM < Test::Unit::TestCase
     t = Tb.parse_pnm(ppm)
     assert_equal(
       [
-        {"component"=>"pnm_type", "value"=>"P6"},
-        {"component"=>"width", "value"=>2},
-        {"component"=>"height", "value"=>3},
-        {"component"=>"max", "value"=>255},
-        {"x"=>0, "y"=>0, "component"=>"R", "value"=>0.0},
-        {"x"=>0, "y"=>0, "component"=>"G", "value"=>1.0/255},
-        {"x"=>0, "y"=>0, "component"=>"B", "value"=>2.0/255},
-        {"x"=>1, "y"=>0, "component"=>"R", "value"=>3.0/255},
-        {"x"=>1, "y"=>0, "component"=>"G", "value"=>4.0/255},
-        {"x"=>1, "y"=>0, "component"=>"B", "value"=>5.0/255},
-        {"x"=>0, "y"=>1, "component"=>"R", "value"=>100.0/255},
-        {"x"=>0, "y"=>1, "component"=>"G", "value"=>101.0/255},
-        {"x"=>0, "y"=>1, "component"=>"B", "value"=>102.0/255},
-        {"x"=>1, "y"=>1, "component"=>"R", "value"=>103.0/255},
-        {"x"=>1, "y"=>1, "component"=>"G", "value"=>104.0/255},
-        {"x"=>1, "y"=>1, "component"=>"B", "value"=>105.0/255},
-        {"x"=>0, "y"=>2, "component"=>"R", "value"=>250.0/255},
-        {"x"=>0, "y"=>2, "component"=>"G", "value"=>251.0/255},
-        {"x"=>0, "y"=>2, "component"=>"B", "value"=>252.0/255},
-        {"x"=>1, "y"=>2, "component"=>"R", "value"=>253.0/255},
-        {"x"=>1, "y"=>2, "component"=>"G", "value"=>254.0/255},
-        {"x"=>1, "y"=>2, "component"=>"B", "value"=>255.0/255}
+        {"type"=>"meta", "component"=>"pnm_type", "value"=>"P6"},
+        {"type"=>"meta", "component"=>"width", "value"=>2},
+        {"type"=>"meta", "component"=>"height", "value"=>3},
+        {"type"=>"meta", "component"=>"max", "value"=>255},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"R", "value"=>0.0},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"G", "value"=>1.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"B", "value"=>2.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"R", "value"=>3.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"G", "value"=>4.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"B", "value"=>5.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"R", "value"=>100.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"G", "value"=>101.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"B", "value"=>102.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"R", "value"=>103.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"G", "value"=>104.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"B", "value"=>105.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"R", "value"=>250.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"G", "value"=>251.0/255},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"B", "value"=>252.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"R", "value"=>253.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"G", "value"=>254.0/255},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"B", "value"=>255.0/255}
       ], t.map {|rec| rec.to_h })
     assert_equal(ppm, t.generate_pnm)
   end
@@ -145,28 +146,28 @@ class TestTbPNM < Test::Unit::TestCase
     t = Tb.parse_pnm(ppm)
     assert_equal(
       [
-        {"component"=>"pnm_type", "value"=>"P6"},
-        {"component"=>"width", "value"=>2},
-        {"component"=>"height", "value"=>3},
-        {"component"=>"max", "value"=>65535},
-        {"x"=>0, "y"=>0, "component"=>"R", "value"=>0.0},
-        {"x"=>0, "y"=>0, "component"=>"G", "value"=>1.0/65535},
-        {"x"=>0, "y"=>0, "component"=>"B", "value"=>2.0/65535},
-        {"x"=>1, "y"=>0, "component"=>"R", "value"=>3.0/65535},
-        {"x"=>1, "y"=>0, "component"=>"G", "value"=>4.0/65535},
-        {"x"=>1, "y"=>0, "component"=>"B", "value"=>5.0/65535},
-        {"x"=>0, "y"=>1, "component"=>"R", "value"=>100.0/65535},
-        {"x"=>0, "y"=>1, "component"=>"G", "value"=>101.0/65535},
-        {"x"=>0, "y"=>1, "component"=>"B", "value"=>102.0/65535},
-        {"x"=>1, "y"=>1, "component"=>"R", "value"=>103.0/65535},
-        {"x"=>1, "y"=>1, "component"=>"G", "value"=>104.0/65535},
-        {"x"=>1, "y"=>1, "component"=>"B", "value"=>105.0/65535},
-        {"x"=>0, "y"=>2, "component"=>"R", "value"=>250.0/65535},
-        {"x"=>0, "y"=>2, "component"=>"G", "value"=>251.0/65535},
-        {"x"=>0, "y"=>2, "component"=>"B", "value"=>252.0/65535},
-        {"x"=>1, "y"=>2, "component"=>"R", "value"=>253.0/65535},
-        {"x"=>1, "y"=>2, "component"=>"G", "value"=>254.0/65535},
-        {"x"=>1, "y"=>2, "component"=>"B", "value"=>255.0/65535}
+        {"type"=>"meta", "component"=>"pnm_type", "value"=>"P6"},
+        {"type"=>"meta", "component"=>"width", "value"=>2},
+        {"type"=>"meta", "component"=>"height", "value"=>3},
+        {"type"=>"meta", "component"=>"max", "value"=>65535},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"R", "value"=>0.0},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"G", "value"=>1.0/65535},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"B", "value"=>2.0/65535},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"R", "value"=>3.0/65535},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"G", "value"=>4.0/65535},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"B", "value"=>5.0/65535},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"R", "value"=>100.0/65535},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"G", "value"=>101.0/65535},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"B", "value"=>102.0/65535},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"R", "value"=>103.0/65535},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"G", "value"=>104.0/65535},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"B", "value"=>105.0/65535},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"R", "value"=>250.0/65535},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"G", "value"=>251.0/65535},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"B", "value"=>252.0/65535},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"R", "value"=>253.0/65535},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"G", "value"=>254.0/65535},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"B", "value"=>255.0/65535}
       ], t.map {|rec| rec.to_h })
     assert_equal(ppm, t.generate_pnm)
   end
@@ -176,17 +177,17 @@ class TestTbPNM < Test::Unit::TestCase
     t = Tb.parse_pnm(pbm)
     assert_equal(
       [
-        {"component"=>"pnm_type", "value"=>"P1"},
-        {"component"=>"width", "value"=>2},
-        {"component"=>"height", "value"=>3},
-        {"component"=>"max", "value"=>1},
-        {"component"=>"comment", "value"=>"foo"},
-        {"x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
-        {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
-        {"x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
-        {"x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
-        {"x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
-        {"x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
+        {"type"=>"meta", "component"=>"pnm_type", "value"=>"P1"},
+        {"type"=>"meta", "component"=>"width", "value"=>2},
+        {"type"=>"meta", "component"=>"height", "value"=>3},
+        {"type"=>"meta", "component"=>"max", "value"=>1},
+        {"type"=>"meta", "component"=>"comment", "value"=>"foo"},
+        {"type"=>"pixel", "x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
+        {"type"=>"pixel", "x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
+        {"type"=>"pixel", "x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
+        {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
+        {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
+        {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
       ], t.map {|rec| rec.to_h })
     assert_equal("P1\n\#foo\n2 3\n10\n11\n01\n", t.generate_pnm)
   end
@@ -295,7 +296,7 @@ class TestTbPNM < Test::Unit::TestCase
     Dir.mktmpdir {|d|
       File.open(fn="#{d}/foo.pbm", "w") {|f| f << "P4\n1 1\n\0" }
       t = Tb.load_pnm(fn)
-      assert_equal({"component"=>"pnm_type", "value"=>"P4"}, t.get_record(0).to_h)
+      assert_equal({"type"=>"meta", "component"=>"pnm_type", "value"=>"P4"}, t.get_record(0).to_h)
     }
   end
 
@@ -303,17 +304,17 @@ class TestTbPNM < Test::Unit::TestCase
     pbm = "P1\n2 3\n101101\n"
     r = Tb::PNMReader.new(pbm)
     assert_equal(
-      [["x", "y", "component", "value"],
-       [nil, nil, "pnm_type", "P1"],
-       [nil, nil, "width", 2],
-       [nil, nil, "height", 3],
-       [nil, nil, "max", 1],
-       [0, 0, "V", 0.0],
-       [1, 0, "V", 1.0],
-       [0, 1, "V", 0.0],
-       [1, 1, "V", 0.0],
-       [0, 2, "V", 1.0],
-       [1, 2, "V", 0.0]],
+      [["type", "x", "y", "component", "value"],
+       ["meta", nil, nil, "pnm_type", "P1"],
+       ["meta", nil, nil, "width", 2],
+       ["meta", nil, nil, "height", 3],
+       ["meta", nil, nil, "max", 1],
+       ["pixel", 0, 0, "V", 0.0],
+       ["pixel", 1, 0, "V", 1.0],
+       ["pixel", 0, 1, "V", 0.0],
+       ["pixel", 1, 1, "V", 0.0],
+       ["pixel", 0, 2, "V", 1.0],
+       ["pixel", 1, 2, "V", 0.0]],
        r.to_a)
   end
 
@@ -340,32 +341,32 @@ class TestTbPNM < Test::Unit::TestCase
         File.open("gb.pnm", "w") {|f| f << "P5\n1 1\n255\n\0" }
         File.open("pb.pnm", "w") {|f| f << "P6\n1 1\n255\n\0\0\0" }
 
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("ba.pbm") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pnm:ba") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("ga.pgm") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pnm:ga") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pa.ppm") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pnm:pa") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("bb.pbm") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pnm:bb") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("gb.pgm") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pnm:gb") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pb.ppm") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pnm:pb") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("ba.pbm") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pnm:ba") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("ga.pgm") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pnm:ga") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pa.ppm") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pnm:pa") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("bb.pbm") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pnm:bb") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("gb.pgm") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pnm:gb") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pb.ppm") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pnm:pb") {|r| r.header })
 
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pbm:ba") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pgm:ga") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("ppm:pa") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pbm:bb") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pgm:gb") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("ppm:pb") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pbm:ba") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pgm:ga") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("ppm:pa") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pbm:bb") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pgm:gb") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("ppm:pb") {|r| r.header })
 
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("ba.pnm") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("ga.pnm") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pa.pnm") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("bb.pnm") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("gb.pnm") {|r| r.header })
-        assert_equal(["x", "y", "component", "value"], Tb::Reader.open("pb.pnm") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("ba.pnm") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("ga.pnm") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pa.pnm") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("bb.pnm") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("gb.pnm") {|r| r.header })
+        assert_equal(["type", "x", "y", "component", "value"], Tb::Reader.open("pb.pnm") {|r| r.header })
       }
     }
   end

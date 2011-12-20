@@ -78,16 +78,16 @@ class Tb
       raise ArgumentError, "unsupported max value: #{max}" if 65535 < max
 
       @ary = [
-        ['x', 'y', 'component', 'value'],
-        [nil, nil, 'pnm_type', magic],
-        [nil, nil, 'width', w],
-        [nil, nil, 'height', h],
-        [nil, nil, 'max', max]
+        ['type', 'x', 'y', 'component', 'value'],
+        ['meta', nil, nil, 'pnm_type', magic],
+        ['meta', nil, nil, 'width', w],
+        ['meta', nil, nil, 'height', h],
+        ['meta', nil, nil, 'max', max]
       ]
 
       [wsp1, wsp2, wsp3].each {|wsp|
         next if !wsp
-        wsp.scan(/\#([^\r\n]*)[\r\n]/) { @ary << [nil, nil, 'comment', $1] }
+        wsp.scan(/\#([^\r\n]*)[\r\n]/) { @ary << ['meta', nil, nil, 'comment', $1] }
       }
 
       if /P[65]/ =~ magic # raw (binary) PPM/PGM
@@ -109,7 +109,7 @@ class Tb
         break if i == n
         y, x = (i / pixel_component.length).divmod(w)
         c = pixel_component[i % pixel_component.length]
-        @ary << [x, y, c, value.to_f / max]
+        @ary << ['pixel', x, y, c, value.to_f / max]
         i += 1
       }
       if i != n
