@@ -242,7 +242,7 @@ Tb::CatReader.open(argv) {|r|
   tmps.each {|(facet_x, facet_y), h|
     if $facet_x_field || $facet_y_field
       xorigin = $facet_x_field ? (checkers[$facet_x_field].categorical_index(facet_x)-1.0)/checkers[$facet_x_field].values.size : 0
-      yorigin = $facet_y_field ? (checkers[$facet_y_field].categorical_index(facet_y)-1.0)/checkers[$facet_y_field].values.size : 0
+      yorigin = $facet_y_field ? 1.0-(checkers[$facet_y_field].categorical_index(facet_y)-0.0)/checkers[$facet_y_field].values.size : 0
       gnuplot_command << "set origin #{xorigin},#{yorigin}\n"
     end
     gnuplot_command << 'plot '
