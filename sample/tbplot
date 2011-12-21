@@ -221,11 +221,11 @@ Tb::CatReader.open(argv) {|r|
   end
   if 0 < checkers[$x_field].time
     gnuplot_command << "set xdata time\n"
-    gnuplot_command << "set format x #{gnuplot_escape_string(x_checker.tic_format)}\n"
+    gnuplot_command << "set format x #{gnuplot_escape_string(checkers[$x_field].tic_format)}\n"
   end
   if 0 < checkers[$y_field].time
     gnuplot_command << "set ydata time\n"
-    gnuplot_command << "set format y #{gnuplot_escape_string(y_checker.tic_format)}\n"
+    gnuplot_command << "set format y #{gnuplot_escape_string(checkers[$y_field].tic_format)}\n"
   end
   gnuplot_command << "set xlabel #{gnuplot_escape_string($x_field)}\n"
   gnuplot_command << "set ylabel #{gnuplot_escape_string($y_field)}\n"
