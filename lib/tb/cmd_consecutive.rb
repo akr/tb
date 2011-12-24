@@ -29,7 +29,7 @@ Tb::Cmd.default_option[:opt_consecutive_n] = 2
 def (Tb::Cmd).op_consecutive
   op = OptionParser.new
   op.banner = 'Usage: tb consecutive [OPTS] [TABLE ...]'
-  define_common_option(op, "ho", "--no-pager")
+  define_common_option(op, "hNo", "--no-pager")
   op.def_option('-n NUM', 'gather NUM records.  (default: 2)') {|n| Tb::Cmd.opt_consecutive_n = n.to_i }
   op
 end
@@ -43,12 +43,9 @@ Example:
   4,5,6
   7,8,9
   % tb consecutive tstcsv
-  a_1,b_1,c_1,a_2,b_2,c_2
-  0,1,2,4,5,6
-  4,5,6,7,8,9
-
-Note:
-* Header fields must exist.  A fields which don't have header is ignored.
+  a_1,a_2,b_1,b_2,c_1,c_2
+  0,4,1,5,2,6
+  4,7,5,8,6,9
 End
 
 def (Tb::Cmd).main_consecutive(argv)
@@ -56,25 +53,25 @@ def (Tb::Cmd).main_consecutive(argv)
   exit_if_help('consecutive')
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
-  header = creader.header
   consecutive_header = []
-  Tb::Cmd.opt_consecutive_n.times {|i|
-    consecutive_header.concat header.map {|f| "#{f}_#{i+1}" }
+  creader.header.each {|f|
+    Tb::Cmd.opt_consecutive_n.times {|i|
+      consecutive_header << "#{f}_#{i+1}"
+    }
   }
   with_table_stream_output {|gen|
-    if !Tb::Cmd.opt_N
-      gen << consecutive_header
-    end
+    gen.output_header consecutive_header
     buf = []
     creader.each {|ary|
-      if header.length < ary.length
-        ary = ary[0, header.length]
-      elsif ary.length < header.length
-        ary.concat([nil]*(header.length-ary.length))
-      end
       buf << ary
       if buf.length == Tb::Cmd.opt_consecutive_n
-        gen << buf.flatten
+        ary2 = []
+        buf.each_with_index {|a, i|
+          a.each_with_index {|e, j|
+            ary2[j*Tb::Cmd.opt_consecutive_n + i] = e
+          }
+        }
+        gen << ary2
         buf.shift
       end
     }
