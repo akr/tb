@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = 'tb'
-  s.version = '0.1'
-  s.date = '2011-12-01'
+  s.version = '0.2'
+  s.date = '2011-12-29'
   s.author = 'Tanaka Akira'
   s.email = 'akr@fsij.org'
   s.files = %w[
@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
     lib/tb/basic.rb
     lib/tb/catreader.rb
     lib/tb/cmd_cat.rb
+    lib/tb/cmd_consecutive.rb
     lib/tb/cmd_crop.rb
     lib/tb/cmd_cross.rb
     lib/tb/cmd_csv.rb
@@ -21,12 +22,15 @@ Gem::Specification.new do |s|
     lib/tb/cmd_help.rb
     lib/tb/cmd_join.rb
     lib/tb/cmd_json.rb
+    lib/tb/cmd_ls.rb
     lib/tb/cmd_mheader.rb
     lib/tb/cmd_newfield.rb
+    lib/tb/cmd_pnm.rb
     lib/tb/cmd_pp.rb
     lib/tb/cmd_rename.rb
     lib/tb/cmd_shape.rb
     lib/tb/cmd_sort.rb
+    lib/tb/cmd_svn_log.rb
     lib/tb/cmd_tsv.rb
     lib/tb/cmd_yaml.rb
     lib/tb/cmdmain.rb
@@ -35,14 +39,20 @@ Gem::Specification.new do |s|
     lib/tb/csv.rb
     lib/tb/enumerable.rb
     lib/tb/fieldset.rb
+    lib/tb/pager.rb
+    lib/tb/pnm.rb
     lib/tb/reader.rb
     lib/tb/record.rb
+    lib/tb/ropen.rb
     lib/tb/search.rb
     lib/tb/tsv.rb
+    sample/colors.ppm
     sample/excel2csv
+    sample/gradation.pgm
     sample/langs.csv
     sample/poi-xls2csv.rb
     sample/poi-xls2csv.sh
+    sample/tbplot
     test-all-cov.rb
     test-all.rb
   ]
@@ -50,6 +60,7 @@ Gem::Specification.new do |s|
     test/test_basic.rb
     test/test_catreader.rb
     test/test_cmd_cat.rb
+    test/test_cmd_consecutive.rb
     test/test_cmd_crop.rb
     test/test_cmd_cross.rb
     test/test_cmd_csv.rb
@@ -63,6 +74,7 @@ Gem::Specification.new do |s|
     test/test_cmd_ls.rb
     test/test_cmd_mheader.rb
     test/test_cmd_newfield.rb
+    test/test_cmd_pnm.rb
     test/test_cmd_pp.rb
     test/test_cmd_rename.rb
     test/test_cmd_shape.rb
@@ -70,9 +82,12 @@ Gem::Specification.new do |s|
     test/test_cmd_tsv.rb
     test/test_cmd_yaml.rb
     test/test_cmdtty.rb
+    test/test_cmdutil.rb
     test/test_csv.rb
     test/test_enumerable.rb
     test/test_fieldset.rb
+    test/test_pager.rb
+    test/test_pnm.rb
     test/test_reader.rb
     test/test_record.rb
     test/test_search.rb
@@ -84,6 +99,11 @@ Gem::Specification.new do |s|
   s.executables << 'tb'
   s.summary = 'manipulation tool for table: CSV, TSV, etc.'
   s.description = <<'End'
-manipulation tool for table: CSV, TSV, etc.
+tb is a manipulation tool for table: CSV, TSV, etc.
+
+tb provides a command and a library for manipulating tables:
+Unix filter like operations (grep, sort, cat, cut, ls, etc.),
+SQL like operations (join, group, etc.),
+and more.
 End
 end
