@@ -22,23 +22,50 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-Tb::Cmd.subcommands << 'tsv'
+Tb::Cmd.subcommands << 'to-pp'
 
-def (Tb::Cmd).op_tsv
+def (Tb::Cmd).op_to_pp
   op = OptionParser.new
-  op.banner = "Usage: tb tsv [OPTS] [TABLE]\n" +
-    "Convert a table to TSV (Tab Separated Value)."
+  op.banner = "Usage: tb to-pp [OPTS] [TABLE]\n" +
+    "Convert a table to pretty printed format."
   define_common_option(op, "hNo", "--no-pager")
   op
 end
 
-def (Tb::Cmd).main_tsv(argv)
-  op_tsv.parse!(argv)
-  exit_if_help('tsv')
-  argv = ['-'] if argv.empty?
-  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
+def (Tb::Cmd).main_to_pp(argv)
+  op_to_pp.parse!(argv)
+  exit_if_help('to-pp')
+  argv.unshift '-' if argv.empty?
   with_output {|out|
-    tbl_generate_tsv(tbl, out)
+    argv.each {|filename|
+      tablereader_open(filename) {|tblreader|
+        tblreader.each {|ary|
+          a = []
+          ary.each_with_index {|v, i|
+            next if v.nil?
+            a << [tblreader.field_from_index_ex(i), v]
+          }
+          q = PP.new(out, 79)
+          q.guard_inspect_key {
+            q.group(1, '{', '}') {
+              q.seplist(a, nil, :each) {|kv|
+                k, v = kv
+                q.group {
+                  q.pp k
+                  q.text '=>'
+                  q.group(1) {
+                    q.breakable ''
+                    q.pp v
+                  }
+                }
+              }
+            }
+          }
+          q.flush
+          out << "\n"
+        }
+      }
+    }
   }
 end
 

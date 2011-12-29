@@ -1,8 +1,12 @@
 require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
+begin
+  require 'json'
+rescue LoadError
+end
 
-class TestTbCmdPP < Test::Unit::TestCase
+class TestTbCmdToJSON < Test::Unit::TestCase
   def setup
     Tb::Cmd.reset_option
     @curdir = Dir.pwd
@@ -21,21 +25,18 @@ class TestTbCmdPP < Test::Unit::TestCase
       0,1,2
       4,5,6
     End
-    Tb::Cmd.main_pp(['-o', o="o.pp", i])
+    Tb::Cmd.main_to_json(['-o', o="o.json", i])
     assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, ''))
-      { "a" => "0", "b" => "1", "c" => "2" }
-      { "a" => "4", "b" => "5", "c" => "6" }
-    End
-  end
-
-  def test_extend
-    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
-      a,b
-      0,1,2,3
-    End
-    Tb::Cmd.main_pp(['-o', o="o.pp", i])
-    assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, ''))
-      { "a" => "0", "b" => "1", "1" => "2", "2" => "3" }
+      [{
+        "a": "0",
+        "b": "1",
+        "c": "2"
+      },
+      {
+        "a": "4",
+        "b": "5",
+        "c": "6"
+      }]
     End
   end
 
@@ -50,13 +51,25 @@ class TestTbCmdPP < Test::Unit::TestCase
       5,6
       7,8
     End
-    Tb::Cmd.main_pp(['-o', o="o.csv", i1, i2])
-    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
-      {"a"=>"1", "b"=>"2"}
-      {"a"=>"3", "b"=>"4"}
-      {"b"=>"5", "a"=>"6"}
-      {"b"=>"7", "a"=>"8"}
+    Tb::Cmd.main_to_json(['-o', o="o.csv", i1, i2])
+    assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, ''))
+      [{
+        "a": "1",
+        "b": "2"
+      },
+      {
+        "a": "3",
+        "b": "4"
+      },
+      {
+        "b": "5",
+        "a": "6"
+      },
+      {
+        "b": "7",
+        "a": "8"
+      }]
     End
   end
 
-end
+end if defined?(JSON)

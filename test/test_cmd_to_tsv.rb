@@ -2,7 +2,7 @@ require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
 
-class TestTbCmdTSV < Test::Unit::TestCase
+class TestTbCmdToTSV < Test::Unit::TestCase
   def setup
     Tb::Cmd.reset_option
     @curdir = Dir.pwd
@@ -21,7 +21,7 @@ class TestTbCmdTSV < Test::Unit::TestCase
       0,1,2
       4,5,6
     End
-    Tb::Cmd.main_tsv(['-o', o="o.tsv", i])
+    Tb::Cmd.main_to_tsv(['-o', o="o.tsv", i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a\tb\tc
       0\t1\t2
@@ -35,7 +35,7 @@ class TestTbCmdTSV < Test::Unit::TestCase
       0,1,2
       4,5,6
     End
-    Tb::Cmd.main_tsv(['-o', o="o.tsv", '-N', i])
+    Tb::Cmd.main_to_tsv(['-o', o="o.tsv", '-N', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a\tb\tc
       0\t1\t2
@@ -54,7 +54,7 @@ class TestTbCmdTSV < Test::Unit::TestCase
       5,6
       7,8
     End
-    Tb::Cmd.main_tsv(['-o', o="o.csv", i1, i2])
+    Tb::Cmd.main_to_tsv(['-o', o="o.csv", i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a\tb
       1\t2

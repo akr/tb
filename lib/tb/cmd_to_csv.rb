@@ -22,23 +22,22 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-Tb::Cmd.subcommands << 'pnm'
+Tb::Cmd.subcommands << 'to-csv'
 
-def (Tb::Cmd).op_pnm
+def (Tb::Cmd).op_to_csv
   op = OptionParser.new
-  op.banner = "Usage: tb pnm [OPTS] [TABLE]\n" +
-    "Convert a table to PNM (Portable Anymap: PPM, PGM, PBM)."
+  op.banner = "Usage: tb to-csv [OPTS] [TABLE ...]\n" +
+    "Convert a table to CSV (Comma Separated Value)."
   define_common_option(op, "hNo", "--no-pager")
   op
 end
 
-def (Tb::Cmd).main_pnm(argv)
-  op_pnm.parse!(argv)
-  exit_if_help('pnm')
+def (Tb::Cmd).main_to_csv(argv)
+  op_to_csv.parse!(argv)
+  exit_if_help('to-csv')
   argv = ['-'] if argv.empty?
   tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
   with_output {|out|
-    tbl.generate_pnm(out)
+    tbl_generate_csv(tbl, out)
   }
 end
-

@@ -67,7 +67,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
         s.winsize = [2, 80]
         th = reader_thread(m)
         with_stdout(s) {
-          Tb::Cmd.main_csv([i])
+          Tb::Cmd.main_to_csv([i])
         }
         s.close
         result = th.value
@@ -92,7 +92,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
         s.winsize = [24, 80]
         th = reader_thread(m)
         with_stdout(s) {
-          Tb::Cmd.main_csv([i])
+          Tb::Cmd.main_to_csv([i])
         }
         s.close
         result = th.value
@@ -116,7 +116,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
         s.winsize = [3, 10]
         th = reader_thread(m)
         with_stdout(s) {
-          Tb::Cmd.main_csv([i])
+          Tb::Cmd.main_to_csv([i])
         }
         s.close
         result = th.value
@@ -139,7 +139,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
         s.winsize = [0, 0]
         th = reader_thread(m)
         with_stdout(s) {
-          Tb::Cmd.main_csv([i])
+          Tb::Cmd.main_to_csv([i])
         }
         s.close
         result = th.value

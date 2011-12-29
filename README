@@ -128,12 +128,12 @@ There are more subcommands.
   % tb help
   Usage:
     tb help [OPTS] [SUBCOMMAND]
-    tb csv [OPTS] [TABLE ...]
-    tb tsv [OPTS] [TABLE]
-    tb pnm [OPTS] [TABLE]
-    tb json [OPTS] [TABLE]
-    tb yaml [OPTS] [TABLE]
-    tb pp [OPTS] [TABLE]
+    tb to-csv [OPTS] [TABLE ...]
+    tb to-tsv [OPTS] [TABLE]
+    tb to-pnm [OPTS] [TABLE]
+    tb to-json [OPTS] [TABLE]
+    tb to-yaml [OPTS] [TABLE]
+    tb to-pp [OPTS] [TABLE]
     tb grep [OPTS] REGEXP [TABLE ...]
     tb gsub [OPTS] REGEXP STRING [TABLE ...]
     tb sort [OPTS] [TABLE]
@@ -156,12 +156,12 @@ There are more subcommands.
 tb command has many subcommands.
 
   help        : Show help message of tb command.
-  csv         : Convert a table to CSV (Comma Separated Value).
-  tsv         : Convert a table to TSV (Tab Separated Value).
-  pnm         : Convert a table to PNM (Portable Anymap: PPM, PGM, PBM).
-  json        : Convert a table to JSON (JavaScript Object Notation).
-  yaml        : Convert a table to YAML (YAML Ain't a Markup Language).
-  pp          : Convert a table to pretty printed format.
+  to-csv      : Convert a table to CSV (Comma Separated Value).
+  to-tsv      : Convert a table to TSV (Tab Separated Value).
+  to-pnm      : Convert a table to PNM (Portable Anymap: PPM, PGM, PBM).
+  to-json     : Convert a table to JSON (JavaScript Object Notation).
+  to-yaml     : Convert a table to YAML (YAML Ain't a Markup Language).
+  to-pp       : Convert a table to pretty printed format.
   grep        : Search rows using regexp or ruby expression.
   gsub        : Substitute cells.
   sort        : Sort rows.

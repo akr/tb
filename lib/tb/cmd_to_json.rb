@@ -22,22 +22,40 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-Tb::Cmd.subcommands << 'csv'
+Tb::Cmd.subcommands << 'to-json'
 
-def (Tb::Cmd).op_csv
+def (Tb::Cmd).op_to_json
   op = OptionParser.new
-  op.banner = "Usage: tb csv [OPTS] [TABLE ...]\n" +
-    "Convert a table to CSV (Comma Separated Value)."
+  op.banner = "Usage: tb to-json [OPTS] [TABLE]\n" +
+    "Convert a table to JSON (JavaScript Object Notation)."
   define_common_option(op, "hNo", "--no-pager")
   op
 end
 
-def (Tb::Cmd).main_csv(argv)
-  op_csv.parse!(argv)
-  exit_if_help('csv')
+def (Tb::Cmd).main_to_json(argv)
+  require 'json'
+  op_to_json.parse!(argv)
+  exit_if_help('to-json')
   argv = ['-'] if argv.empty?
-  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
   with_output {|out|
-    tbl_generate_csv(tbl, out)
+    out.print "["
+    sep = nil
+    argv.each {|filename|
+      sep = ",\n\n" if sep
+      tablereader_open(filename) {|tblreader|
+        tblreader.each {|ary|
+          out.print sep if sep
+          header = tblreader.header
+          h = {}
+          ary.each_with_index {|e, i|
+            h[header[i]] = e if !e.nil?
+          }
+          out.print JSON.pretty_generate(h)
+          sep = ",\n"
+        }
+      }
+    }
+    out.puts "]"
   }
 end
+

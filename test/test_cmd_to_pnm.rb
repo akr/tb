@@ -2,7 +2,7 @@ require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
 
-class TestTbCmdPNM < Test::Unit::TestCase
+class TestTbCmdToPNM < Test::Unit::TestCase
   def setup
     Tb::Cmd.reset_option
     @curdir = Dir.pwd
@@ -23,7 +23,7 @@ class TestTbCmdPNM < Test::Unit::TestCase
       11
       01
     End
-    Tb::Cmd.main_pnm(['-o', o="o.ppm", i])
+    Tb::Cmd.main_to_pnm(['-o', o="o.ppm", i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       P1
       2 3

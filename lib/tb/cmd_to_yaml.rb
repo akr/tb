@@ -22,40 +22,27 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-Tb::Cmd.subcommands << 'json'
+Tb::Cmd.subcommands << 'to-yaml'
 
-def (Tb::Cmd).op_json
+def (Tb::Cmd).op_to_yaml
   op = OptionParser.new
-  op.banner = "Usage: tb json [OPTS] [TABLE]\n" +
-    "Convert a table to JSON (JavaScript Object Notation)."
+  op.banner = "Usage: tb to-yaml [OPTS] [TABLE]\n" +
+    "Convert a table to YAML (YAML Ain't a Markup Language)."
   define_common_option(op, "hNo", "--no-pager")
   op
 end
 
-def (Tb::Cmd).main_json(argv)
-  require 'json'
-  op_json.parse!(argv)
-  exit_if_help('json')
+def (Tb::Cmd).main_to_yaml(argv)
+  require 'yaml'
+  op_to_yaml.parse!(argv)
+  exit_if_help('to-yaml')
   argv = ['-'] if argv.empty?
+  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
+  ary = tbl.map {|rec| rec.to_h }
   with_output {|out|
-    out.print "["
-    sep = nil
-    argv.each {|filename|
-      sep = ",\n\n" if sep
-      tablereader_open(filename) {|tblreader|
-        tblreader.each {|ary|
-          out.print sep if sep
-          header = tblreader.header
-          h = {}
-          ary.each_with_index {|e, i|
-            h[header[i]] = e if !e.nil?
-          }
-          out.print JSON.pretty_generate(h)
-          sep = ",\n"
-        }
-      }
-    }
-    out.puts "]"
+    YAML.dump(ary, out)
+    out.puts
   }
 end
+
 

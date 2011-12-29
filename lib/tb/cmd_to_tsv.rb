@@ -22,27 +22,23 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-Tb::Cmd.subcommands << 'yaml'
+Tb::Cmd.subcommands << 'to-tsv'
 
-def (Tb::Cmd).op_yaml
+def (Tb::Cmd).op_to_tsv
   op = OptionParser.new
-  op.banner = "Usage: tb yaml [OPTS] [TABLE]\n" +
-    "Convert a table to YAML (YAML Ain't a Markup Language)."
+  op.banner = "Usage: tb to-tsv [OPTS] [TABLE]\n" +
+    "Convert a table to TSV (Tab Separated Value)."
   define_common_option(op, "hNo", "--no-pager")
   op
 end
 
-def (Tb::Cmd).main_yaml(argv)
-  require 'yaml'
-  op_yaml.parse!(argv)
-  exit_if_help('yaml')
+def (Tb::Cmd).main_to_tsv(argv)
+  op_to_tsv.parse!(argv)
+  exit_if_help('to-tsv')
   argv = ['-'] if argv.empty?
   tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
-  ary = tbl.map {|rec| rec.to_h }
   with_output {|out|
-    YAML.dump(ary, out)
-    out.puts
+    tbl_generate_tsv(tbl, out)
   }
 end
-
 

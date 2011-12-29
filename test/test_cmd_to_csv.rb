@@ -2,7 +2,7 @@ require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
 
-class TestTbCmdCSV < Test::Unit::TestCase
+class TestTbCmdToCSV < Test::Unit::TestCase
   def setup
     Tb::Cmd.reset_option
     @curdir = Dir.pwd
@@ -21,7 +21,7 @@ class TestTbCmdCSV < Test::Unit::TestCase
       0\t1\t2
       4\t5\t6
     End
-    Tb::Cmd.main_csv(['-o', o="o.csv", i])
+    Tb::Cmd.main_to_csv(['-o', o="o.csv", i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b,c
       0,1,2
@@ -35,7 +35,7 @@ class TestTbCmdCSV < Test::Unit::TestCase
       0,1,2
       4,5,6
     End
-    Tb::Cmd.main_csv(['-o', o="o.csv", i])
+    Tb::Cmd.main_to_csv(['-o', o="o.csv", i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b,1
       0,1,2
@@ -49,7 +49,7 @@ class TestTbCmdCSV < Test::Unit::TestCase
       0,1,2
       4,5,6
     End
-    Tb::Cmd.main_csv(['-o', o="o.csv", '-N', i])
+    Tb::Cmd.main_to_csv(['-o', o="o.csv", '-N', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,,
       0,1,2
@@ -66,7 +66,7 @@ class TestTbCmdCSV < Test::Unit::TestCase
     save = STDIN.dup
     input = File.open(i)
     STDIN.reopen(input)
-    Tb::Cmd.main_csv(['-o', o="o.csv"])
+    Tb::Cmd.main_to_csv(['-o', o="o.csv"])
     STDIN.reopen(save)
     save.close
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
@@ -90,7 +90,7 @@ class TestTbCmdCSV < Test::Unit::TestCase
     save = STDOUT.dup
     STDOUT.reopen(w)
     w.close
-    Tb::Cmd.main_csv([i])
+    Tb::Cmd.main_to_csv([i])
     STDOUT.reopen(save)
     save.close
     result = th.value
@@ -116,7 +116,7 @@ class TestTbCmdCSV < Test::Unit::TestCase
       5,6
       7,8
     End
-    Tb::Cmd.main_csv(['-o', o="o.csv", i1, i2])
+    Tb::Cmd.main_to_csv(['-o', o="o.csv", i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b
       1,2

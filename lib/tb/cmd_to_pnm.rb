@@ -22,50 +22,23 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-Tb::Cmd.subcommands << 'pp'
+Tb::Cmd.subcommands << 'to-pnm'
 
-def (Tb::Cmd).op_pp
+def (Tb::Cmd).op_to_pnm
   op = OptionParser.new
-  op.banner = "Usage: tb pp [OPTS] [TABLE]\n" +
-    "Convert a table to pretty printed format."
+  op.banner = "Usage: tb to-pnm [OPTS] [TABLE]\n" +
+    "Convert a table to PNM (Portable Anymap: PPM, PGM, PBM)."
   define_common_option(op, "hNo", "--no-pager")
   op
 end
 
-def (Tb::Cmd).main_pp(argv)
-  op_pp.parse!(argv)
-  exit_if_help('pp')
-  argv.unshift '-' if argv.empty?
+def (Tb::Cmd).main_to_pnm(argv)
+  op_to_pnm.parse!(argv)
+  exit_if_help('to-pnm')
+  argv = ['-'] if argv.empty?
+  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
   with_output {|out|
-    argv.each {|filename|
-      tablereader_open(filename) {|tblreader|
-        tblreader.each {|ary|
-          a = []
-          ary.each_with_index {|v, i|
-            next if v.nil?
-            a << [tblreader.field_from_index_ex(i), v]
-          }
-          q = PP.new(out, 79)
-          q.guard_inspect_key {
-            q.group(1, '{', '}') {
-              q.seplist(a, nil, :each) {|kv|
-                k, v = kv
-                q.group {
-                  q.pp k
-                  q.text '=>'
-                  q.group(1) {
-                    q.breakable ''
-                    q.pp v
-                  }
-                }
-              }
-            }
-          }
-          q.flush
-          out << "\n"
-        }
-      }
-    }
+    tbl.generate_pnm(out)
   }
 end
 
