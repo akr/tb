@@ -155,29 +155,29 @@ There are more subcommands.
 
 tb command has many subcommands.
 
-  help     : show help message of tb command.
-  csv      : convert a table to CSV (Comma Separated Value).
-  tsv      : convert a table to TSV (Tab Separated Value).
-  pnm      : convert a table to PNM (Portable Anymap: PPM, PGM, PBM)
-  json     : convert a table to JSON (JavaScript Object Notation).
-  yaml     : convert a table to YAML (YAML Ain't a Markup Language).
-  pp       : convert a table to pretty printed format.
-  grep     : search rows using regexp or ruby expression.
-  gsub     : substitute cells.
-  sort     : sort rows.
-  cut      : select columns.
-  rename   : rename field names.
-  newfield : add a field.
-  cat      : concatenate tables vertically.
-  join     : concatenate tables horizontally as left/right/full natural join.
-  consecutive : concatenate consecutive rows.
-  group    : group and aggregate rows.
-  cross    : create a contingency table.
-  shape    : show table size.
-  mheader  : collapse multi rows header.
-  crop     : extract rectangle in a table.
-  ls       : list directory entries as a table.
-  svn-log  : show the SVN log as a table.
+  help        : Show help message of tb command.
+  csv         : Convert a table to CSV (Comma Separated Value).
+  tsv         : Convert a table to TSV (Tab Separated Value).
+  pnm         : Convert a table to PNM (Portable Anymap: PPM, PGM, PBM).
+  json        : Convert a table to JSON (JavaScript Object Notation).
+  yaml        : Convert a table to YAML (YAML Ain't a Markup Language).
+  pp          : Convert a table to pretty printed format.
+  grep        : Search rows using regexp or ruby expression.
+  gsub        : Substitute cells.
+  sort        : Sort rows.
+  cut         : Select columns.
+  rename      : Rename field names.
+  newfield    : Add a field.
+  cat         : Concatenate tables vertically.
+  join        : Concatenate tables horizontally as left/right/full natural join.
+  consecutive : Concatenate consecutive rows.
+  group       : Group and aggregate rows.
+  cross       : Create a contingency table.
+  shape       : Show table size.
+  mheader     : Collapse multi rows header.
+  crop        : Extract rectangle in a table.
+  ls          : List directory entries as a table.
+  svn-log     : Show the SVN log as a table.
 
 == Install
 
