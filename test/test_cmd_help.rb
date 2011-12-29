@@ -187,4 +187,11 @@ class TestTbCmdHelp < Test::Unit::TestCase
     assert_match(/unexpected subcommand/, exc.message)
   end
 
+  def test_help_s
+    assert_exit_success(['help', '-o', o="msg", '-s'])
+    msg = File.read(o)
+    assert_match(/Show help message of tb command/, msg)
+    assert_no_match(/Usage:/, msg)
+  end
+
 end

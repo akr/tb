@@ -24,6 +24,8 @@
 
 Tb::Cmd.subcommands << 'help'
 
+Tb::Cmd.default_option[:opt_help_s] = nil
+
 def (Tb::Cmd).usage_list_subcommands
   with_output {|f|
     f.print <<'End'
@@ -31,8 +33,22 @@ Usage:
 End
     Tb::Cmd.subcommands.each {|subcommand|
       banner = self.subcommand_send("op", subcommand).banner
-      banner = banner[/^Usage: (.*)/, 1]
-      f.puts "  " + banner
+      usage = banner[/^Usage: (.*)/, 1]
+      f.puts "  " + usage
+    }
+  }
+end
+
+def (Tb::Cmd).list_summary_of_subcommands
+  with_output {|f|
+    f.print <<'End'
+End
+    subcommand_maxlen = Tb::Cmd.subcommands.map {|subcommand| subcommand.length }.max
+    fmt = "%-#{subcommand_maxlen}s : %s"
+    Tb::Cmd.subcommands.each {|subcommand|
+      banner = self.subcommand_send("op", subcommand).banner
+      summary = banner[/^Usage: (.*)\n(.*)/, 2]
+      f.puts(fmt % [subcommand, summary])
     }
   }
 end
@@ -42,6 +58,7 @@ def (Tb::Cmd).op_help
   op.banner = "Usage: tb help [OPTS] [SUBCOMMAND]\n" +
     "Show help message of tb command."
   define_common_option(op, "hvo", "--no-pager")
+  op.def_option('-s', 'show summary of subcommands') { Tb::Cmd.opt_help_s = true }
   op
 end
 
@@ -86,7 +103,10 @@ end
 
 def (Tb::Cmd).main_help(argv)
   op_help.parse!(argv)
-  if argv.empty?
+  if Tb::Cmd.opt_help_s
+    list_summary_of_subcommands
+    return true
+  elsif argv.empty?
     if Tb::Cmd.opt_help == 0
       usage_list_subcommands
       return true
