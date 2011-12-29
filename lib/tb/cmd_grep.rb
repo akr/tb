@@ -31,7 +31,8 @@ Tb::Cmd.default_option[:opt_grep_v] = nil
 
 def (Tb::Cmd).op_grep
   op = OptionParser.new
-  op.banner = 'Usage: tb grep [OPTS] REGEXP [TABLE ...]'
+  op.banner = "Usage: tb grep [OPTS] REGEXP [TABLE ...]\n" +
+    "Search rows using regexp or ruby expression."
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-f FIELD', 'search field') {|field| Tb::Cmd.opt_grep_f = field }
   op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| Tb::Cmd.opt_grep_e = pattern }

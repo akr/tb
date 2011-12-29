@@ -26,7 +26,8 @@ Tb::Cmd.subcommands << 'json'
 
 def (Tb::Cmd).op_json
   op = OptionParser.new
-  op.banner = 'Usage: tb json [OPTS] [TABLE]'
+  op.banner = "Usage: tb json [OPTS] [TABLE]\n" +
+    "Convert a table to JSON (JavaScript Object Notation)."
   define_common_option(op, "hNo", "--no-pager")
   op
 end

@@ -29,7 +29,8 @@ Tb::Cmd.default_option[:opt_gsub_f] = nil
 
 def (Tb::Cmd).op_gsub
   op = OptionParser.new
-  op.banner = 'Usage: tb gsub [OPTS] REGEXP STRING [TABLE ...]'
+  op.banner = "Usage: tb gsub [OPTS] REGEXP STRING [TABLE ...]\n" +
+    "Substitute cells."
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-f FIELD', 'target field') {|field| Tb::Cmd.opt_gsub_f = field }
   op.def_option('-e REGEXP', 'specify regexp, possibly begins with a hyphen') {|pattern| Tb::Cmd.opt_gsub_e = pattern }

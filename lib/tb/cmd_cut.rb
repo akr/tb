@@ -28,7 +28,8 @@ Tb::Cmd.default_option[:opt_cut_v] = nil
 
 def (Tb::Cmd).op_cut
   op = OptionParser.new
-  op.banner = 'Usage: tb cut [OPTS] FIELD,... [TABLE]'
+  op.banner = "Usage: tb cut [OPTS] FIELD,... [TABLE]\n" +
+    "Select columns."
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-v', 'invert match') { Tb::Cmd.opt_cut_v = true }
   op

@@ -31,7 +31,8 @@ Tb::Cmd.default_option[:opt_svn_log_xml] = nil
 
 def (Tb::Cmd).op_svn_log
   op = OptionParser.new
-  op.banner = 'Usage: tb svn-log [OPTS] -- [SVN-LOG-ARGS]'
+  op.banner = "Usage: tb svn-log [OPTS] -- [SVN-LOG-ARGS]\n" +
+    "Show the SVN log as a table."
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('--svn-command COMMAND', 'specify the svn command (default: svn)') {|command| Tb::Cmd.opt_svn_log_svn_command = command }
   op.def_option('--svn-log-xml FILE', 'specify the result svn log --xml') {|filename| Tb::Cmd.opt_svn_log_xml = filename }

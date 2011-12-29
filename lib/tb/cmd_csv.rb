@@ -26,7 +26,8 @@ Tb::Cmd.subcommands << 'csv'
 
 def (Tb::Cmd).op_csv
   op = OptionParser.new
-  op.banner = 'Usage: tb csv [OPTS] [TABLE ...]'
+  op.banner = "Usage: tb csv [OPTS] [TABLE ...]\n" +
+    "Convert a table to CSV (Comma Separated Value)."
   define_common_option(op, "hNo", "--no-pager")
   op
 end

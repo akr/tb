@@ -26,7 +26,8 @@ Tb::Cmd.subcommands << 'pp'
 
 def (Tb::Cmd).op_pp
   op = OptionParser.new
-  op.banner = 'Usage: tb pp [OPTS] [TABLE]'
+  op.banner = "Usage: tb pp [OPTS] [TABLE]\n" +
+    "Convert a table to pretty printed format."
   define_common_option(op, "hNo", "--no-pager")
   op
 end

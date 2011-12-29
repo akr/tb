@@ -28,7 +28,8 @@ Tb::Cmd.default_option[:opt_sort_f] = nil
 
 def (Tb::Cmd).op_sort
   op = OptionParser.new
-  op.banner = 'Usage: tb sort [OPTS] [TABLE]'
+  op.banner = "Usage: tb sort [OPTS] [TABLE]\n" +
+    "Sort rows."
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-f FIELD,...', 'specify sort keys') {|fs| Tb::Cmd.opt_sort_f = fs }
   op

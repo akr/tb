@@ -31,7 +31,8 @@ Tb::Cmd.default_option[:opt_ls_R] = nil
 
 def (Tb::Cmd).op_ls
   op = OptionParser.new
-  op.banner = 'Usage: tb ls [OPTS] [FILE ...]'
+  op.banner = "Usage: tb ls [OPTS] [FILE ...]\n" +
+    "List directory entries as a table."
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-a', 'don\'t ignore filenames beginning with a period.') {|fs| Tb::Cmd.opt_ls_a = true }
   op.def_option('-A', 'don\'t ignore filenames beginning with a period, except "." and "..".') {|fs| Tb::Cmd.opt_ls_A = true }

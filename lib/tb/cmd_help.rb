@@ -30,14 +30,17 @@ def (Tb::Cmd).usage_list_subcommands
 Usage:
 End
     Tb::Cmd.subcommands.each {|subcommand|
-      f.puts "  " + self.subcommand_send("op", subcommand).banner.sub(/\AUsage: /, '')
+      banner = self.subcommand_send("op", subcommand).banner
+      banner = banner[/^Usage: (.*)/, 1]
+      f.puts "  " + banner
     }
   }
 end
 
 def (Tb::Cmd).op_help
   op = OptionParser.new
-  op.banner = 'Usage: tb help [OPTS] [SUBCOMMAND]'
+  op.banner = "Usage: tb help [OPTS] [SUBCOMMAND]\n" +
+    "Show help message of tb command."
   define_common_option(op, "hvo", "--no-pager")
   op
 end

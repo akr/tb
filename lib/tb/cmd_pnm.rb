@@ -26,7 +26,8 @@ Tb::Cmd.subcommands << 'pnm'
 
 def (Tb::Cmd).op_pnm
   op = OptionParser.new
-  op.banner = 'Usage: tb pnm [OPTS] [TABLE]'
+  op.banner = "Usage: tb pnm [OPTS] [TABLE]\n" +
+    "Convert a table to PNM (Portable Anymap: PPM, PGM, PBM)."
   define_common_option(op, "hNo", "--no-pager")
   op
 end

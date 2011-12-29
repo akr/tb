@@ -28,7 +28,8 @@ Tb::Cmd.default_option[:opt_group_fields] = []
 
 def (Tb::Cmd).op_group
   op = OptionParser.new
-  op.banner = 'Usage: tb group [OPTS] KEY-FIELD1,... [TABLE ...]'
+  op.banner = "Usage: tb group [OPTS] KEY-FIELD1,... [TABLE ...]\n" +
+    "Group and aggregate rows."
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| Tb::Cmd.opt_group_fields << arg }

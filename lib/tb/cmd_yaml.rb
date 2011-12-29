@@ -26,7 +26,8 @@ Tb::Cmd.subcommands << 'yaml'
 
 def (Tb::Cmd).op_yaml
   op = OptionParser.new
-  op.banner = 'Usage: tb yaml [OPTS] [TABLE]'
+  op.banner = "Usage: tb yaml [OPTS] [TABLE]\n" +
+    "Convert a table to YAML (YAML Ain't a Markup Language)."
   define_common_option(op, "hNo", "--no-pager")
   op
 end

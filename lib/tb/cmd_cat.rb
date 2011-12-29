@@ -26,7 +26,8 @@ Tb::Cmd.subcommands << 'cat'
 
 def (Tb::Cmd).op_cat
   op = OptionParser.new
-  op.banner = 'Usage: tb cat [OPTS] [TABLE ...]'
+  op.banner = "Usage: tb cat [OPTS] [TABLE ...]\n" +
+    "Concatenate tables vertically."
   define_common_option(op, "hNo", "--no-pager")
   op
 end

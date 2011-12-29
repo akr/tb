@@ -30,7 +30,8 @@ Tb::Cmd.default_option[:opt_join_retain_right] = nil
 
 def (Tb::Cmd).op_join
   op = OptionParser.new
-  op.banner = 'Usage: tb join [OPTS] [TABLE1 TABLE2 ...]'
+  op.banner = "Usage: tb join [OPTS] [TABLE1 TABLE2 ...]\n" +
+    "Concatenate tables horizontally as left/right/full natural join."
   define_common_option(op, 'hNod', '--no-pager', '--debug')
   op.def_option('--outer', 'outer join') {
     Tb::Cmd.opt_join_retain_left = true

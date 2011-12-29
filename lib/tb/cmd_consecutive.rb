@@ -28,7 +28,8 @@ Tb::Cmd.default_option[:opt_consecutive_n] = 2
 
 def (Tb::Cmd).op_consecutive
   op = OptionParser.new
-  op.banner = 'Usage: tb consecutive [OPTS] [TABLE ...]'
+  op.banner = "Usage: tb consecutive [OPTS] [TABLE ...]\n" +
+    "Concatenate consecutive rows."
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-n NUM', 'gather NUM records.  (default: 2)') {|n| Tb::Cmd.opt_consecutive_n = n.to_i }
   op
