@@ -105,7 +105,7 @@ def (Tb::Cmd).main_help(argv)
   op_help.parse!(argv)
   if Tb::Cmd.opt_help_s
     list_summary_of_subcommands
-    return true
+    exit
   elsif argv.empty?
     if Tb::Cmd.opt_help == 0
       usage_list_subcommands
