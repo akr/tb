@@ -49,13 +49,13 @@ Example:
   tb help               : list subcommands
 
   tb cat -h             : succinct help of "cat" subcommand
-  tb cat -hh            : verbose help of "cat" subcommand
   tb help cat           : succinct help of "cat" subcommand
+  tb cat -hh            : verbose help of "cat" subcommand
   tb help -h cat        : verbose help of "cat" subcommand
 
   tb help -h            : succinct help of "help" subcommand
-  tb help -hh           : verbose help of "help" subcommand
   tb help help          : succinct help of "help" subcommand
+  tb help -hh           : verbose help of "help" subcommand
   tb help -h help       : verbose help of "help" subcommand
 End
 
