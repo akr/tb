@@ -140,7 +140,7 @@ def (Tb::Cmd).svn_log_with_svn_log(argv)
     }
   else
     svn = Tb::Cmd.opt_svn_log_svn_command || 'svn'
-    IO.popen(['svn', 'log', '--xml', *argv]) {|f|
+    IO.popen([svn, 'log', '--xml', *argv]) {|f|
       yield f
     }
   end
