@@ -158,6 +158,7 @@ tb command has many subcommands.
   help     : show help message of tb command.
   csv      : convert a table to CSV (Comma Separated Value).
   tsv      : convert a table to TSV (Tab Separated Value).
+  pnm      : convert a table to PNM (Portable Anymap: PPM, PGM, PBM)
   json     : convert a table to JSON (JavaScript Object Notation).
   yaml     : convert a table to YAML (YAML Ain't a Markup Language).
   pp       : convert a table to pretty printed format.
@@ -169,11 +170,14 @@ tb command has many subcommands.
   newfield : add a field.
   cat      : concatenate tables vertically.
   join     : concatenate tables horizontally as left/right/full natural join.
+  consecutive : concatenate consecutive rows.
   group    : group and aggregate rows.
   cross    : create a contingency table.
   shape    : show table size.
   mheader  : collapse multi rows header.
   crop     : extract rectangle in a table.
+  ls       : list directory entries as a table.
+  svn-log  : show the SVN log as a table.
 
 == Install
 
