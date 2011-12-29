@@ -53,6 +53,7 @@ require 'tb/cmd_mheader'
 require 'tb/cmd_crop'
 require 'tb/cmd_ls'
 require 'tb/cmd_svn_log'
+require 'tb/cmd_git_log'
 require 'tb/cmdmain'
 
 Tb::Cmd.init_option
