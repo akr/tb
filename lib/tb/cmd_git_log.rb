@@ -37,47 +37,31 @@ def (Tb::Cmd).op_git_log
   op
 end
 
-Tb::Cmd::GIT_LOG_PRETTY_FORMAT = 'format:%x01commit-separator%x01%n' + <<'End'.gsub(/%.*/, '%w(0,0,1)\&%w(0,0,0)').gsub(/\n/, '%n')
-commit:%H
-tree:%T
-parents:%P
-author-name:%an
-author-email:%ae
-author-date:%ai
-committer-name:%cn
-committer-email:%ce
-committer-date:%ci
-ref-names:%d
-encoding:%e
-subject:%s
-body:%b
-raw-body:%B
-notes:%N
-reflog-selector:%gD
-reflog-subject:%gs
-end-commit
-End
-
-Tb::Cmd::GIT_LOG_HEADER = %w[
-  commit
-  tree
-  parents
-  author-name
-  author-email
-  author-date
-  committer-name
-  committer-email
-  committer-date
-  ref-names
-  encoding
-  subject
-  body
-  raw-body
-  notes
-  reflog-selector
-  reflog-subject
-  files
+Tb::Cmd::GIT_LOG_FORMAT_SPEC = [
+  %w[commit %H],
+  %w[tree %T],
+  %w[parents %P],
+  %w[author-name %an],
+  %w[author-email %ae],
+  %w[author-date %ai],
+  %w[committer-name %cn],
+  %w[committer-email %ce],
+  %w[committer-date %ci],
+  %w[ref-names %d],
+  %w[encoding %e],
+  %w[subject %s],
+  %w[body %b],
+  %w[raw-body %B],
+  %w[notes %N],
+  %w[reflog-selector %gD],
+  %w[reflog-subject %gs],
 ]
+
+Tb::Cmd::GIT_LOG_PRETTY_FORMAT = 'format:%x01commit-separator%x01%n' +
+  Tb::Cmd::GIT_LOG_FORMAT_SPEC.map {|k, v| "#{k}:%w(0,0,1)#{v}%w(0,0,0)%n" }.join('') +
+  "end-commit%n"
+
+Tb::Cmd::GIT_LOG_HEADER = Tb::Cmd::GIT_LOG_FORMAT_SPEC.map {|k, v| k }
 
 def (Tb::Cmd).git_log_with_git_log
   if Tb::Cmd.opt_git_log_debug_git_log_file
