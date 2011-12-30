@@ -70,6 +70,7 @@ Tb::Cmd::GIT_LOG_HEADER = %w[
   committer-date
   ref-names
   encoding
+  subject
   body
   raw-body
   notes
