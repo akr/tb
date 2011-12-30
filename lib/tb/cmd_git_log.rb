@@ -106,7 +106,6 @@ def (Tb::Cmd).git_log_unescape_filename(filename)
         when 'v' then "\v"
         when 'f' then "\f"
         when 'r' then "\r"
-        when 'a' then "\a"
         when '"' then '"'
         when '\\' then "\\"
         else
@@ -145,10 +144,10 @@ def (Tb::Cmd).git_log_parse_commit(commit_info, files)
     when /\A(?:author-date|committer-date)/
       v = v.sub(/\A(\d+-\d\d-\d\d) (\d\d:\d\d:\d\d) ([-+]\d\d\d\d)\z/, '\1T\2\3')
     when /\Aparents\z/
-      v = ['parent', *v.split(/ /)].map {|s| s + "\n" }.join("")
+      v = ['parent', *v.split(/ /)].map {|c| c + "\n" }.join("")
     when /\Aref-names\z/
       v = v.strip.gsub(/\A\(|\)\z/, '')
-      v = ['ref-name', *v.split(/, /)].map {|s| s + "\n" }.join("")
+      v = ['ref-name', *v.split(/, /)].map {|c| c + "\n" }.join("")
     end
     h[k] = v
   }

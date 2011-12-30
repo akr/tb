@@ -59,8 +59,8 @@ def (Tb::Cmd).main_unnest(argv)
   end
   result_fields = tbl.list_fields.map {|f|
     if f == target_field
-      nested_fields.map {|f|
-        Tb::Cmd.opt_unnest_prefix + f
+      nested_fields.map {|nf|
+        Tb::Cmd.opt_unnest_prefix + nf
       }
     else
       f
