@@ -30,7 +30,7 @@ Tb::Cmd.default_option[:opt_git_log_debug_git_log_file] = nil
 def (Tb::Cmd).op_git_log
   op = OptionParser.new
   op.banner = "Usage: tb git-log [OPTS]\n" +
-    "Show the SVN log as a table."
+    "Show the GIT log as a table."
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('--git-command COMMAND', 'specify the git command (default: git)') {|command| Tb::Cmd.opt_git_log_git_command = command }
   op.def_option('--debug-git-log-file FILE', 'specify the result git log (for debug)') {|filename| Tb::Cmd.opt_git_log_debug_git_log_file = filename }
