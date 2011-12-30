@@ -37,7 +37,7 @@ def (Tb::Cmd).op_git_log
   op
 end
 
-Tb::Cmd::GIT_LOG_PRETTY_FORMAT = 'format:%x01commit-separator%x01%n' + <<'End'.gsub(/%.*/, '%w(0,1,1)\&%w(0,0,0)').gsub(/\n/, '%n')
+Tb::Cmd::GIT_LOG_PRETTY_FORMAT = 'format:%x01commit-separator%x01%n' + <<'End'.gsub(/%.*/, '%w(0,0,1)\&%w(0,0,0)').gsub(/\n/, '%n')
 commit:%H
 tree:%T
 parents:%P
@@ -140,7 +140,7 @@ def (Tb::Cmd).git_log_parse_commit(commit_info, files)
       next
     end
     k = $`
-    v = $'.gsub(/(\A|\n) /, '\1')
+    v = $'.gsub(/\n /, "\n")
     case k
     when /\A(?:author-date|committer-date)/
       v = v.sub(/\A(\d+-\d\d-\d\d) (\d\d:\d\d:\d\d) ([-+]\d\d\d\d)\z/, '\1T\2\3')
