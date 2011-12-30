@@ -85,7 +85,7 @@ def (Tb::Cmd).git_log_with_git_log
     }
   else
     git = Tb::Cmd.opt_svn_log_svn_command || 'git'
-    IO.popen([git, 'log', "--name-only", "--decorate=full", "--pretty=#{Tb::Cmd::GIT_LOG_PRETTY_FORMAT}"]) {|f|
+    IO.popen([git, 'log', "--pretty=#{Tb::Cmd::GIT_LOG_PRETTY_FORMAT}", '--decorate=full', '--raw', '--abbrev=40']) {|f|
       yield f
     }
   end
@@ -121,7 +121,18 @@ end
 
 def (Tb::Cmd).git_log_parse_commit(commit_info, files)
   commit_info = commit_info.split(/\n(?=[a-z])/)
-  files = files.split(/\n/).map {|filename| git_log_unescape_filename(filename) }
+  Tb.csv_stream_output(files_csv="") {|gen|
+    gen << %w[mode1 mode2 hash1 hash2 status filename]
+    files.split(/\n/).each {|file_line|
+      if /\A:(\d+) (\d+) ([0-9a-f]+) ([0-9a-f]+) (\S+)\t(.+)\z/ !~ file_line
+        warn "unexpected git-log output: #{file_line.inspect}"
+        next
+      end
+      mode1, mode2, hash1, hash2, status, filename = $1, $2, $3, $4, $5, $6
+      filename = git_log_unescape_filename(filename)
+      gen << [mode1, mode2, hash1, hash2, status, filename]
+    }
+  }
   h = {}
   commit_info.each {|s|
     if /:/ !~ s
@@ -129,7 +140,7 @@ def (Tb::Cmd).git_log_parse_commit(commit_info, files)
       next
     end
     k = $`
-    v = $'.sub(/\A /, '')
+    v = $'.gsub(/(\A|\n) /, '\1')
     case k
     when /\A(?:author-date|committer-date)/
       v = v.sub(/\A(\d+-\d\d-\d\d) (\d\d:\d\d:\d\d) ([-+]\d\d\d\d)\z/, '\1T\2\3')
@@ -141,7 +152,7 @@ def (Tb::Cmd).git_log_parse_commit(commit_info, files)
     end
     h[k] = v
   }
-  h['files'] = ['filename', *files].map {|s| s + "\n" }.join("") 
+  h['files'] = files_csv
   h
 end
 
