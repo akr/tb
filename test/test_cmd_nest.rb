@@ -42,7 +42,7 @@ class TestTbCmdNest < Test::Unit::TestCase
       0,3,4
       4,5,6
     End
-    exc = assert_raise(SystemExit) { Tb::Cmd.main_nest(['-o', o="o.csv", 'z,b,d', i]) }
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_nest(['-o', "o.csv", 'z,b,d', i]) }
     assert(!exc.success?)
   end
 
