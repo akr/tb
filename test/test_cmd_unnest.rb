@@ -82,9 +82,8 @@ class TestTbCmdUnnest < Test::Unit::TestCase
       5,6
       ",quuux
     End
-    exc = assert_raise(SystemExit) {  Tb::Cmd.main_unnest(['-o', o="o.csv", 'bb', i]) }
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_unnest(['-o', o="o.csv", 'bb', i]) }
     assert(!exc.success?)
-
   end
 
 end
