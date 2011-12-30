@@ -84,7 +84,7 @@ def (Tb::Cmd).git_log_with_git_log
       yield f
     }
   else
-    git = Tb::Cmd.opt_svn_log_svn_command || 'git'
+    git = Tb::Cmd.opt_git_log_git_command || 'git'
     IO.popen([git, 'log', "--pretty=#{Tb::Cmd::GIT_LOG_PRETTY_FORMAT}", '--decorate=full', '--raw', '--abbrev=40']) {|f|
       yield f
     }
