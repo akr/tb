@@ -71,6 +71,8 @@ def (Tb::Cmd).main_unnest(argv)
     tbl.each {|rec|
       if rec[target_field]
         ntbl = Tb.parse_csv(rec[target_field])
+      end
+      if ntbl && 0 < ntbl.size
         ntbl.each {|nrec|
           ary = []
           tbl.list_fields.each {|f|
