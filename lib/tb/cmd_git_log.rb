@@ -61,16 +61,27 @@ Tb::Cmd::GIT_LOG_PRETTY_FORMAT = 'format:%x01commit-separator%x01%n' +
   Tb::Cmd::GIT_LOG_FORMAT_SPEC.map {|k, v| "#{k}:%w(0,0,1)#{v}%w(0,0,0)%n" }.join('') +
   "end-commit%n"
 
-Tb::Cmd::GIT_LOG_HEADER = Tb::Cmd::GIT_LOG_FORMAT_SPEC.map {|k, v| k }
+Tb::Cmd::GIT_LOG_HEADER = Tb::Cmd::GIT_LOG_FORMAT_SPEC.map {|k, v| k } + ['files']
 
-def (Tb::Cmd).git_log_with_git_log
+def (Tb::Cmd).git_log_with_git_log(dir)
   if Tb::Cmd.opt_git_log_debug_git_log_file
     File.open(Tb::Cmd.opt_git_log_debug_git_log_file) {|f|
       yield f
     }
   else
     git = Tb::Cmd.opt_git_log_git_command || 'git'
-    IO.popen([git, 'log', "--pretty=#{Tb::Cmd::GIT_LOG_PRETTY_FORMAT}", '--decorate=full', '--raw', '--abbrev=40']) {|f|
+    # depends Ruby 1.9.
+    command = [
+      git,
+      'log',
+      "--pretty=#{Tb::Cmd::GIT_LOG_PRETTY_FORMAT}",
+      '--decorate=full',
+        '--raw',
+        '--abbrev=40',
+        '.',
+        {:chdir=>dir}
+    ]
+    IO.popen(command) {|f|
       yield f
     }
   end
@@ -120,7 +131,7 @@ def (Tb::Cmd).git_log_parse_commit(commit_info, files)
   h = {}
   commit_info.each {|s|
     if /:/ !~ s
-      warn "unexpected git-log output"
+      warn "unexpected git-log output: #{s.inspect}"
       next
     end
     k = $`
@@ -144,11 +155,13 @@ def (Tb::Cmd).git_log_each_commit(f)
   while chunk = f.gets("\x01commit-separator\x01\n")
     chunk.chomp!("\x01commit-separator\x01\n")
     next if chunk.empty? # beginning of the output
-    if /\nend-commit\n\n/ !~ chunk
-      warn "unexpected git-log output"
+    if /\nend-commit\n/ !~ chunk
+      warn "unexpected git-log output: #{chunk.inspect}"
       next
     end
-    h = git_log_parse_commit($`, $')
+    commit_info, files = $`, $'
+    files.sub!(/\A\n/, '')
+    h = git_log_parse_commit(commit_info, files)
     yield h
   end
 
@@ -157,12 +170,15 @@ end
 def (Tb::Cmd).main_git_log(argv)
   op_git_log.parse!(argv)
   exit_if_help('git-log')
+  argv = ['.'] if argv.empty?
   with_table_stream_output {|gen|
-    git_log_with_git_log {|f|
-      gen.output_header Tb::Cmd::GIT_LOG_HEADER
-      f.set_encoding("ASCII-8BIT") if f.respond_to? :set_encoding
-      git_log_each_commit(f) {|h|
-        gen << h.values_at(*Tb::Cmd::GIT_LOG_HEADER)
+    gen.output_header Tb::Cmd::GIT_LOG_HEADER
+    argv.each {|dir|
+      git_log_with_git_log(dir) {|f|
+        f.set_encoding("ASCII-8BIT") if f.respond_to? :set_encoding
+        git_log_each_commit(f) {|h|
+          gen << h.values_at(*Tb::Cmd::GIT_LOG_HEADER)
+        }
       }
     }
   }
