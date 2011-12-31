@@ -1,6 +1,4 @@
-# lib/tb.rb - entry file for table library
-#
-# Copyright (C) 2010-2011 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2012 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -24,17 +22,63 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 # OF SUCH DAMAGE.
 
-require 'tempfile'
-require 'tb/basic'
-require 'tb/record'
-require 'tb/csv'
-require 'tb/tsv'
-require 'tb/pnm'
-require 'tb/reader'
-require 'tb/ropen'
-require 'tb/catreader'
-require 'tb/fieldset'
-require 'tb/search'
-require 'tb/enumerable'
-require 'tb/enum'
-require 'tb/fileenumerator'
+# Tb::FileEnumerator is an enumerator backed by a temporally file.
+#
+# An instance of Tb::FileEnumerator can be used just once,
+# except if Tb::FileEnumerator#use is explicitly used.
+#
+# After the use, the temporally file is removed.
+# If the object is not used, the temporally file is removed by GC
+# as usual Tempfile object.
+#
+class Tb::FileEnumerator
+  include Tb::Enum
+
+  def self.new_tempfile
+    tempfile = Tempfile.new("tb")
+    tempfile.binmode
+    gen = lambda {|*objs|
+      Marshal.dump(objs, tempfile)
+    }
+    yield gen
+    tempfile.close
+    self.new(
+      lambda { open(tempfile.path, "rb") },
+      lambda { tempfile.close(true) })
+  end
+
+  def initialize(open_func, close_func)
+    @use_count = 0
+    @open_func = open_func
+    @close_func = close_func
+  end
+
+  # delay removing the tempfile until the given block is finished.
+  def use
+    if !@open_func
+      raise ArgumentError, "FileEnumerator reused."
+    end
+    @use_count += 1
+    yield
+    @use_count -= 1
+    if @use_count == 0
+      @close_func.call
+      @open_func = @close_func = nil
+    end
+  end
+
+  def each
+    self.use {
+      begin
+        io = @open_func.call
+        while true
+          objs = Marshal.load(io)
+          yield(*objs)
+        end
+      rescue EOFError
+      ensure
+        io.close 
+      end
+    }
+  end
+end
