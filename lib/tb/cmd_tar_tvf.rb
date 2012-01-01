@@ -24,11 +24,14 @@
 
 Tb::Cmd.subcommands << 'tar-tvf'
 
+Tb::Cmd.default_option[:opt_tar_tvf_l] = 0
+
 def (Tb::Cmd).op_tar_tvf
   op = OptionParser.new
   op.banner = "Usage: tb tar-tvf [OPTS] [TAR-FILE ...]\n" +
     "Show the file listing of tar file."
   define_common_option(op, "hNo", "--no-pager")
+  op.def_option('-l', 'show more attributes.') {|fs| Tb::Cmd.opt_tar_tvf_l += 1 }
   op
 end
 
@@ -65,7 +68,8 @@ Tb::Cmd::TAR_TYPEFLAG = {
   '7' => :contiguous,           # [POSIX] Reserved for high-performance file.  (It is come from "contiguous file" of Masscomp?)
 }
 
-Tb::Cmd::TAR_CSV_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime filename symlink hardlink]
+Tb::Cmd::TAR_CSV_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime filename linkname]
+Tb::Cmd::TAR_CSV_LONG_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime filename linkname tar_typeflag tar_magic tar_version tar_chksum]
 
 def (Tb::Cmd).tar_tvf_parse_header(header_record)
   ary = header_record.unpack(Tb::Cmd::TAR_HEADER_TEPMLATE)
@@ -246,7 +250,12 @@ def (Tb::Cmd).main_tar_tvf(argv)
   exit_if_help('tar-tvf')
   argv = ['-'] if argv.empty?
   with_table_stream_output {|gen|
-    gen.output_header Tb::Cmd::TAR_CSV_HEADER
+    if Tb::Cmd.opt_tar_tvf_l == 0
+      header = Tb::Cmd::TAR_CSV_HEADER
+    else
+      header = Tb::Cmd::TAR_CSV_LONG_HEADER
+    end
+    gen.output_header header
     argv.each {|filename|
       tar_tvf_open_with(filename) {|f|
         tar_tvf_each(f) {|h|
@@ -262,9 +271,12 @@ def (Tb::Cmd).main_tar_tvf(argv)
           formatted["devmajor"] = h[:devmajor].to_s
           formatted["devminor"] = h[:devminor].to_s
           formatted["filename"] = h[:filename]
-          formatted["symlink"] = h[:linkname] if Tb::Cmd::TAR_TYPEFLAG[h[:typeflag]] == :symlink
-          formatted["hardlink"] = h[:linkname] if Tb::Cmd::TAR_TYPEFLAG[h[:typeflag]] == :link
-          gen << formatted.values_at(*Tb::Cmd::TAR_CSV_HEADER)
+          formatted["linkname"] = h[:linkname]
+          formatted["tar_chksum"] = h[:chksum]
+          formatted["tar_typeflag"] = h[:typeflag]
+          formatted["tar_magic"] = h[:magic]
+          formatted["tar_version"] = h[:version]
+          gen << formatted.values_at(*header)
         }
       }
     }
