@@ -127,6 +127,7 @@ def (Tb::Cmd).tar_tvf_each(f)
     case Tb::Cmd::TAR_TYPEFLAG[h[:typeflag]]
     when :link, :symlink, :directory, :character_special, :block_special, :fifo
       records = 0
+      # xxx: hardlink may have contents for posix archive.
     else
       records = (h[:size] + Tb::Cmd::TAR_RECORD_LENGTH - 1) / Tb::Cmd::TAR_RECORD_LENGTH
     end
@@ -171,6 +172,7 @@ def (Tb::Cmd).tar_tvf_open_with(arg)
     rescue Errno::ESPIPE
       seek_success = false
     end
+    # Ruby 1.9 dependent.
     if decompression
       if seek_success
         IO.popen(decompression + [{:in => f}], 'rb') {|pipe|
