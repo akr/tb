@@ -47,7 +47,7 @@ Tb::Cmd::TAR_HEADER_STRUCTURE = [
   [:typeflag, "a1"],    # [POSIX] a single character.
   [:linkname, "Z100"],  # [POSIX] NUL-terminated character strings except when all characters in the array contain non-NUL characters including the last character.
   [:magic, "Z6"],       # [POSIX] terminated by a NUL character.
-  [:version, "a2"],     # [POSIX] two octets containing the characters "00" (zero-zero)
+  [:version, "Z2"],     # [POSIX] two octets containing the characters "00" (zero-zero)
   [:uname, "Z32"],      # [POSIX] terminated by a NUL character.
   [:gname, "Z32"],      # [POSIX] terminated by a NUL character.
   [:devmajor, "A8"],    # [POSIX] leading zero-filled octal numbers using digits which terminated by one or more <space> or NUL characters.
