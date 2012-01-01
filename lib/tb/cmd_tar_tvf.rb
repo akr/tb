@@ -1,0 +1,272 @@
+# Copyright (C) 2012 Tanaka Akira  <akr@fsij.org>
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+#  1. Redistributions of source code must retain the above copyright notice, this
+#     list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
+#     and/or other materials provided with the distribution.
+#  3. The name of the author may not be used to endorse or promote products
+#     derived from this software without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+# OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+# OF SUCH DAMAGE.
+
+Tb::Cmd.subcommands << 'tar-tvf'
+
+def (Tb::Cmd).op_tar_tvf
+  op = OptionParser.new
+  op.banner = "Usage: tb tar-tvf [OPTS] [TAR-FILE ...]\n" +
+    "Show the file listing of tar file."
+  define_common_option(op, "hNo", "--no-pager")
+  op
+end
+
+Tb::Cmd::TAR_RECORD_LENGTH = 512
+Tb::Cmd::TAR_HEADER_STRUCTURE = [
+  [:name, "Z100"],      # [POSIX] NUL-terminated character strings except when all characters in the array contain non-NUL characters including the last character.
+  [:mode, "A8"],        # [POSIX] leading zero-filled octal numbers using digits which terminated by one or more <space> or NUL characters.
+  [:uid, "A8"],         # [POSIX] leading zero-filled octal numbers using digits which terminated by one or more <space> or NUL characters.
+  [:gid, "A8"],         # [POSIX] leading zero-filled octal numbers using digits which terminated by one or more <space> or NUL characters.
+  [:size, "A12"],       # [POSIX] leading zero-filled octal numbers using digits which terminated by one or more <space> or NUL characters.
+  [:mtime, "A12"],      # [POSIX] leading zero-filled octal numbers using digits which terminated by one or more <space> or NUL characters.
+  [:chksum, "A8"],      # [POSIX] leading zero-filled octal numbers using digits which terminated by one or more <space> or NUL characters.
+  [:typeflag, "a1"],    # [POSIX] a single character.
+  [:linkname, "Z100"],  # [POSIX] NUL-terminated character strings except when all characters in the array contain non-NUL characters including the last character.
+  [:magic, "Z6"],       # [POSIX] terminated by a NUL character.
+  [:version, "a2"],     # [POSIX] two octets containing the characters "00" (zero-zero)
+  [:uname, "Z32"],      # [POSIX] terminated by a NUL character.
+  [:gname, "Z32"],      # [POSIX] terminated by a NUL character.
+  [:devmajor, "A8"],    # [POSIX] leading zero-filled octal numbers using digits which terminated by one or more <space> or NUL characters.
+  [:devminor, "A8"],    # [POSIX] leading zero-filled octal numbers using digits which terminated by one or more <space> or NUL characters.
+  [:prefix, "Z155"],    # [POSIX] NUL-terminated character strings except when all characters in the array contain non-NUL characters including the last character.
+]
+Tb::Cmd::TAR_HEADER_TEPMLATE = Tb::Cmd::TAR_HEADER_STRUCTURE.map {|n, t| t }.join('')
+
+Tb::Cmd::TAR_TYPEFLAG = {
+  "\0" => :regular,             # [POSIX] For backwards-compatibility.
+  '0' => :regular,              # [POSIX]
+  '1' => :link,                 # [POSIX]
+  '2' => :symlink,              # [POSIX]
+  '5' => :directory,            # [POSIX]
+  '3' => :character_special,    # [POSIX]
+  '4' => :block_special,        # [POSIX]
+  '6' => :fifo,                 # [POSIX]
+  '7' => :contiguous,           # [POSIX] Reserved for high-performance file.  (It is come from "contiguous file" of Masscomp?)
+}
+
+Tb::Cmd::TAR_CSV_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime filename symlink hardlink]
+
+def (Tb::Cmd).tar_tvf_parse_header(header_record)
+  ary = header_record.unpack(Tb::Cmd::TAR_HEADER_TEPMLATE)
+  h = {}
+  Tb::Cmd::TAR_HEADER_STRUCTURE.each_with_index {|(k, t), i|
+    h[k] = ary[i]
+  }
+  [:mode, :uid, :gid, :size, :mtime, :chksum, :devmajor, :devminor].each {|k|
+    h[k] = h[k].to_i(8)
+  }
+  h[:mtime] = Time.at(h[:mtime])
+  if h[:prefix].empty?
+    h[:filename] = h[:name]
+  else
+    h[:filename] = h[:prefix] + '/' + h[:name]
+  end
+  header_record_for_chksum = header_record.dup
+  header_record_for_chksum[148, 8] = ' ' * 8
+  if header_record_for_chksum.sum(0) != h[:chksum]
+    warn "invalid checksum: #{h[:filename].inspect}"
+  end
+  h
+end
+
+def (Tb::Cmd).tar_tvf_each(f)
+  while true
+    header_record = f.read(Tb::Cmd::TAR_RECORD_LENGTH)
+    if !header_record
+      break
+    end
+    if header_record.length != Tb::Cmd::TAR_RECORD_LENGTH
+      warn "premature end of tar archive"
+      break
+    end
+    if /\A\0*\z/ =~ header_record
+      second_end_of_archive_indicator_record = f.read(Tb::Cmd::TAR_RECORD_LENGTH)
+      if !second_end_of_archive_indicator_record
+        warn "premature end of tar archive indicator (no second record)"
+        break
+      end
+      if second_end_of_archive_indicator_record.length != Tb::Cmd::TAR_RECORD_LENGTH
+        warn "premature end of second record of end of tar archive indicator"
+        break
+      end
+      if /\A\0*\z/ !~ header_record
+        warn "The second record of end of tar archive indicator is not zero"
+        break
+      end
+      # There may be garbage after the end of tar archive indicator. 
+      # It is acceptable.  ("ustar Interchange Format" in POSIX)
+      break
+    end
+    h = tar_tvf_parse_header(header_record)
+    yield h
+    case Tb::Cmd::TAR_TYPEFLAG[h[:typeflag]]
+    when :link, :symlink, :directory, :character_special, :block_special, :fifo
+      records = 0
+    else
+      records = (h[:size] + Tb::Cmd::TAR_RECORD_LENGTH - 1) / Tb::Cmd::TAR_RECORD_LENGTH
+    end
+    begin
+      f.seek(records * Tb::Cmd::TAR_RECORD_LENGTH, IO::SEEK_CUR)
+    rescue Errno::ESPIPE
+      records.times {
+        ret = f.read(Tb::Cmd::TAR_RECORD_LENGTH)
+        if !ret || ret.length != Tb::Cmd::TAR_RECORD_LENGTH
+          warn "premature end of tar archive content"
+          break
+        end
+      }
+    end
+  end
+end
+
+def (Tb::Cmd).tar_tvf_open_with0(arg)
+  if arg == '-'
+    yield STDIN
+  else
+    open(arg, 'rb') {|f|
+      yield f
+    }
+  end
+end
+
+def (Tb::Cmd).tar_tvf_open_with(arg)
+  tar_tvf_open_with0(arg) {|f|
+    magic = f.read(8)
+    case magic
+    when /\A\x1f\x8b/, /\A\037\235/ # \x1f\x8b is gzip format.  \037\235 is "compress" format of old Unix.
+      decompression = ['gzip', '-dc']
+    when /\ABZh/
+      decompression = ['bzip2', '-dc']
+    when /\A\xFD7zXZ\x00/
+      decompression = ['xz', '-dc']
+    end
+    begin
+      f.rewind
+      seek_success = true
+    rescue Errno::ESPIPE
+      seek_success = false
+    end
+    if decompression
+      if seek_success
+        IO.popen(decompression + [{:in => f}], 'rb') {|pipe|
+          yield pipe
+        }
+      else
+        IO.pipe {|r, w|
+          w.binmode
+          IO.popen(decompression + [{:in => r}], 'rb') {|pipe|
+            w << magic
+            th = Thread.new {
+              IO.copy_stream(f, w)
+              w.close
+            }
+            begin
+              yield pipe
+            ensure
+              th.join
+            end
+          }
+        }
+      end
+    else
+      if seek_success
+        yield f
+      else
+        IO.pipe {|r, w|
+          w.binmode
+          w << magic
+          th = Thread.new {
+            IO.copy_stream(f, w)
+            w.close
+          }
+          begin
+            yield pipe
+          ensure
+            th.join
+          end
+        }
+      end
+    end
+  }
+end
+
+def (Tb::Cmd).tar_tvf_format_filemode(typeflag, mode)
+  entry_type =
+    case Tb::Cmd::TAR_TYPEFLAG[typeflag]
+    when :regular then '-'
+    when :directory then 'd'
+    when :character_special then 'c'
+    when :block_special then 'b'
+    when :fifo then 'p'
+    when :symlink then 'l'
+    when :link then 'h'
+    when :contiguous then 'C'
+    else '?'
+    end
+  m = mode
+  sprintf("%s%c%c%c%c%c%c%c%c%c",
+    entry_type,
+    (m & 0400 == 0 ? ?- : ?r),
+    (m & 0200 == 0 ? ?- : ?w),
+    (m & 0100 == 0 ? (m & 04000 == 0 ? ?- : ?S) :
+                     (m & 04000 == 0 ? ?x : ?s)),
+    (m & 0040 == 0 ? ?- : ?r),
+    (m & 0020 == 0 ? ?- : ?w),
+    (m & 0010 == 0 ? (m & 02000 == 0 ? ?- : ?S) :
+                     (m & 02000 == 0 ? ?x : ?s)),
+    (m & 0004 == 0 ? ?- : ?r),
+    (m & 0002 == 0 ? ?- : ?w),
+    (m & 0001 == 0 ? (m & 01000 == 0 ? ?- : ?T) :
+                     (m & 01000 == 0 ? ?x : ?t)))
+end
+
+def (Tb::Cmd).main_tar_tvf(argv)
+  op_tar_tvf.parse!(argv)
+  exit_if_help('tar-tvf')
+  argv = ['-'] if argv.empty?
+  with_table_stream_output {|gen|
+    gen.output_header Tb::Cmd::TAR_CSV_HEADER
+    argv.each {|filename|
+      tar_tvf_open_with(filename) {|f|
+        tar_tvf_each(f) {|h|
+          formatted = {}
+          formatted["mode"] = sprintf("0%o", h[:mode])
+          formatted["filemode"] = tar_tvf_format_filemode(h[:typeflag], h[:mode])
+          formatted["uid"] = h[:uid].to_s
+          formatted["gid"] = h[:gid].to_s
+          formatted["size"] = h[:size].to_s
+          formatted["mtime"] = h[:mtime].iso8601
+          formatted["user"] = h[:uname]
+          formatted["group"] = h[:gname]
+          formatted["devmajor"] = h[:devmajor].to_s
+          formatted["devminor"] = h[:devminor].to_s
+          formatted["filename"] = h[:filename]
+          formatted["symlink"] = h[:linkname] if Tb::Cmd::TAR_TYPEFLAG[h[:typeflag]] == :symlink
+          formatted["hardlink"] = h[:linkname] if Tb::Cmd::TAR_TYPEFLAG[h[:typeflag]] == :link
+          gen << formatted.values_at(*Tb::Cmd::TAR_CSV_HEADER)
+        }
+      }
+    }
+  }
+end
