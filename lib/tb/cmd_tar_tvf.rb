@@ -62,7 +62,7 @@ Tb::Cmd::TAR_TYPEFLAG = {
   '3' => :character_special,    # [POSIX]
   '4' => :block_special,        # [POSIX]
   '6' => :fifo,                 # [POSIX]
-  '7' => :contiguous,           # [POSIX] Reserved for high-performance file.  (It is come from "contiguous file" of Masscomp?)
+  '7' => :contiguous,           # [POSIX] Reserved for high-performance file.  (It is come from "contiguous file" (S_IFCTG) of Masscomp?)
 }
 
 Tb::Cmd::TAR_CSV_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime filename symlink hardlink]
