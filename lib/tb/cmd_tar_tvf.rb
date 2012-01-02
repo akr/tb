@@ -84,7 +84,7 @@ Tb::Cmd::TAR_PAX_KEYWORD_RECOGNIZERS = {
 }
 
 Tb::Cmd::TAR_CSV_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime path linkname]
-Tb::Cmd::TAR_CSV_LONG_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime path linkname tar_typeflag tar_magic tar_version tar_chksum]
+Tb::Cmd::TAR_CSV_LONG_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime atime ctime path linkname tar_typeflag tar_magic tar_version tar_chksum]
 
 def (Tb::Cmd).tar_tvf_parse_header(header_record)
   ary = header_record.unpack(Tb::Cmd::TAR_HEADER_TEPMLATE)
@@ -333,6 +333,8 @@ def (Tb::Cmd).main_tar_tvf(argv)
           formatted["gid"] = h[:gid].to_s
           formatted["size"] = h[:size].to_s
           formatted["mtime"] = h[:mtime].iso8601
+          formatted["atime"] = h[:atime].iso8601 if h[:atime]
+          formatted["ctime"] = h[:ctime].iso8601 if h[:ctime]
           formatted["user"] = h[:uname]
           formatted["group"] = h[:gname]
           formatted["devmajor"] = h[:devmajor].to_s
