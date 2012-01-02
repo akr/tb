@@ -42,7 +42,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
   end
 
   def reader_thread(io)
-    Thread.new {
+    th = Thread.new {
       r = ''
       loop {
         begin
@@ -53,6 +53,8 @@ class TestTbCmdTTY < Test::Unit::TestCase
       }
       r
     }
+    sleep 0.1 if /freebsd/ =~ RUBY_PLATFORM # FreeBSD 8.2-RELEASE-p3 (amd64) hang ???
+    th
   end
 
   def test_ttyout_multiscreen
