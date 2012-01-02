@@ -70,6 +70,19 @@ Tb::Cmd::TAR_TYPEFLAG = {
   '7' => :contiguous,           # [POSIX] Reserved for high-performance file.  (It is come from "contiguous file" (S_IFCTG) of Masscomp?)
 }
 
+Tb::Cmd::TAR_PAX_KEYWORD_RECOGNIZERS = {
+  'atime' => [:atime, lambda {|val| Time.at(val.to_f) }], # xxx: to_f is not accurate
+  'mtime' => [:mtime, lambda {|val| Time.at(val.to_f) }], # xxx: to_f is not accurate
+  'ctime' => [:ctime, lambda {|val| Time.at(val.to_f) }], # xxx: to_f is not accurate
+  'gid' => [:gid, lambda {|val| val.to_i }],
+  'gname' => [:gname, lambda {|val| val }],
+  'uid' => [:uid, lambda {|val| val.to_i }],
+  'uname' => [:uname, lambda {|val| val }],
+  'linkpath' => [:linkname, lambda {|val| val }],
+  'path' => [:path, lambda {|val| val }],
+  'size' => [:size, lambda {|val| val.to_i }],
+}
+
 Tb::Cmd::TAR_CSV_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime path linkname]
 Tb::Cmd::TAR_CSV_LONG_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime path linkname tar_typeflag tar_magic tar_version tar_chksum]
 
@@ -155,24 +168,24 @@ def (Tb::Cmd).tar_tvf_each(f)
           else
             key = $`
             val = $'
-            case key
-            when 'atime' then prefix_parameters[:atime] = Time.at(val.to_f) # xxx: to_f is not accurate
-            when 'mtime' then prefix_parameters[:mtime] = Time.at(val.to_f) # xxx: to_f is not accurate
-            when 'ctime' then prefix_parameters[:ctime] = Time.at(val.to_f) # xxx: to_f is not accurate
-            when 'gid' then prefix_parameters[:gid] = val.to_i
-            when 'gname' then prefix_parameters[:gname] = val
-            when 'uid' then prefix_parameters[:uid] = val.to_i
-            when 'uname' then prefix_parameters[:uname] = val
-            when 'linkpath' then prefix_parameters[:linkname] = val
-            when 'path' then prefix_parameters[:path] = val
-            when 'size' then prefix_parameters[:size] = val.to_i
+            if Tb::Cmd::TAR_PAX_KEYWORD_RECOGNIZERS[key]
+              if val == ''
+                prefix_parameters[symkey] = nil
+              else
+                symkey, recognizer = Tb::Cmd::TAR_PAX_KEYWORD_RECOGNIZERS[key]
+                prefix_parameters[symkey] = recognizer.call(val)
+              end
             end
           end
         end
       end
     end
     prefix_parameters.each {|k, v|
-      h[k] = v
+      if v.nil?
+        h.delete k
+      else
+        h[k] = v
+      end
     }
     yield h
     prefix_parameters = {}
