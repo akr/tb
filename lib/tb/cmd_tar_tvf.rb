@@ -70,10 +70,26 @@ Tb::Cmd::TAR_TYPEFLAG = {
   '7' => :contiguous,           # [POSIX] Reserved for high-performance file.  (It is come from "contiguous file" (S_IFCTG) of Masscomp?)
 }
 
+def (Tb::Cmd).tar_tvf_parse_seconds_from_epoch(val)
+  if /\./ =~ val
+    num = ($` + $').to_i
+    den = 10 ** $'.length
+    t = Rational(num, den)
+    begin
+      Time.at(t)
+    rescue TypeError
+      ti = t.floor
+      Time.at(ti, ((t-ti) * 1000000).floor)
+    end
+  else
+    Time.at(val.to_i)
+  end
+end
+
 Tb::Cmd::TAR_PAX_KEYWORD_RECOGNIZERS = {
-  'atime' => [:atime, lambda {|val| Time.at(val.to_f) }], # xxx: to_f is not accurate
-  'mtime' => [:mtime, lambda {|val| Time.at(val.to_f) }], # xxx: to_f is not accurate
-  'ctime' => [:ctime, lambda {|val| Time.at(val.to_f) }], # xxx: to_f is not accurate
+  'atime' => [:atime, lambda {|val| Tb::Cmd.tar_tvf_parse_seconds_from_epoch(val) }],
+  'mtime' => [:mtime, lambda {|val| Tb::Cmd.tar_tvf_parse_seconds_from_epoch(val) }],
+  'ctime' => [:ctime, lambda {|val| Tb::Cmd.tar_tvf_parse_seconds_from_epoch(val) }],
   'gid' => [:gid, lambda {|val| val.to_i }],
   'gname' => [:gname, lambda {|val| val }],
   'uid' => [:uid, lambda {|val| val.to_i }],
@@ -332,9 +348,9 @@ def (Tb::Cmd).main_tar_tvf(argv)
           formatted["uid"] = h[:uid].to_s
           formatted["gid"] = h[:gid].to_s
           formatted["size"] = h[:size].to_s
-          formatted["mtime"] = h[:mtime].iso8601
-          formatted["atime"] = h[:atime].iso8601 if h[:atime]
-          formatted["ctime"] = h[:ctime].iso8601 if h[:ctime]
+          formatted["mtime"] = h[:mtime].iso8601(0 < Tb::Cmd.opt_tar_tvf_l ? 9 : 0)
+          formatted["atime"] = h[:atime].iso8601(0 < Tb::Cmd.opt_tar_tvf_l ? 9 : 0) if h[:atime]
+          formatted["ctime"] = h[:ctime].iso8601(0 < Tb::Cmd.opt_tar_tvf_l ? 9 : 0) if h[:ctime]
           formatted["user"] = h[:uname]
           formatted["group"] = h[:gname]
           formatted["devmajor"] = h[:devmajor].to_s
