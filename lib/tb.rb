@@ -1,6 +1,6 @@
 # lib/tb.rb - entry file for table library
 #
-# Copyright (C) 2010-2011 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2010-2012 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -25,6 +25,11 @@
 # OF SUCH DAMAGE.
 
 require 'tempfile'
+
+class Tb
+end
+
+require 'tb/enum'
 require 'tb/basic'
 require 'tb/record'
 require 'tb/csv'
@@ -36,5 +41,4 @@ require 'tb/catreader'
 require 'tb/fieldset'
 require 'tb/search'
 require 'tb/enumerable'
-require 'tb/enum'
 require 'tb/fileenumerator'
