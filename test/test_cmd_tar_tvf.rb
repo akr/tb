@@ -34,4 +34,15 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     Tb::Cmd.main_tar_tvf(['-o', o='o.csv', 'bar.tar'])
     assert_match(/,foo,/, File.read(o))
   end
+
+  def test_longname
+    name = 'ABC' + 'a' * 200 + 'XYZ'
+    open(name, 'w') {|f| }
+    assert(system("tar cf bar.tar #{name}"))
+    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+    result = File.read(o)
+    assert_equal(2, result.count("\n"))
+    assert_match(/,#{name},/, result)
+  end
+
 end

@@ -25,6 +25,7 @@
 Tb::Cmd.subcommands << 'tar-tvf'
 
 Tb::Cmd.default_option[:opt_tar_tvf_l] = 0
+Tb::Cmd.default_option[:opt_tar_tvf_ustar] = nil
 
 def (Tb::Cmd).op_tar_tvf
   op = OptionParser.new
@@ -32,6 +33,7 @@ def (Tb::Cmd).op_tar_tvf
     "Show the file listing of tar file."
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-l', 'show more attributes.') {|fs| Tb::Cmd.opt_tar_tvf_l += 1 }
+  op.def_option('--ustar', 'ustar format (POSIX.1-1988).  No GNU and POSIX.1-2001 extension.') {|fs| Tb::Cmd.opt_tar_tvf_ustar = true }
   op
 end
 
@@ -68,8 +70,8 @@ Tb::Cmd::TAR_TYPEFLAG = {
   '7' => :contiguous,           # [POSIX] Reserved for high-performance file.  (It is come from "contiguous file" (S_IFCTG) of Masscomp?)
 }
 
-Tb::Cmd::TAR_CSV_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime filename linkname]
-Tb::Cmd::TAR_CSV_LONG_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime filename linkname tar_typeflag tar_magic tar_version tar_chksum]
+Tb::Cmd::TAR_CSV_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime path linkname]
+Tb::Cmd::TAR_CSV_LONG_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime path linkname tar_typeflag tar_magic tar_version tar_chksum]
 
 def (Tb::Cmd).tar_tvf_parse_header(header_record)
   ary = header_record.unpack(Tb::Cmd::TAR_HEADER_TEPMLATE)
@@ -82,19 +84,20 @@ def (Tb::Cmd).tar_tvf_parse_header(header_record)
   }
   h[:mtime] = Time.at(h[:mtime])
   if h[:prefix].empty?
-    h[:filename] = h[:name]
+    h[:path] = h[:name]
   else
-    h[:filename] = h[:prefix] + '/' + h[:name]
+    h[:path] = h[:prefix] + '/' + h[:name]
   end
   header_record_for_chksum = header_record.dup
   header_record_for_chksum[148, 8] = ' ' * 8
   if header_record_for_chksum.sum(0) != h[:chksum]
-    warn "invalid checksum: #{h[:filename].inspect}"
+    warn "invalid checksum: #{h[:path].inspect}"
   end
   h
 end
 
 def (Tb::Cmd).tar_tvf_each(f)
+  prefix_parameters = nil
   while true
     header_record = f.read(Tb::Cmd::TAR_RECORD_LENGTH)
     if !header_record
@@ -123,18 +126,33 @@ def (Tb::Cmd).tar_tvf_each(f)
       break
     end
     h = tar_tvf_parse_header(header_record)
+    content_numrecords = (h[:size] + Tb::Cmd::TAR_RECORD_LENGTH - 1) / Tb::Cmd::TAR_RECORD_LENGTH
+    content_blocklength = content_numrecords * Tb::Cmd::TAR_RECORD_LENGTH
+    if !Tb::Cmd.opt_tar_tvf_ustar
+      if h[:typeflag] == 'L' # GNU
+        content_blocks = f.read(content_blocklength)
+        content = content_blocks[0, h[:size]][/\A[^\0]*/]
+        prefix_parameters ||= {}
+        prefix_parameters[:path] = content
+        next
+      end
+    end
+    if prefix_parameters
+      prefix_parameters.each {|k, v|
+        h[k] = v
+      }
+    end
     yield h
+    prefix_parameters = nil
     case Tb::Cmd::TAR_TYPEFLAG[h[:typeflag]]
     when :link, :symlink, :directory, :character_special, :block_special, :fifo
-      records = 0
       # xxx: hardlink may have contents for posix archive.
-    else
-      records = (h[:size] + Tb::Cmd::TAR_RECORD_LENGTH - 1) / Tb::Cmd::TAR_RECORD_LENGTH
+      next
     end
     begin
-      f.seek(records * Tb::Cmd::TAR_RECORD_LENGTH, IO::SEEK_CUR)
+      f.seek(content_blocklength, IO::SEEK_CUR)
     rescue Errno::ESPIPE
-      records.times {
+      content_numrecords.times {
         ret = f.read(Tb::Cmd::TAR_RECORD_LENGTH)
         if !ret || ret.length != Tb::Cmd::TAR_RECORD_LENGTH
           warn "premature end of tar archive content"
@@ -272,7 +290,7 @@ def (Tb::Cmd).main_tar_tvf(argv)
           formatted["group"] = h[:gname]
           formatted["devmajor"] = h[:devmajor].to_s
           formatted["devminor"] = h[:devminor].to_s
-          formatted["filename"] = h[:filename]
+          formatted["path"] = h[:path]
           formatted["linkname"] = h[:linkname]
           formatted["tar_chksum"] = h[:chksum]
           formatted["tar_typeflag"] = h[:typeflag]
