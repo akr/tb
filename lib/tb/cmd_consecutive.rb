@@ -63,7 +63,7 @@ def (Tb::Cmd).main_consecutive(argv)
   with_table_stream_output {|gen|
     gen.output_header consecutive_header
     buf = []
-    creader.each {|ary|
+    creader.each_values {|ary|
       buf << ary
       if buf.length == Tb::Cmd.opt_consecutive_n
         ary2 = []

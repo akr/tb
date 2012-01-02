@@ -59,7 +59,7 @@ def (Tb::Cmd).main_cat(argv)
   header = creader.header
   with_table_stream_output {|gen|
     gen << header if !Tb::Cmd.opt_N
-    creader.each {|ary|
+    creader.each_values {|ary|
       gen << ary
     }
   }

@@ -45,7 +45,7 @@ def (Tb::Cmd).main_newfield(argv)
     renamed_header = [field] + tblreader.header
     with_table_stream_output {|gen|
       gen.output_header(renamed_header)
-      tblreader.each {|ary|
+      tblreader.each_values {|ary|
         h = {}
         ary.each_with_index {|str, i|
           f = tblreader.field_from_index_ex(i)

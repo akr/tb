@@ -50,7 +50,7 @@ def (Tb::Cmd).main_rename(argv)
     renamed_header = tblreader.header.map {|f| h.fetch(f, f) }
     with_table_stream_output {|gen|
       gen.output_header(renamed_header)
-      tblreader.each {|ary|
+      tblreader.each_values {|ary|
         gen << ary
       }
     }

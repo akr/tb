@@ -61,7 +61,7 @@ def (Tb::Cmd).main_cross(argv)
     vset = {}
     hset = {}
     set = {}
-    tblreader.each {|ary|
+    tblreader.each_values {|ary|
       vkvs = ary.values_at(*vkis)
       hkvs = ary.values_at(*hkis)
       vset[vkvs] = true if !vset.include?(vkvs)

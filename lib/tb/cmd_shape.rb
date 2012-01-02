@@ -43,7 +43,7 @@ def (Tb::Cmd).main_shape(argv)
       min_num_fields = nil
       max_num_fields = nil
       num_records = 0
-      tblreader.each {|ary|
+      tblreader.each_values {|ary|
         num_records += 1
         n = ary.length
         if min_num_fields.nil?

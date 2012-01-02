@@ -60,7 +60,7 @@ def (Tb::Cmd).main_group(argv)
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     kis = kfs.map {|f| tblreader.index_from_field(f) }
     result_fields = kfs + opt_group_fields.map {|nf, maker| nf }
-    tblreader.each {|ary|
+    tblreader.each_values {|ary|
       kvs = ary.values_at(*kis)
       if !h.include?(kvs)
         h[kvs] = opt_group_fields.map {|nf, maker| ag = maker.call(tblreader.header); ag.update(ary); ag }

@@ -40,7 +40,7 @@ class Tb
     if header_fields.empty?
       reader = Tb::Reader.new(aa)
       arys = []
-      reader.each {|ary|
+      reader.each_values {|ary|
         arys << ary
       }
       header = reader.header

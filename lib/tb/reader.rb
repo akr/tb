@@ -80,6 +80,10 @@ class Tb::Reader
   end
 
   def each
+    raise NotImplementedError
+  end
+
+  def each_values
     while ary = self.shift
       yield ary
     end

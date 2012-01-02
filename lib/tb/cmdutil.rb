@@ -247,7 +247,7 @@ end
 
 def build_table(tblreader)
   arys = []
-  tblreader.each {|ary|
+  tblreader.each_values {|ary|
     arys << ary
   }
   header = tblreader.header

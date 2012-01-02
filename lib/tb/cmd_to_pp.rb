@@ -39,7 +39,7 @@ def (Tb::Cmd).main_to_pp(argv)
   with_output {|out|
     argv.each {|filename|
       tablereader_open(filename) {|tblreader|
-        tblreader.each {|ary|
+        tblreader.each_values {|ary|
           a = []
           ary.each_with_index {|v, i|
             next if v.nil?

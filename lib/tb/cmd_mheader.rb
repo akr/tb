@@ -54,7 +54,7 @@ def (Tb::Cmd).main_mheader(argv)
   end
   with_table_stream_output {|gen|
     Tb::CatReader.open(argv, true) {|tblreader|
-      tblreader.each {|ary|
+      tblreader.each_values {|ary|
         if header
           ary.each_with_index {|v,i|
             header[i] ||= []

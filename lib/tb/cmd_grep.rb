@@ -61,7 +61,7 @@ def (Tb::Cmd).main_grep(argv)
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     with_table_stream_output {|gen|
       gen.output_header tblreader.header
-      tblreader.each {|ary|
+      tblreader.each_values {|ary|
         h = {}
         ary.each_with_index {|str, i|
           f = tblreader.field_from_index_ex(i)

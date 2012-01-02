@@ -52,7 +52,7 @@ def (Tb::Cmd).main_gsub(argv)
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     with_table_stream_output {|gen|
       gen.output_header tblreader.header
-      tblreader.each {|ary|
+      tblreader.each_values {|ary|
         if Tb::Cmd.opt_gsub_f
           ary2 = []
           ary.each_with_index {|str, i|

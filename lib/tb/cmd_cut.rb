@@ -54,7 +54,7 @@ def (Tb::Cmd).main_cut(argv)
       end
       with_table_stream_output {|gen|
         gen.output_header(header)
-        tblreader.each {|ary|
+        tblreader.each_values {|ary|
           values = []
           ary.each_with_index {|v, i|
             values << v if !h[i]
@@ -68,7 +68,7 @@ def (Tb::Cmd).main_cut(argv)
       is = fs.map {|f| tblreader.index_from_field_ex(f) }
       with_table_stream_output {|gen|
         gen.output_header(is.map {|i| tblreader.field_from_index_ex(i) })
-        tblreader.each {|ary|
+        tblreader.each_values {|ary|
           gen << ary.values_at(*is)
         }
       }

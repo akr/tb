@@ -43,7 +43,7 @@ def (Tb::Cmd).main_to_json(argv)
     argv.each {|filename|
       sep = ",\n\n" if sep
       tablereader_open(filename) {|tblreader|
-        tblreader.each {|ary|
+        tblreader.each_values {|ary|
           out.print sep if sep
           header = tblreader.header
           h = {}
