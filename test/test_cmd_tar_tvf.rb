@@ -41,11 +41,117 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     @@tar_with_format_option = nil
   end
 
+  def with_stdin(io)
+    save = STDIN.dup
+    STDIN.reopen(io)
+    begin
+      yield
+    ensure
+      STDIN.reopen(save)
+      save.close
+    end
+  end
+
   def test_basic
     open('foo', 'w') {|f| }
     assert(system('tar cf bar.tar foo'))
     Tb::Cmd.main_tar_tvf(['-o', o='o.csv', 'bar.tar'])
     assert_match(/,foo,/, File.read(o))
+  end
+
+  def test_stdin
+    open('foo', 'w') {|f| }
+    assert(system('tar cf bar.tar foo'))
+    o = nil
+    open('bar.tar') {|f|
+      with_stdin(f) {
+        Tb::Cmd.main_tar_tvf(['-o', o='o.csv'])
+      }
+    }
+    assert_match(/,foo,/, File.read(o))
+  end
+
+  def test_pipe_stdin
+    open('foo', 'w') {|f| }
+    assert(system('tar cf bar.tar foo'))
+    o = nil
+    IO.popen('cat bar.tar') {|f|
+      with_stdin(f) {
+        Tb::Cmd.main_tar_tvf(['-o', o='o.csv'])
+      }
+    }
+    assert_match(/,foo,/, File.read(o))
+  end
+
+  def test_gzip
+    open('foo', 'w') {|f| }
+    assert(system('tar cf bar.tar foo'))
+    assert(system('gzip bar.tar'))
+    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', 'bar.tar.gz'])
+    assert_match(/,foo,/, File.read(o))
+  end
+
+  def test_gzip_stdin
+    open('foo', 'w') {|f| }
+    assert(system('tar cf bar.tar foo'))
+    assert(system('gzip bar.tar'))
+    o = nil
+    open('bar.tar.gz') {|f|
+      with_stdin(f) {
+        Tb::Cmd.main_tar_tvf(['-o', o='o.csv'])
+      }
+    }
+    assert_match(/,foo,/, File.read(o))
+  end
+
+  def test_gzip_pipe_stdin
+    open('foo', 'w') {|f| f << "oooo" }
+    assert(system('tar cf bar.tar foo'))
+    assert(system('gzip bar.tar'))
+    o = nil
+    IO.popen('cat bar.tar.gz') {|f|
+      with_stdin(f) {
+        Tb::Cmd.main_tar_tvf(['-o', o='o.csv'])
+      }
+    }
+    assert_match(/,foo,/, File.read(o))
+  end
+
+  def test_directory
+    Dir.mkdir("d")
+    open('d/foo', 'w') {|f| f << "hahaha" }
+    assert(system('tar cf bar.tar d'))
+    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+    result = File.read(o)
+    assert_match(%r{,d/,}, result)
+    assert_match(%r{,d/foo,}, result)
+  end
+
+  def test_hardlink
+    open('foo', 'w') {|f| f << "hahaha" }
+    File.link('foo', 'baz')
+    assert(system('tar cf bar.tar foo baz'))
+    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+    result = File.read(o)
+    assert_match(/,foo,/, result)
+    assert_match(/,h/, result)
+    assert_match(/,baz,foo,/, result)
+  end
+
+  def test_ustar_longpath
+    return unless tar_and_formats = tar_with_format_option
+    name = 'ABC' + 'a' * 90 + 'DEF/GHI' + 'b' * 90 + 'IJK'
+    Dir.mkdir(File.dirname(name))
+    open(name, 'w') {|f| }
+    %w[ustar gnu oldgnu pax].each {|format|
+      next unless tar_and_formats.last.include? format
+      tar = tar_and_formats.first
+      assert(system("#{tar} cf bar.tar --format=#{format} #{name}"))
+      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      result = File.read(o)
+      assert_equal(2, result.count("\n"), "tar format: #{format}")
+      assert_match(/,#{name},/, result)
+    }
   end
 
   def test_ext_longname
