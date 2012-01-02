@@ -46,4 +46,28 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     assert_match(/,#{name},/, result)
   end
 
+  def test_gnu_longlink
+    return unless gtar = gnu_tar
+    link = 'ABC' + 'a' * 200 + 'XYZ'
+    File.symlink(link, 'foo')
+    assert(system("#{gtar} cf bar.tar --format=gnu foo"))
+    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+    result = File.read(o)
+    assert_equal(2, result.count("\n"))
+    assert_match(/,#{link},/, result)
+  end
+
+  def test_gnu_longname_and_longlink
+    return unless gtar = gnu_tar
+    name = 'ABC' + 'a' * 200 + 'XYZ'
+    link = 'ABC' + 'b' * 200 + 'XYZ'
+    File.symlink(link, name)
+    assert(system("#{gtar} cf bar.tar --format=gnu #{name}"))
+    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+    result = File.read(o)
+    assert_equal(2, result.count("\n"))
+    assert_match(/,#{name},/, result)
+    assert_match(/,#{link},/, result)
+  end
+
 end

@@ -97,7 +97,7 @@ def (Tb::Cmd).tar_tvf_parse_header(header_record)
 end
 
 def (Tb::Cmd).tar_tvf_each(f)
-  prefix_parameters = nil
+  prefix_parameters = {}
   while true
     header_record = f.read(Tb::Cmd::TAR_RECORD_LENGTH)
     if !header_record
@@ -129,21 +129,22 @@ def (Tb::Cmd).tar_tvf_each(f)
     content_numrecords = (h[:size] + Tb::Cmd::TAR_RECORD_LENGTH - 1) / Tb::Cmd::TAR_RECORD_LENGTH
     content_blocklength = content_numrecords * Tb::Cmd::TAR_RECORD_LENGTH
     if !Tb::Cmd.opt_tar_tvf_ustar
-      if h[:typeflag] == 'L' # GNU
-        content_blocks = f.read(content_blocklength)
-        content = content_blocks[0, h[:size]][/\A[^\0]*/]
-        prefix_parameters ||= {}
+      case h[:typeflag]
+      when 'L' # GNU
+        content = f.read(content_blocklength)[0, h[:size]][/\A[^\0]*/]
         prefix_parameters[:path] = content
+        next
+      when 'K' # GNU
+        content = f.read(content_blocklength)[0, h[:size]][/\A[^\0]*/]
+        prefix_parameters[:linkname] = content
         next
       end
     end
-    if prefix_parameters
-      prefix_parameters.each {|k, v|
-        h[k] = v
-      }
-    end
+    prefix_parameters.each {|k, v|
+      h[k] = v
+    }
     yield h
-    prefix_parameters = nil
+    prefix_parameters = {}
     case Tb::Cmd::TAR_TYPEFLAG[h[:typeflag]]
     when :link, :symlink, :directory, :character_special, :block_special, :fifo
       # xxx: hardlink may have contents for posix archive.
