@@ -15,17 +15,30 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     FileUtils.rmtree @tmpdir
   end
 
-  def gnu_tar
-    return @@gnu_tar if defined? @@gnu_tar
-    commands = %w[gtar tar]
+  def tar_with_format_option
+    return @@tar_with_format_option if defined? @@tar_with_format_option
+    commands = %w[tar gtar]
     commands.each {|c|
       msg = IO.popen("exec 2>&1; LC_ALL=C #{c} --help") {|f| f.read }
-      if /GNU/ =~ msg
-        @@gnu_tar = c
-        return @@gnu_tar
+      if / --format \{(.*)\}/ =~ msg # bsdtar 2.7.0 (FreeBSD 8.2)
+        format_desc = $1
+        formats = []
+        formats << 'ustar' if /\bustar\b/ =~ format_desc
+        formats << 'pax' if /\bpax\b/ =~ format_desc
+        @@tar_with_format_option = [c, formats]
+        return @@tar_with_format_option
+      elsif / --format=FORMAT / =~ msg # GNU tar 1.23
+        formats = []
+        formats << 'gnu' if /\bgnu\b.*\bformat\b/ =~ format_desc
+        formats << 'oldgnu' if /\boldgnu\b.*\bformat\b/ =~ format_desc
+        formats << 'pax' if /\bpax\b.*\bformat\b/ =~ format_desc
+        formats << 'ustar' if /\bustar\b.*\bformat\b/ =~ format_desc
+        formats << 'v7' if /\bv7\b.*\bformat\b/ =~ format_desc
+        @@tar_with_format_option = [c, formats]
+        return @@tar_with_format_option
       end
     }
-    @@gnu_tar = nil
+    @@tar_with_format_option = nil
   end
 
   def test_basic
@@ -36,10 +49,12 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
   end
 
   def test_gnu_longname
-    return unless gtar = gnu_tar
+    return unless tar_and_formats = tar_with_format_option
+    return unless tar_and_formats.last.include? 'gnu'
+    tar = tar_and_formats.first
     name = 'ABC' + 'a' * 200 + 'XYZ'
     open(name, 'w') {|f| }
-    assert(system("#{gtar} cf bar.tar --format=gnu #{name}"))
+    assert(system("#{tar} cf bar.tar --format=gnu #{name}"))
     Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
     result = File.read(o)
     assert_equal(2, result.count("\n"))
@@ -47,10 +62,12 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
   end
 
   def test_gnu_longlink
-    return unless gtar = gnu_tar
+    return unless tar_and_formats = tar_with_format_option
+    return unless tar_and_formats.last.include? 'gnu'
+    tar = tar_and_formats.first
     link = 'ABC' + 'a' * 200 + 'XYZ'
     File.symlink(link, 'foo')
-    assert(system("#{gtar} cf bar.tar --format=gnu foo"))
+    assert(system("#{tar} cf bar.tar --format=gnu foo"))
     Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
     result = File.read(o)
     assert_equal(2, result.count("\n"))
@@ -58,11 +75,13 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
   end
 
   def test_gnu_longname_and_longlink
-    return unless gtar = gnu_tar
+    return unless tar_and_formats = tar_with_format_option
+    return unless tar_and_formats.last.include? 'gnu'
+    tar = tar_and_formats.first
     name = 'ABC' + 'a' * 200 + 'XYZ'
     link = 'ABC' + 'b' * 200 + 'XYZ'
     File.symlink(link, name)
-    assert(system("#{gtar} cf bar.tar --format=gnu #{name}"))
+    assert(system("#{tar} cf bar.tar --format=gnu #{name}"))
     Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
     result = File.read(o)
     assert_equal(2, result.count("\n"))
