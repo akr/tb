@@ -25,6 +25,18 @@
 module Tb::Enum
   include Enumerable
 
+  def each_arypair
+    self.each {|pairs|
+      ks = []
+      vs = []
+      pairs.each {|k, v|
+        ks << k
+        vs << v
+      }
+      yield [ks, vs]
+    }
+  end
+
   # creates a Tb::FileEnumerator object.
   #
   def fileenumerator
@@ -49,7 +61,7 @@ module Tb::Enum
     part_filename = "#{filename}.part"
     open(part_filename, "w") {|f|
       Tb.csv_stream_output(f) {|gen|
-        self.each {|ks, vs|
+        self.each_arypair {|ks, vs|
           if !keys_at_first
             keys_at_first = ks
             keys_at_last = ks

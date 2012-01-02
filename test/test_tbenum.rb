@@ -16,9 +16,9 @@ class TestTbEnum < Test::Unit::TestCase
 
   def test_write_to_csv_basic
     obj = [
-      [%w[a b c], [0, 1, 2]],
-      [%w[a b c], [3, 4, 5]],
-      [%w[a b c], [6, 7, 8]],
+      [['a', 0], ['b', 1], ['c', 2]],
+      [['a', 3], ['b', 4], ['c', 5]],
+      [['a', 6], ['b', 7], ['c', 8]],
     ]
     obj.extend Tb::Enum
     Dir.mktmpdir {|d|
@@ -34,9 +34,9 @@ class TestTbEnum < Test::Unit::TestCase
 
   def test_write_to_csv_header_extension
     obj = [
-      [%w[a], [0]],
-      [%w[b], [1]],
-      [%w[c], [2]],
+      [['a', 0]],
+      [['b', 1]],
+      [['c', 2]],
     ]
     obj.extend Tb::Enum
     Dir.mktmpdir {|d|
@@ -52,9 +52,9 @@ class TestTbEnum < Test::Unit::TestCase
 
   def test_write_to_csv_without_header
     obj = [
-      [%w[a], [0]],
-      [%w[b], [1]],
-      [%w[c], [2]],
+      [['a', 0]],
+      [['b', 1]],
+      [['c', 2]],
     ]
     obj.extend Tb::Enum
     Dir.mktmpdir {|d|
