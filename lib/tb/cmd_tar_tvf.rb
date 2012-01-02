@@ -142,15 +142,14 @@ def (Tb::Cmd).tar_tvf_each(f)
     content_numrecords = (h[:size] + Tb::Cmd::TAR_RECORD_LENGTH - 1) / Tb::Cmd::TAR_RECORD_LENGTH
     content_blocklength = content_numrecords * Tb::Cmd::TAR_RECORD_LENGTH
     if !Tb::Cmd.opt_tar_tvf_ustar
+      extension_header = true
       case h[:typeflag]
       when 'L' # GNU
         content = f.read(content_blocklength)[0, h[:size]][/\A[^\0]*/]
         prefix_parameters[:path] = content
-        next
       when 'K' # GNU
         content = f.read(content_blocklength)[0, h[:size]][/\A[^\0]*/]
         prefix_parameters[:linkname] = content
-        next
       when 'x' # pax (POSIX.1-2001)
         content = f.read(content_blocklength)[0, h[:size]]
         while /\A(\d+) / =~ content
@@ -178,7 +177,10 @@ def (Tb::Cmd).tar_tvf_each(f)
             end
           end
         end
+      else
+        extension_header = false
       end
+      next if extension_header
     end
     prefix_parameters.each {|k, v|
       if v.nil?

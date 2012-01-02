@@ -95,4 +95,22 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     }
   end
 
+  def test_mtime
+    return unless tar_and_formats = tar_with_format_option
+    name = 'foo'
+    open(name, 'w') {|f| }
+    mtime_from_epoch = 730479600
+    mtime = Time.at(mtime_from_epoch)
+    File.utime(mtime, mtime, name)
+    %w[v7 ustar oldgnu gnu pax].each {|format|
+      next unless tar_and_formats.last.include? format
+      tar = tar_and_formats.first
+      assert(system("#{tar} cf bar.tar --format=#{format} #{name}"))
+      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      result = File.read(o)
+      assert_equal(2, result.count("\n"), "tar format: #{format}")
+      assert_match(/,#{Regexp.escape mtime.iso8601},/, result)
+    }
+  end
+
 end
