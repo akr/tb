@@ -121,7 +121,6 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     atime = Time.at(atime_from_epoch)
     File.utime(atime, 0, name)
     %w[pax].each {|format|
-      # oldgnu and gnu can support atime, maybe.
       next unless tar_and_formats.last.include? format
       tar = tar_and_formats.first
       assert(system("#{tar} cf bar.tar --format=#{format} #{name}"))
