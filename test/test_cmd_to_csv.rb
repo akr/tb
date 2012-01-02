@@ -57,26 +57,34 @@ class TestTbCmdToCSV < Test::Unit::TestCase
     End
   end
 
+  def with_stdin(io)
+    save = STDIN.dup
+    STDIN.reopen(io)
+    begin
+      yield
+    ensure
+      STDIN.reopen(save)
+      save.close
+    end
+  end
+
   def test_noarg
     File.open(i="i.tsv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c
       0,1,2
       4,5,6
     End
-    save = STDIN.dup
-    input = File.open(i)
-    STDIN.reopen(input)
-    Tb::Cmd.main_to_csv(['-o', o="o.csv"])
-    STDIN.reopen(save)
-    save.close
+    o = nil
+    File.open(i) {|input|
+      with_stdin(input) {
+        Tb::Cmd.main_to_csv(['-o', o="o.csv"])
+      }
+    }
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b,c
       0,1,2
       4,5,6
     End
-  ensure
-    save.close if save && !save.closed?
-    input.close if input && !input.closed?
   end
 
   def test_pipeout
