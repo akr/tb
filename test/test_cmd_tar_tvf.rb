@@ -72,6 +72,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
   end
 
   def test_pipe_stdin
+    return unless Process.respond_to? :spawn
     open('foo', 'w') {|f| }
     assert(system('tar cf bar.tar foo'))
     o = nil
@@ -84,6 +85,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
   end
 
   def test_gzip
+    return unless Process.respond_to? :spawn
     open('foo', 'w') {|f| }
     assert(system('tar cf bar.tar foo'))
     assert(system('gzip bar.tar'))
@@ -92,6 +94,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
   end
 
   def test_gzip_stdin
+    return unless Process.respond_to? :spawn
     open('foo', 'w') {|f| }
     assert(system('tar cf bar.tar foo'))
     assert(system('gzip bar.tar'))
@@ -105,6 +108,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
   end
 
   def test_gzip_pipe_stdin
+    return unless Process.respond_to? :spawn
     open('foo', 'w') {|f| f << "oooo" }
     assert(system('tar cf bar.tar foo'))
     assert(system('gzip bar.tar'))
