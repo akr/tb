@@ -288,7 +288,7 @@ def (Tb::Cmd).tar_tvf_open_with(arg)
             w.close
           }
           begin
-            yield pipe
+            yield r
           ensure
             th.join
           end
