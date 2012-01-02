@@ -19,7 +19,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     return @@gnu_tar if defined? @@gnu_tar
     commands = %w[gtar tar]
     commands.each {|c|
-      msg = IO.popen("LC_ALL=C #{c} --help 2>&1") {|f| f.read }
+      msg = IO.popen("exec 2>&1; LC_ALL=C #{c} --help") {|f| f.read }
       if /GNU/ =~ msg
         @@gnu_tar = c
         return @@gnu_tar
