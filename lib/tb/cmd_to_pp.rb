@@ -43,12 +43,8 @@ def (Tb::Cmd).main_to_pp(argv)
   with_output {|out|
     argv.each {|filename|
       tablereader_open(filename) {|tblreader|
-        tblreader.each_values {|ary|
-          a = []
-          ary.each_with_index {|v, i|
-            next if v.nil?
-            a << [tblreader.field_from_index_ex(i), v]
-          }
+        tblreader.each {|pairs|
+          a = pairs.reject {|f, v| v.nil? }
           q = PP.new(out, 79)
           q.guard_inspect_key {
             q.group(1, '{', '}') {

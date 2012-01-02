@@ -113,7 +113,14 @@ class Tb::CatReader
   end
 
   def each
-    raise NotImplementedError
+    each_values {|ary|
+      pairs = []
+      ary.each_with_index {|v, i|
+        f = field_from_index_ex(i)
+        pairs << [f, v]
+      }
+      yield pairs
+    }
   end
 
   def each_values

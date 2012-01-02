@@ -65,15 +65,17 @@ def (Tb::Cmd).main_grep(argv)
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     with_table_stream_output {|gen|
       gen.output_header tblreader.header
-      tblreader.each_values {|ary|
+      tblreader.each {|pairs|
         h = {}
-        ary.each_with_index {|str, i|
-          f = tblreader.field_from_index_ex(i)
-          h[f] = str
+        pairs.each {|f, v|
+          h[f] = v
         }
         found = pred.call(h)
         found = opt_v ^ !!(found)
-        gen << ary if found
+        if found
+          ary = pairs.map {|f, v| v }
+          gen << ary
+        end
       }
     }
   }

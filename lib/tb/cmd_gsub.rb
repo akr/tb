@@ -56,25 +56,23 @@ def (Tb::Cmd).main_gsub(argv)
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     with_table_stream_output {|gen|
       gen.output_header tblreader.header
-      tblreader.each_values {|ary|
+      tblreader.each {|pairs|
         if Tb::Cmd.opt_gsub_f
-          ary2 = []
-          ary.each_with_index {|str, i|
-            f = tblreader.field_from_index_ex(i)
+          ary = pairs.map {|f, v|
             if f == Tb::Cmd.opt_gsub_f
-              str ||= ''
-              ary2 << str.gsub(re, repl)
+              v ||= ''
+              v.gsub(re, repl)
             else
-              ary2 << str
+              v
             end
           }
         else
-          ary2 = ary.map {|s|
-            s ||= ''
-            s.gsub(re, repl)
+          ary = pairs.map {|f, v|
+            v ||= ''
+            v.gsub(re, repl)
           }
         end
-        gen << ary2
+        gen << ary
       }
     }
   }

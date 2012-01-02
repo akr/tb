@@ -49,12 +49,12 @@ def (Tb::Cmd).main_newfield(argv)
     renamed_header = [field] + tblreader.header
     with_table_stream_output {|gen|
       gen.output_header(renamed_header)
-      tblreader.each_values {|ary|
+      tblreader.each {|pairs|
         h = {}
-        ary.each_with_index {|str, i|
-          f = tblreader.field_from_index_ex(i)
-          h[f] = str
+        pairs.each {|f, v|
+          h[f] = v
         }
+        ary = pairs.map {|f, v| v }
         gen << [pr.call(h), *ary]
       }
     }
