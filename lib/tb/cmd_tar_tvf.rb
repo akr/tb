@@ -74,7 +74,7 @@ Tb::Cmd::TAR_CSV_LONG_HEADER = %w[mode filemode uid user gid group devmajor devm
 def (Tb::Cmd).tar_tvf_parse_header(header_record)
   ary = header_record.unpack(Tb::Cmd::TAR_HEADER_TEPMLATE)
   h = {}
-  Tb::Cmd::TAR_HEADER_STRUCTURE.each_with_index {|(k, t), i|
+  Tb::Cmd::TAR_HEADER_STRUCTURE.each_with_index {|(k, _), i|
     h[k] = ary[i]
   }
   [:mode, :uid, :gid, :size, :mtime, :chksum, :devmajor, :devminor].each {|k|
