@@ -15,6 +15,28 @@ class TestTbCmdToCSV < Test::Unit::TestCase
     FileUtils.rmtree @tmpdir
   end
 
+  def with_stdin(io)
+    save = STDIN.dup
+    STDIN.reopen(io)
+    begin
+      yield
+    ensure
+      STDIN.reopen(save)
+      save.close
+    end
+  end
+
+  def with_stdout(io)
+    save = STDOUT.dup
+    STDOUT.reopen(io)
+    begin
+      yield
+    ensure
+      STDOUT.reopen(save)
+      save.close
+    end
+  end
+
   def test_basic
     File.open(i="i.tsv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a\tb\tc
@@ -57,17 +79,6 @@ class TestTbCmdToCSV < Test::Unit::TestCase
     End
   end
 
-  def with_stdin(io)
-    save = STDIN.dup
-    STDIN.reopen(io)
-    begin
-      yield
-    ensure
-      STDIN.reopen(save)
-      save.close
-    end
-  end
-
   def test_noarg
     File.open(i="i.tsv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c
@@ -95,12 +106,10 @@ class TestTbCmdToCSV < Test::Unit::TestCase
     End
     r, w = IO.pipe
     th = Thread.new { r.read }
-    save = STDOUT.dup
-    STDOUT.reopen(w)
-    w.close
-    Tb::Cmd.main_to_csv([i])
-    STDOUT.reopen(save)
-    save.close
+    with_stdout(w) {
+      w.close
+      Tb::Cmd.main_to_csv([i])
+    }
     result = th.value
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), result)
       a,b,c
@@ -110,7 +119,6 @@ class TestTbCmdToCSV < Test::Unit::TestCase
   ensure
     r.close if r && !r.closed?
     w.close if w && !w.closed?
-    save.close if save && !save.closed?
   end
 
   def test_twofile

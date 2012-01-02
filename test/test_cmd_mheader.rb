@@ -15,6 +15,17 @@ class TestTbCmdMheader < Test::Unit::TestCase
     FileUtils.rmtree @tmpdir
   end
 
+  def with_stderr(io)
+    save = STDERR.dup
+    STDERR.reopen(io)
+    begin
+      yield
+    ensure
+      STDERR.reopen(save)
+      save.close
+    end
+  end
+
   def test_basic
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
           ,2000,2000,2001,2001
@@ -49,17 +60,14 @@ class TestTbCmdMheader < Test::Unit::TestCase
       1,1
     End
     save = STDERR.dup
-    logf = File.open(log="log", "w")
-    STDERR.reopen(logf)
-    logf.close
-    Tb::Cmd.main_mheader(['-o', o="o.csv", i])
-    STDERR.reopen(save)
-    save.close
+    o = nil
+    File.open(log="log", "w") {|logf|
+      with_stderr(logf) {
+        Tb::Cmd.main_mheader(['-o', o="o.csv", i])
+      }
+    }
     assert_equal('', File.read(o))
     assert_match(/no header found/, File.read(log))
-  ensure
-    save.close if save && !save.closed?
-    logf.close if logf && !logf.closed?
   end
 
   def test_twofile
