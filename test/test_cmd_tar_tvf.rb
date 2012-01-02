@@ -47,6 +47,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     begin
       yield
     ensure
+      STDIN.read # discard unread data.
       STDIN.reopen(save)
       save.close
     end
