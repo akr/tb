@@ -16,24 +16,22 @@ class TestTbCmdToCSV < Test::Unit::TestCase
   end
 
   def with_stdin(io)
-    save = $stdin.dup
-    $stdin.reopen(io)
+    save = $stdin
+    $stdin = io
     begin
       yield
     ensure
-      $stdin.reopen(save)
-      save.close
+      $stdin = save
     end
   end
 
   def with_stdout(io)
-    save = $stdout.dup
-    $stdout.reopen(io)
+    save = $stdout
+    $stdout = io
     begin
       yield
     ensure
-      $stdout.reopen(save)
-      save.close
+      $stdout = save
     end
   end
 
@@ -107,8 +105,8 @@ class TestTbCmdToCSV < Test::Unit::TestCase
     r, w = IO.pipe
     th = Thread.new { r.read }
     with_stdout(w) {
-      w.close
       Tb::Cmd.main_to_csv([i])
+      w.close
     }
     result = th.value
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), result)

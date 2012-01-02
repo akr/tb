@@ -30,7 +30,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
     end
   end
 
-  def with_stdout(io)
+  def with_real_stdout(io)
     save = $stdout.dup
     $stdout.reopen(io)
     begin
@@ -68,7 +68,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
         s.raw!
         s.winsize = [2, 80]
         th = reader_thread(m)
-        with_stdout(s) {
+        with_real_stdout(s) {
           Tb::Cmd.main_to_csv([i])
         }
         s.close
@@ -93,7 +93,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
         s.raw!
         s.winsize = [24, 80]
         th = reader_thread(m)
-        with_stdout(s) {
+        with_real_stdout(s) {
           Tb::Cmd.main_to_csv([i])
         }
         s.close
@@ -117,7 +117,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
         s.raw!
         s.winsize = [3, 10]
         th = reader_thread(m)
-        with_stdout(s) {
+        with_real_stdout(s) {
           Tb::Cmd.main_to_csv([i])
         }
         s.close
@@ -140,7 +140,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
         s.raw!
         s.winsize = [0, 0]
         th = reader_thread(m)
-        with_stdout(s) {
+        with_real_stdout(s) {
           Tb::Cmd.main_to_csv([i])
         }
         s.close

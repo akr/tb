@@ -16,24 +16,22 @@ class TestTbCmdHelp < Test::Unit::TestCase
   end
 
   def with_stdout(io)
-    save = $stdout.dup
-    $stdout.reopen(io)
+    save = $stdout
+    $stdout = io
     begin
       yield
     ensure
-      $stdout.reopen(save)
-      save.close
+      $stdout = save
     end
   end
 
   def with_stderr(io)
-    save = $stderr.dup
-    $stderr.reopen(io)
+    save = $stderr
+    $stderr = io
     begin
       yield
     ensure
-      $stderr.reopen(save)
-      save.close
+      $stderr = save
     end
   end
 

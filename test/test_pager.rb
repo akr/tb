@@ -26,13 +26,12 @@ class TestTbPager < Test::Unit::TestCase
   end
 
   def with_stdout(io)
-    save = $stdout.dup
-    $stdout.reopen(io)
+    save = $stdout
+    $stdout = io
     begin
       yield
     ensure
-      $stdout.reopen(save)
-      save.close
+      $stdout = save
     end
   end
 

@@ -16,13 +16,12 @@ class TestTbCmdLs < Test::Unit::TestCase
   end
 
   def with_stderr(io)
-    save = $stderr.dup
-    $stderr.reopen(io)
+    save = $stderr
+    $stderr = io
     begin
       yield
     ensure
-      $stderr.reopen(save)
-      save.close
+      $stderr = save
     end
   end
 
