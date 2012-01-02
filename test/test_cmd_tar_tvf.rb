@@ -19,7 +19,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     return @@gnu_tar if defined? @@gnu_tar
     commands = %w[gtar tar]
     commands.each {|c|
-      msg = IO.popen("LC_ALL=C #{c} --help 1>&2") {|f| f.read }
+      msg = IO.popen("LC_ALL=C #{c} --help 2>&1") {|f| f.read }
       if /GNU/ =~ msg
         @@gnu_tar = c
         return @@gnu_tar
@@ -35,10 +35,11 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     assert_match(/,foo,/, File.read(o))
   end
 
-  def test_longname
+  def test_gnu_longname
+    return unless gtar = gnu_tar
     name = 'ABC' + 'a' * 200 + 'XYZ'
     open(name, 'w') {|f| }
-    assert(system("tar cf bar.tar #{name}"))
+    assert(system("#{gtar} cf bar.tar --format=gnu #{name}"))
     Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
     result = File.read(o)
     assert_equal(2, result.count("\n"))
