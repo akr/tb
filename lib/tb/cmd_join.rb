@@ -65,13 +65,13 @@ def (Tb::Cmd).main_join(argv)
   if retain_left || retain_right
     argv.each {|filename|
       tbl = load_table(filename)
-      STDERR.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= Tb::Cmd.opt_debug
+      $stderr.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= Tb::Cmd.opt_debug
       result = result.natjoin2_outer(tbl, Tb::Cmd.opt_join_outer_missing, retain_left, retain_right)
     }
   else
     argv.each {|filename|
       tbl = load_table(filename)
-      STDERR.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= Tb::Cmd.opt_debug
+      $stderr.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= Tb::Cmd.opt_debug
       result = result.natjoin2(tbl)
     }
   end

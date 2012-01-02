@@ -239,7 +239,7 @@ excel = WIN32OLE.new('Excel.Application')
 WIN32OLE.const_load(excel,Excel)
 begin
   excel.displayAlerts = false
-  Tb.csv_stream_output(STDOUT) {|csvgen|
+  Tb.csv_stream_output($stdout) {|csvgen|
     ARGV.each {|excel_filename|
       if File.directory? excel_filename
         filenames = []

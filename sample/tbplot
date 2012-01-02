@@ -37,7 +37,7 @@ require 'time'
 require 'tb'
 
 def err(msg)
-  STDERR.puts msg
+  $stderr.puts msg
   exit false
 end
 

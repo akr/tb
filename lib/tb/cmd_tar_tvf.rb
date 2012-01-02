@@ -228,7 +228,7 @@ end
 
 def (Tb::Cmd).tar_tvf_open_with0(arg)
   if arg == '-'
-    yield STDIN
+    yield $stdin
   else
     open(arg, 'rb') {|f|
       yield f

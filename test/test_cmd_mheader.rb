@@ -16,12 +16,12 @@ class TestTbCmdMheader < Test::Unit::TestCase
   end
 
   def with_stderr(io)
-    save = STDERR.dup
-    STDERR.reopen(io)
+    save = $stderr.dup
+    $stderr.reopen(io)
     begin
       yield
     ensure
-      STDERR.reopen(save)
+      $stderr.reopen(save)
       save.close
     end
   end
@@ -59,7 +59,7 @@ class TestTbCmdMheader < Test::Unit::TestCase
       a,a
       1,1
     End
-    save = STDERR.dup
+    save = $stderr.dup
     o = nil
     File.open(log="log", "w") {|logf|
       with_stderr(logf) {

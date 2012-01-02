@@ -317,11 +317,11 @@ def with_output
     ensure
       File.unlink tmp if File.exist? tmp
     end
-  elsif STDOUT.tty? && !Tb::Cmd.opt_no_pager
+  elsif $stdout.tty? && !Tb::Cmd.opt_no_pager
     Tb::Pager.open {|pager|
       yield pager
     }
   else
-    yield STDOUT
+    yield $stdout
   end
 end

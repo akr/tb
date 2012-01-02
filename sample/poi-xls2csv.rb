@@ -382,7 +382,7 @@ def convert_book(filename, input, csvgen)
   end
 end
 
-Tb.csv_stream_output(STDOUT) {|csvgen|
+Tb.csv_stream_output($stdout) {|csvgen|
   argv = ARGV.empty? ? ['-'] : ARGV
   argv.each {|filename|
     if filename == '-'

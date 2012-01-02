@@ -14,11 +14,11 @@ class Tb::Pager
   end
 
   def initialize
-    if STDOUT.tty?
+    if $stdout.tty?
       @io = nil
       @buf = ''
     else
-      @io = STDOUT
+      @io = $stdout
       @buf = nil
     end
   end
@@ -81,8 +81,8 @@ class Tb::Pager
   DEFAULT_COLUMNS = 80
 
   def winsize
-    if STDOUT.respond_to? :winsize
-      lines, columns = STDOUT.winsize
+    if $stdout.respond_to? :winsize
+      lines, columns = $stdout.winsize
       return [lines, columns] if lines != 0 && columns != 0
     end
     [DEFAULT_LINES, DEFAULT_COLUMNS]
@@ -122,10 +122,10 @@ class Tb::Pager
 
   def close
     if !@io
-      STDOUT.print @buf
+      $stdout.print @buf
     else
       # don't need to ouput @buf because @buf is nil.
-      @io.close if @io != STDOUT
+      @io.close if @io != $stdout
     end
     nil
   end

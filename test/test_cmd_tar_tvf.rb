@@ -42,13 +42,13 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
   end
 
   def with_stdin(io)
-    save = STDIN.dup
-    STDIN.reopen(io)
+    save = $stdin.dup
+    $stdin.reopen(io)
     begin
       yield
     ensure
-      STDIN.read # discard unread data.
-      STDIN.reopen(save)
+      $stdin.read # discard unread data.
+      $stdin.reopen(save)
       save.close
     end
   end

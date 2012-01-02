@@ -17,10 +17,10 @@ at_exit {
     %r{lib/tb[/.]} !~ f
   }
   if !fs.empty?
-    if STDOUT.tty?
+    if $stdout.tty?
       out = IO.popen(['less', '-S', '-j20', '+/ 0:'], 'w')
     else
-      out = STDOUT
+      out = $stdout
     end
     pat = nil
     fs[0].chars.to_a.reverse_each {|ch|
@@ -55,7 +55,7 @@ at_exit {
         end
       }
     }
-    if out != STDOUT
+    if out != $stdout
       out.close
     end
   end

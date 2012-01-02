@@ -39,7 +39,7 @@ end
 def (Tb::Cmd).main(argv)
   main_body(argv)
 rescue SystemExit
-  STDERR.puts $!.message if $!.message != 'exit'
+  $stderr.puts $!.message if $!.message != 'exit'
   raise
 end
 

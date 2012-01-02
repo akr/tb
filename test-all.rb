@@ -4,7 +4,7 @@ $:.unshift "lib"
 
 r, w = IO.pipe
 w.close
-STDIN.reopen(r)
+$stdin.reopen(r)
 r.close
 
 Dir.glob('test/test_*.rb') {|filename|

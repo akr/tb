@@ -16,23 +16,23 @@ class TestTbCmdToCSV < Test::Unit::TestCase
   end
 
   def with_stdin(io)
-    save = STDIN.dup
-    STDIN.reopen(io)
+    save = $stdin.dup
+    $stdin.reopen(io)
     begin
       yield
     ensure
-      STDIN.reopen(save)
+      $stdin.reopen(save)
       save.close
     end
   end
 
   def with_stdout(io)
-    save = STDOUT.dup
-    STDOUT.reopen(io)
+    save = $stdout.dup
+    $stdout.reopen(io)
     begin
       yield
     ensure
-      STDOUT.reopen(save)
+      $stdout.reopen(save)
       save.close
     end
   end

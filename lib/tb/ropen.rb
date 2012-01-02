@@ -50,7 +50,7 @@ class Tb::Reader
       raise ArgumentError, "unexpected filename: #{filename.inspect}"
     end
     if filename == '-'
-      rawreader = rawreader_maker.call(STDIN)
+      rawreader = rawreader_maker.call($stdin)
     else
       io = File.open(filename)
       opts[:close] = io
