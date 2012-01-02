@@ -138,6 +138,37 @@ def (Tb::Cmd).tar_tvf_each(f)
         content = f.read(content_blocklength)[0, h[:size]][/\A[^\0]*/]
         prefix_parameters[:linkname] = content
         next
+      when 'x' # pax (POSIX.1-2001)
+        content = f.read(content_blocklength)[0, h[:size]]
+        while /\A(\d+) / =~ content
+          lenlen = $&.length
+          len = $1.to_i
+          param = content[lenlen, len-lenlen]
+          content = content[len..-1]
+          if /\n\z/ =~ param
+            param.chomp!("\n")
+          else
+            warn "pax hearder record doesn't end with a newline: #{param.inspect}"
+          end
+          if /=/ !~ param
+            warn "pax hearder record doesn't contain a equal character: #{param.inspect}"
+          else
+            key = $`
+            val = $'
+            case key
+            when 'atime' then prefix_parameters[:atime] = Time.at(val.to_f) # xxx: to_f is not accurate
+            when 'mtime' then prefix_parameters[:mtime] = Time.at(val.to_f) # xxx: to_f is not accurate
+            when 'ctime' then prefix_parameters[:ctime] = Time.at(val.to_f) # xxx: to_f is not accurate
+            when 'gid' then prefix_parameters[:gid] = val.to_i
+            when 'gname' then prefix_parameters[:gname] = val
+            when 'uid' then prefix_parameters[:uid] = val.to_i
+            when 'uname' then prefix_parameters[:uname] = val
+            when 'linkpath' then prefix_parameters[:linkname] = val
+            when 'path' then prefix_parameters[:path] = val
+            when 'size' then prefix_parameters[:size] = val.to_i
+            end
+          end
+        end
       end
     end
     prefix_parameters.each {|k, v|

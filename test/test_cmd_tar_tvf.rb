@@ -48,45 +48,51 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     assert_match(/,foo,/, File.read(o))
   end
 
-  def test_gnu_longname
+  def test_ext_longname
     return unless tar_and_formats = tar_with_format_option
-    return unless tar_and_formats.last.include? 'gnu'
-    tar = tar_and_formats.first
     name = 'ABC' + 'a' * 200 + 'XYZ'
     open(name, 'w') {|f| }
-    assert(system("#{tar} cf bar.tar --format=gnu #{name}"))
-    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
-    result = File.read(o)
-    assert_equal(2, result.count("\n"))
-    assert_match(/,#{name},/, result)
+    %w[gnu oldgnu pax].each {|format|
+      next unless tar_and_formats.last.include? format
+      tar = tar_and_formats.first
+      assert(system("#{tar} cf bar.tar --format=#{format} #{name}"))
+      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      result = File.read(o)
+      assert_equal(2, result.count("\n"), "tar format: #{format}")
+      assert_match(/,#{name},/, result)
+    }
   end
 
-  def test_gnu_longlink
+  def test_ext_longlink
     return unless tar_and_formats = tar_with_format_option
-    return unless tar_and_formats.last.include? 'gnu'
-    tar = tar_and_formats.first
     link = 'ABC' + 'a' * 200 + 'XYZ'
     File.symlink(link, 'foo')
-    assert(system("#{tar} cf bar.tar --format=gnu foo"))
-    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
-    result = File.read(o)
-    assert_equal(2, result.count("\n"))
-    assert_match(/,#{link},/, result)
+    %w[gnu oldgnu pax].each {|format|
+      next unless tar_and_formats.last.include? format
+      tar = tar_and_formats.first
+      assert(system("#{tar} cf bar.tar --format=#{format} foo"))
+      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      result = File.read(o)
+      assert_equal(2, result.count("\n"), "tar format: #{format}")
+      assert_match(/,#{link},/, result)
+    }
   end
 
-  def test_gnu_longname_and_longlink
+  def test_ext_longname_and_longlink
     return unless tar_and_formats = tar_with_format_option
-    return unless tar_and_formats.last.include? 'gnu'
-    tar = tar_and_formats.first
     name = 'ABC' + 'a' * 200 + 'XYZ'
     link = 'ABC' + 'b' * 200 + 'XYZ'
     File.symlink(link, name)
-    assert(system("#{tar} cf bar.tar --format=gnu #{name}"))
-    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
-    result = File.read(o)
-    assert_equal(2, result.count("\n"))
-    assert_match(/,#{name},/, result)
-    assert_match(/,#{link},/, result)
+    %w[gnu oldgnu pax].each {|format|
+      next unless tar_and_formats.last.include? format
+      tar = tar_and_formats.first
+      assert(system("#{tar} cf bar.tar --format=#{format} #{name}"))
+      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      result = File.read(o)
+      assert_equal(2, result.count("\n"))
+      assert_match(/,#{name},/, result)
+      assert_match(/,#{link},/, result)
+    }
   end
 
 end
