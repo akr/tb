@@ -58,7 +58,6 @@ class TestTbCmdMheader < Test::Unit::TestCase
       a,a
       1,1
     End
-    save = $stderr.dup
     o = nil
     File.open(log="log", "w") {|logf|
       with_stderr(logf) {
