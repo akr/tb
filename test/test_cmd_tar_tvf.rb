@@ -29,11 +29,11 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
         return @@tar_with_format_option
       elsif / --format=FORMAT / =~ msg # GNU tar 1.23
         formats = []
-        formats << 'gnu' if /\bgnu\b.*\bformat\b/ =~ format_desc
-        formats << 'oldgnu' if /\boldgnu\b.*\bformat\b/ =~ format_desc
-        formats << 'pax' if /\bpax\b.*\bformat\b/ =~ format_desc
-        formats << 'ustar' if /\bustar\b.*\bformat\b/ =~ format_desc
-        formats << 'v7' if /\bv7\b.*\bformat\b/ =~ format_desc
+        formats << 'gnu' if /\bgnu\b.*\bformat\b/ =~ msg
+        formats << 'oldgnu' if /\boldgnu\b.*\bformat\b/ =~ msg
+        formats << 'pax' if /\bpax\b.*\bformat\b/ =~ msg
+        formats << 'ustar' if /\bustar\b.*\bformat\b/ =~ msg
+        formats << 'v7' if /\bv7\b.*\bformat\b/ =~ msg
         @@tar_with_format_option = [c, formats]
         return @@tar_with_format_option
       end
