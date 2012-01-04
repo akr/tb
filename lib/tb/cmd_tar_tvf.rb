@@ -129,7 +129,26 @@ def (Tb::Cmd).tar_tvf_parse_header(header_record)
   h
 end
 
+def (Tb::Cmd).tar_tvf_read_end_of_archive_indicator(f)
+  second_end_of_archive_indicator_record = f.read(Tb::Cmd::TAR_RECORD_LENGTH)
+  if !second_end_of_archive_indicator_record
+    warn "premature end of tar archive indicator (no second record)"
+    return
+  end
+  if second_end_of_archive_indicator_record.length != Tb::Cmd::TAR_RECORD_LENGTH
+    warn "premature end of second record of end of tar archive indicator"
+    return
+  end
+  if /\A\0*\z/ !~ second_end_of_archive_indicator_record
+    warn "The second record of end of tar archive indicator is not zero"
+    return
+  end
+  # There may be garbage after the end of tar archive indicator. 
+  # It is acceptable.  ("ustar Interchange Format" in POSIX)
+end
+
 def (Tb::Cmd).tar_tvf_each(f)
+  offset = 0
   prefix_parameters = {}
   while true
     header_record = f.read(Tb::Cmd::TAR_RECORD_LENGTH)
@@ -141,21 +160,7 @@ def (Tb::Cmd).tar_tvf_each(f)
       break
     end
     if /\A\0*\z/ =~ header_record
-      second_end_of_archive_indicator_record = f.read(Tb::Cmd::TAR_RECORD_LENGTH)
-      if !second_end_of_archive_indicator_record
-        warn "premature end of tar archive indicator (no second record)"
-        break
-      end
-      if second_end_of_archive_indicator_record.length != Tb::Cmd::TAR_RECORD_LENGTH
-        warn "premature end of second record of end of tar archive indicator"
-        break
-      end
-      if /\A\0*\z/ !~ header_record
-        warn "The second record of end of tar archive indicator is not zero"
-        break
-      end
-      # There may be garbage after the end of tar archive indicator. 
-      # It is acceptable.  ("ustar Interchange Format" in POSIX)
+      tar_tvf_read_end_of_archive_indicator(f)
       break
     end
     h = tar_tvf_parse_header(header_record)
