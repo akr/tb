@@ -104,7 +104,7 @@ Tb::Cmd::TAR_PAX_KEYWORD_RECOGNIZERS = {
 }
 
 Tb::Cmd::TAR_CSV_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime path linkname]
-Tb::Cmd::TAR_CSV_LONG_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime atime ctime path linkname tar_typeflag tar_magic tar_version tar_chksum]
+Tb::Cmd::TAR_CSV_LONG_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime atime ctime path linkname size_in_tar tar_typeflag tar_magic tar_version tar_chksum]
 
 def (Tb::Cmd).tar_tvf_parse_header(header_record)
   ary = header_record.unpack(Tb::Cmd::TAR_HEADER_TEPMLATE)
@@ -254,6 +254,7 @@ def (Tb::Cmd).tar_tvf_check_extension_record(reader, h, content_blocklength)
 end
 
 def (Tb::Cmd).tar_tvf_each(f)
+  offset = 0
   reader = Tb::Cmd::TarReader.new(f)
   prefix_parameters = {}
   while true
@@ -282,14 +283,16 @@ def (Tb::Cmd).tar_tvf_each(f)
         h[k] = v
       end
     }
-    yield h
-    prefix_parameters = {}
     case Tb::Cmd::TAR_TYPEFLAG[h[:typeflag]]
     when :link, :symlink, :directory, :character_special, :block_special, :fifo
       # xxx: hardlink may have contents for posix archive.
-      next
+    else
+      reader.skip(content_blocklength, 'file content')
     end
-    reader.skip(content_blocklength, 'file content')
+    h[:size_in_tar] = reader.offset - offset
+    yield h
+    offset = reader.offset
+    prefix_parameters = {}
   end
 end
 
@@ -424,6 +427,7 @@ def (Tb::Cmd).main_tar_tvf(argv)
           formatted["devminor"] = h[:devminor].to_s
           formatted["path"] = h[:path]
           formatted["linkname"] = h[:linkname]
+          formatted["size_in_tar"] = h[:size_in_tar]
           formatted["tar_chksum"] = h[:chksum]
           formatted["tar_typeflag"] = h[:typeflag]
           formatted["tar_magic"] = h[:magic]
