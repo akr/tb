@@ -129,83 +129,151 @@ def (Tb::Cmd).tar_tvf_parse_header(header_record)
   h
 end
 
-def (Tb::Cmd).tar_tvf_read_end_of_archive_indicator(f)
-  second_end_of_archive_indicator_record = f.read(Tb::Cmd::TAR_RECORD_LENGTH)
-  if !second_end_of_archive_indicator_record
-    warn "premature end of tar archive indicator (no second record)"
-    return
+class Tb::Cmd::TarFormatError < StandardError
+end
+
+class Tb::Cmd::TarReader
+  def initialize(input)
+    @input = input
+    @offset = 0
   end
-  if second_end_of_archive_indicator_record.length != Tb::Cmd::TAR_RECORD_LENGTH
-    warn "premature end of second record of end of tar archive indicator"
-    return
+  attr_reader :offset
+
+  def get_single_record(kind)
+    record = @input.read(Tb::Cmd::TAR_RECORD_LENGTH)
+    if !record
+      return nil
+    end
+    if record.length != Tb::Cmd::TAR_RECORD_LENGTH
+      warn "premature end of tar archive (#{kind})"
+      raise Tb::Cmd::TarFormatError
+    end
+    @offset += Tb::Cmd::TAR_RECORD_LENGTH
+    record
   end
+
+  def read_single_record(kind)
+    record = get_single_record(kind)
+    if !record
+      warn "premature end of tar archive (#{kind})"
+      raise Tb::Cmd::TarFormatError
+    end
+    record
+  end
+
+  def read_exactly(size, kind)
+    record = @input.read(size)
+    if !record
+      warn "premature end of tar archive (#{kind})"
+      raise Tb::Cmd::TarFormatError
+    end
+    if record.length != size
+      warn "premature end of tar archive (#{kind})"
+      raise Tb::Cmd::TarFormatError
+    end
+    @offset += size
+    record
+  end
+
+  def skip(size, kind)
+    begin
+      @input.seek(size, IO::SEEK_CUR)
+    rescue Errno::ESPIPE
+      rest = size
+      while 0 < rest
+        if rest < 4096
+          s = rest
+        else
+          s = 4096
+        end
+        ret = @input.read(s)
+        if !ret || ret.length != s
+          warn "premature end of tar archive content (#{kind})"
+          raise Tb::Cmd::TarFormatError
+        end
+        rest -= s
+      end
+    end
+    @offset += size
+  end
+end
+
+def (Tb::Cmd).tar_tvf_read_end_of_archive_indicator(reader)
+  # The end of archive indicator is two consecutive records of NULs.
+  # The first record is already read.
+  second_end_of_archive_indicator_record = reader.read_single_record("second record of the end of archive indicator")
   if /\A\0*\z/ !~ second_end_of_archive_indicator_record
     warn "The second record of end of tar archive indicator is not zero"
-    return
+    raise Tb::Cmd::TarFormatError
   end
-  # There may be garbage after the end of tar archive indicator. 
-  # It is acceptable.  ("ustar Interchange Format" in POSIX)
+  # It is acceptable that there may be garbage after the end of tar
+  # archive indicator.  ("ustar Interchange Format" in POSIX)
+end
+
+def (Tb::Cmd).tar_tvf_check_extension_record(reader, h, content_blocklength)
+  prefix_parameters = {}
+  case h[:typeflag]
+  when 'L' # GNU
+    content = reader.read_exactly(content_blocklength, 'GNU long file name')[0, h[:size]][/\A[^\0]*/]
+    prefix_parameters[:path] = content
+    return prefix_parameters
+  when 'K' # GNU
+    content = reader.read_exactly(content_blocklength, 'GNU long link name')[0, h[:size]][/\A[^\0]*/]
+    prefix_parameters[:linkname] = content
+    return prefix_parameters
+  when 'x' # pax (POSIX.1-2001)
+    content = reader.read_exactly(content_blocklength, 'pax Extended Header content')[0, h[:size]]
+    while /\A(\d+) / =~ content
+      lenlen = $&.length
+      len = $1.to_i
+      param = content[lenlen, len-lenlen]
+      content = content[len..-1]
+      if /\n\z/ =~ param
+        param.chomp!("\n")
+      else
+        warn "pax hearder record doesn't end with a newline: #{param.inspect}"
+      end
+      if /=/ !~ param
+        warn "pax hearder record doesn't contain a equal character: #{param.inspect}"
+      else
+        key = $`
+        val = $'
+        if Tb::Cmd::TAR_PAX_KEYWORD_RECOGNIZERS[key]
+          if val == ''
+            prefix_parameters[symkey] = nil
+          else
+            symkey, recognizer = Tb::Cmd::TAR_PAX_KEYWORD_RECOGNIZERS[key]
+            prefix_parameters[symkey] = recognizer.call(val)
+          end
+        end
+      end
+    end
+    return prefix_parameters
+  end
+  nil
 end
 
 def (Tb::Cmd).tar_tvf_each(f)
-  offset = 0
+  reader = Tb::Cmd::TarReader.new(f)
   prefix_parameters = {}
   while true
-    header_record = f.read(Tb::Cmd::TAR_RECORD_LENGTH)
+    header_record = reader.get_single_record("file header")
     if !header_record
       break
     end
-    if header_record.length != Tb::Cmd::TAR_RECORD_LENGTH
-      warn "premature end of tar archive"
-      break
-    end
     if /\A\0*\z/ =~ header_record
-      tar_tvf_read_end_of_archive_indicator(f)
+      tar_tvf_read_end_of_archive_indicator(reader)
       break
     end
     h = tar_tvf_parse_header(header_record)
     content_numrecords = (h[:size] + Tb::Cmd::TAR_RECORD_LENGTH - 1) / Tb::Cmd::TAR_RECORD_LENGTH
     content_blocklength = content_numrecords * Tb::Cmd::TAR_RECORD_LENGTH
     if !Tb::Cmd.opt_tar_tvf_ustar
-      extension_header = true
-      case h[:typeflag]
-      when 'L' # GNU
-        content = f.read(content_blocklength)[0, h[:size]][/\A[^\0]*/]
-        prefix_parameters[:path] = content
-      when 'K' # GNU
-        content = f.read(content_blocklength)[0, h[:size]][/\A[^\0]*/]
-        prefix_parameters[:linkname] = content
-      when 'x' # pax (POSIX.1-2001)
-        content = f.read(content_blocklength)[0, h[:size]]
-        while /\A(\d+) / =~ content
-          lenlen = $&.length
-          len = $1.to_i
-          param = content[lenlen, len-lenlen]
-          content = content[len..-1]
-          if /\n\z/ =~ param
-            param.chomp!("\n")
-          else
-            warn "pax hearder record doesn't end with a newline: #{param.inspect}"
-          end
-          if /=/ !~ param
-            warn "pax hearder record doesn't contain a equal character: #{param.inspect}"
-          else
-            key = $`
-            val = $'
-            if Tb::Cmd::TAR_PAX_KEYWORD_RECOGNIZERS[key]
-              if val == ''
-                prefix_parameters[symkey] = nil
-              else
-                symkey, recognizer = Tb::Cmd::TAR_PAX_KEYWORD_RECOGNIZERS[key]
-                prefix_parameters[symkey] = recognizer.call(val)
-              end
-            end
-          end
-        end
-      else
-        extension_header = false
+      extension_params = tar_tvf_check_extension_record(reader, h, content_blocklength)
+      if extension_params
+        prefix_parameters.update extension_params
+        next
       end
-      next if extension_header
     end
     prefix_parameters.each {|k, v|
       if v.nil?
@@ -221,17 +289,7 @@ def (Tb::Cmd).tar_tvf_each(f)
       # xxx: hardlink may have contents for posix archive.
       next
     end
-    begin
-      f.seek(content_blocklength, IO::SEEK_CUR)
-    rescue Errno::ESPIPE
-      content_numrecords.times {
-        ret = f.read(Tb::Cmd::TAR_RECORD_LENGTH)
-        if !ret || ret.length != Tb::Cmd::TAR_RECORD_LENGTH
-          warn "premature end of tar archive content"
-          break
-        end
-      }
-    end
+    reader.skip(content_blocklength, 'file content')
   end
 end
 
