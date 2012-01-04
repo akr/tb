@@ -61,6 +61,7 @@ class Tb::Reader
       rawreader = rawreader_maker.call(io)
     end
     reader = self.new(rawreader, opts)
+    reader.filename = filename
     if block_given?
       begin
         yield reader

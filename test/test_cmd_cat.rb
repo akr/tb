@@ -115,4 +115,21 @@ class TestTbCmdCat < Test::Unit::TestCase
     End
   end
 
+  def test_with_filename
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      1,2,3
+    End
+    File.open(i2="i2.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      4,5,6
+    End
+    Tb::Cmd.main_cat(['-o', o="o.csv", '--with-filename', i1, i2])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      filename,a,b,c
+      i1.csv,1,2,3
+      i2.csv,4,5,6
+    End
+  end
+
 end

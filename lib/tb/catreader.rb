@@ -91,7 +91,7 @@ class Tb::CatReader
     @fieldset.field_from_index(i)
   end
 
-  def shift
+  def shift_with_filename
     self.header
     while !@readers.empty?
       r = @readers.first
@@ -104,10 +104,29 @@ class Tb::CatReader
           i2 = @fieldset.index_from_field_ex(f)
           ary2[i2] = v
         }
-        return ary2
+        return ary2, r.filename
       else
         @readers.shift
       end
+    end
+    nil
+  end
+
+  def shift
+    ary, filename = shift_with_filename
+    ary
+  end
+
+  def each_values_with_filename
+    while ary_filename = self.shift_with_filename
+      yield ary_filename
+    end
+    nil
+  end
+
+  def each_values
+    while ary = self.shift
+      yield ary
     end
     nil
   end
@@ -121,13 +140,6 @@ class Tb::CatReader
       }
       yield pairs
     }
-  end
-
-  def each_values
-    while ary = self.shift
-      yield ary
-    end
-    nil
   end
 
   def read_all

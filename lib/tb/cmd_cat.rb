@@ -28,11 +28,14 @@
 
 Tb::Cmd.subcommands << 'cat'
 
+Tb::Cmd.default_option[:opt_cat_with_filename] = nil
+
 def (Tb::Cmd).op_cat
   op = OptionParser.new
   op.banner = "Usage: tb cat [OPTS] [TABLE ...]\n" +
     "Concatenate tables vertically."
   define_common_option(op, "hNo", "--no-pager")
+  op.def_option('-H', '--with-filename', 'add filename column') { Tb::Cmd.opt_cat_with_filename = true }
   op
 end
 
@@ -61,9 +64,15 @@ def (Tb::Cmd).main_cat(argv)
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   header = creader.header
+  if Tb::Cmd.opt_cat_with_filename
+    header = ['filename', *header]
+  end
   with_table_stream_output {|gen|
     gen << header if !Tb::Cmd.opt_N
-    creader.each_values {|ary|
+    creader.each_values_with_filename {|ary, filename|
+      if Tb::Cmd.opt_cat_with_filename
+        ary = [filename, *ary]
+      end
       gen << ary
     }
   }
