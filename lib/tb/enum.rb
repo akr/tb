@@ -43,7 +43,7 @@ module Tb::Enum
 
   # creates a Tb::FileEnumerator object.
   #
-  def fileenumerator
+  def to_fileenumerator
     Tb::FileEnumerator.new_tempfile {|gen|
       self.each {|*objs|
         gen.call(*objs)

@@ -3,10 +3,10 @@ require 'test/unit'
 require 'tmpdir'
 
 class TestTbEnum < Test::Unit::TestCase
-  def test_fileenumerator
+  def test_to_fileenumerator
     obj = [1,2,3]
     obj.extend Tb::Enum
-    en = obj.fileenumerator
+    en = obj.to_fileenumerator
     ary = []
     en.each {|v|
       ary << v
