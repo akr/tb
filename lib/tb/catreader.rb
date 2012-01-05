@@ -113,7 +113,7 @@ class Tb::CatReader
   end
 
   def shift
-    ary, filename = shift_with_filename
+    ary, _ = shift_with_filename
     ary
   end
 
