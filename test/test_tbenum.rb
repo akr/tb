@@ -3,6 +3,39 @@ require 'test/unit'
 require 'tmpdir'
 
 class TestTbEnum < Test::Unit::TestCase
+  def test_cat_without_block
+    t1 = Tb.new(%w[a b], [1, 2], [3, 4])
+    t2 = Tb.new(%w[c d], [5, 6], [7, 8])
+    e = t1.cat(t2)
+    result = []
+    e.each {|x|
+      assert_kind_of(Tb::Record, x)
+      result << [e.header_fixed, x.to_a]
+    }
+    assert_equal(
+      [[%w[a b c d], [['a', 1], ['b', 2]]],
+       [%w[a b c d], [['a', 3], ['b', 4]]],
+       [%w[a b c d], [['c', 5], ['d', 6]]],
+       [%w[a b c d], [['c', 7], ['d', 8]]]],
+      result)
+  end
+
+  def test_cat_with_block
+    t1 = Tb.new(%w[a b], [1, 2], [3, 4])
+    t2 = Tb.new(%w[c d], [5, 6], [7, 8])
+    result = []
+    t1.cat(t2) {|x|
+      assert_kind_of(Tb::Record, x)
+      result << x.to_a
+    }
+    assert_equal(
+      [[['a', 1], ['b', 2]],
+       [['a', 3], ['b', 4]],
+       [['c', 5], ['d', 6]],
+       [['c', 7], ['d', 8]]],
+      result)
+  end
+
   def test_to_fileenumerator
     obj = [1,2,3]
     obj.extend Tb::Enum

@@ -258,6 +258,7 @@ class Tb
   def list_fields
     @field_list.reject {|f| f.start_with?("_") }
   end
+  alias header_fixed list_fields
 
   # :call-seq:
   #   table.list_fields_all -> [field1, field2, ...]

@@ -26,6 +26,22 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+class Tb::Enumerator < Enumerator
+  def header_fixed
+    if defined? @header_fixed
+      return @header_fixed
+    end
+    nil
+  end
+
+  def set_header_fixed(header)
+    if defined? @header_fixed
+      raise ArgumentError, "@header_fixed is already set."
+    end
+    @header_fixed = header.dup.freeze
+  end
+end
+
 module Tb::Enum
   include Enumerable
 
@@ -39,6 +55,41 @@ module Tb::Enum
       }
       yield [ks, vs]
     }
+  end
+
+  def cat(*ers, &b)
+    ers = [self, *ers]
+    er = nil
+    rec = lambda {|y, header|
+      if ers.empty?
+        if header && !er.header_fixed
+          er.set_header_fixed header
+        end
+      else
+        last_e = ers.pop
+        first = true
+        last_e.each {|v|
+          if first
+            first = false
+            if header && last_e.respond_to?(:header_fixed) && last_e.header_fixed
+              header = last_e.header_fixed | header
+            else
+              header = nil
+            end
+            rec.call(y, header)
+          end
+          y.yield v
+        }
+      end
+    }
+    er = Tb::Enumerator.new {|y|
+      rec.call(y, [])
+    }
+    if block_given?
+      er.each(&b)
+    else
+      er
+    end
   end
 
   # creates a Tb::FileEnumerator object.
