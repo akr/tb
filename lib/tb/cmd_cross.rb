@@ -60,12 +60,21 @@ def (Tb::Cmd).main_cross(argv)
   end
   argv = ['-'] if argv.empty?
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
-    vkis = vkfs.map {|f| tblreader.index_from_field(f) }
-    hkis = hkfs.map {|f| tblreader.index_from_field(f) }
+    vkis = nil
+    hkis = nil
     vset = {}
     hset = {}
     set = {}
-    tblreader.each_values {|ary|
+    first = true
+    header_fixed = nil
+    tblreader.each {|pairs|
+      if first
+        first = false
+        header_fixed = tblreader.header_fixed
+        vkis = vkfs.map {|f| header_fixed.index(f) }
+        hkis = hkfs.map {|f| header_fixed.index(f) }
+      end
+      ary = header_fixed.map {|f| pairs[f] }
       vkvs = ary.values_at(*vkis)
       hkvs = ary.values_at(*hkis)
       vset[vkvs] = true if !vset.include?(vkvs)
@@ -73,7 +82,7 @@ def (Tb::Cmd).main_cross(argv)
       if !set.include?([vkvs, hkvs])
         set[[vkvs, hkvs]] = opt_cross_fields.map {|agg_spec, nf|
           begin
-            ag = make_aggregator(agg_spec, tblreader.header)
+            ag = make_aggregator(agg_spec, header_fixed)
           rescue ArgumentError
             err($!.message)
           end

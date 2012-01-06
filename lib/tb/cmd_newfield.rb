@@ -46,15 +46,21 @@ def (Tb::Cmd).main_newfield(argv)
   pr = eval("lambda {|_| #{rubyexp} }")
   argv = ['-'] if argv.empty?
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
-    renamed_header = [field] + tblreader.header
     with_table_stream_output {|gen|
-      gen.output_header(renamed_header)
+      first = true
+      header = nil
       tblreader.each {|pairs|
+        if first
+          first = false
+          header = tblreader.header_fixed
+          gen.output_header([field] + tblreader.header_fixed)
+        end
+        header |= pairs.map {|f, v| f }
         h = {}
         pairs.each {|f, v|
           h[f] = v
         }
-        ary = pairs.map {|f, v| v }
+        ary = header.map {|f| pairs[f] }
         gen << [pr.call(h), *ary]
       }
     }

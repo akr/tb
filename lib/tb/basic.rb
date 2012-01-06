@@ -28,8 +28,6 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'pp'
-
 # Tb represents a set of records.
 # A record contains field values accessed by field names.
 #

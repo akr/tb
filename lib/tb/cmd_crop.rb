@@ -70,7 +70,8 @@ def (Tb::Cmd).main_crop(argv)
     with_table_stream_output {|gen|
       Tb::CatReader.open(argv, true) {|tblreader|
         rownum = 1
-        tblreader.each_values {|ary|
+        tblreader.each {|pairs|
+          ary = pairs.map {|k, v| v }
           if range_row2 < rownum
             break
           end
@@ -90,7 +91,8 @@ def (Tb::Cmd).main_crop(argv)
   else
     arys = []
     Tb::CatReader.open(argv, true) {|tblreader|
-      tblreader.each_values {|a|
+      tblreader.each {|pairs|
+        a = pairs.map {|k, v| v }
         a.pop while !a.empty? && (a.last.nil? || a.last == '')
         arys << a
       }

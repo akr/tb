@@ -58,25 +58,41 @@ def (Tb::Cmd).main_consecutive(argv)
   exit_if_help('consecutive')
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
-  consecutive_header = []
-  creader.header.each {|f|
-    Tb::Cmd.opt_consecutive_n.times {|i|
-      consecutive_header << "#{f}_#{i+1}"
-    }
-  }
   with_table_stream_output {|gen|
-    gen.output_header consecutive_header
+    first = true
     buf = []
-    creader.each_values {|ary|
-      buf << ary
+    consecutive_header = nil
+    creader.each {|pairs|
+      if first
+        first = false
+        if header_fixed = creader.header_fixed
+          consecutive_header = []
+          header_fixed.each {|f|
+            Tb::Cmd.opt_consecutive_n.times {|i|
+              consecutive_header << "#{f}_#{i+1}"
+            }
+          }
+          gen.output_header consecutive_header
+        end
+      end
+      cfs = []
+      pairs.map {|f, v|
+        Tb::Cmd.opt_consecutive_n.times {|i|
+          cfs << "#{f}_#{i+1}"
+        }
+      }
+      consecutive_header |= cfs
+      buf << pairs
       if buf.length == Tb::Cmd.opt_consecutive_n
-        ary2 = []
-        buf.each_with_index {|a, i|
-          a.each_with_index {|e, j|
-            ary2[j*Tb::Cmd.opt_consecutive_n + i] = e
+        h = {}
+        buf.each_with_index {|ps, i|
+          ps.each_with_index {|(k, v), j|
+            h["#{k}_#{i + 1}"] = v
           }
         }
-        gen << ary2
+        fs = consecutive_header.dup
+        fs.pop while !fs.empty? && !h.include?(fs.last)
+        gen << fs.map {|k| h[k] }
         buf.shift
       end
     }

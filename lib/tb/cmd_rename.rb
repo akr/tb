@@ -45,17 +45,21 @@ def (Tb::Cmd).main_rename(argv)
   h = {}
   fs.each_slice(2) {|sf, df| h[sf] = df }
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
-    header = tblreader.header
-    h.each {|sf, df|
-      unless header.include? sf
-        err "field not found: #{sf.inspect}"
-      end
-    }
-    renamed_header = tblreader.header.map {|f| h.fetch(f, f) }
     with_table_stream_output {|gen|
-      gen.output_header(renamed_header)
-      tblreader.each_values {|ary|
-        gen << ary
+      first = true
+      header_fixed = nil
+      tblreader.each {|pairs|
+        if first
+          first = false
+          header_fixed = tblreader.header_fixed
+          h.each {|sf, df|
+            unless header_fixed.include? sf
+              err "field not found: #{sf.inspect}"
+            end
+          }
+          gen.output_header header_fixed.map {|f| h.fetch(f, f) }
+        end
+        gen << header_fixed.map {|f| pairs[f] }
       }
     }
   }

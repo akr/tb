@@ -29,6 +29,8 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class Tb::Reader
+  include Tb::Enum
+
   def initialize(rawreader, opts={})
     @opt_n = opts[:numeric]
     @opt_close = opts[:close]
@@ -48,12 +50,19 @@ class Tb::Reader
           next
         else
           @fieldset = Tb::FieldSet.new(*ary)
+          @header_fixed = @fieldset.header.dup.freeze
           return @fieldset.header
         end
       end
       @fieldset = Tb::FieldSet.new
     end
+    @header_fixed = @fieldset.header.dup.freeze
     return @fieldset.header
+  end
+
+  def header_fixed
+    header
+    @header_fixed
   end
 
   def index_from_field_ex(f)

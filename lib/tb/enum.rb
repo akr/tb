@@ -26,7 +26,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+module Tb::Enum
+  include Enumerable
+end
+
 class Tb::Enumerator < Enumerator
+  include Tb::Enum
+
   def header_fixed
     if defined? @header_fixed
       return @header_fixed
@@ -43,8 +49,6 @@ class Tb::Enumerator < Enumerator
 end
 
 module Tb::Enum
-  include Enumerable
-
   def each_arypair
     self.each {|pairs|
       ks = []
@@ -90,6 +94,47 @@ module Tb::Enum
     else
       er
     end
+  end
+
+  # creates a new Tb::Enumerator object which have
+  # new field named by _field_ with the value returned by the block.
+  #
+  #   t1 = Tb.new %w[a b], [1, 2], [3, 4]
+  #   p t1.newfield("x") {|row| row["a"] + row["b"] + 100 }.to_a
+  #   #=> [#<Tb::Pairs: "x"=>103, "a"=>1, "b"=>2>,
+  #   #    #<Tb::Pairs: "x"=>107, "a"=>3, "b"=>4>]
+  #
+  def newfield(field)
+    er = Tb::Enumerator.new {|y|
+      first = true
+      self.each {|row|
+        if first
+          first = false
+          if self.respond_to?(:header_fixed) && self.header_fixed && !er.header_fixed
+            er.set_header_fixed(Tb::FieldSet.normalize([field, *self.header_fixed]))
+          end
+        end
+        keys = row.map {|k, v| k }
+        keys = Tb::FieldSet.normalize([field, *keys])
+        vals = row.map {|k, v| v }
+        vals = [yield(row), *vals]
+
+        y << Tb::Pairs.new(keys.zip(vals))
+      }
+    }
+  end
+
+  def to_tb
+    tb = Tb.new
+    self.each {|pairs|
+      pairs.each {|k, v|
+        unless tb.has_field? k
+          tb.define_field(k)
+        end
+      }
+      tb.insert pairs
+    }
+    tb
   end
 
   # creates a Tb::FileEnumerator object.

@@ -55,10 +55,20 @@ def (Tb::Cmd).main_gsub(argv)
   argv = ['-'] if argv.empty?
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     with_table_stream_output {|gen|
-      gen.output_header tblreader.header
+      first = true
+      header_fixed = nil
       tblreader.each {|pairs|
+        if first
+          first = false
+          header_fixed = tblreader.header_fixed
+          gen.output_header header_fixed
+        end
+        header_fixed |= pairs.map {|f, v| f }
+        fs = header_fixed.dup
+        fs.pop while !fs.empty? && !pairs.include?(fs.last)
         if Tb::Cmd.opt_gsub_f
-          ary = pairs.map {|f, v|
+          ary = fs.map {|f|
+            v = pairs[f]
             if f == Tb::Cmd.opt_gsub_f
               v ||= ''
               v.gsub(re, repl)
@@ -67,7 +77,8 @@ def (Tb::Cmd).main_gsub(argv)
             end
           }
         else
-          ary = pairs.map {|f, v|
+          ary = fs.map {|f|
+            v = pairs[f]
             v ||= ''
             v.gsub(re, repl)
           }

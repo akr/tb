@@ -14,12 +14,9 @@ class TestTbCatReader < Test::Unit::TestCase
         3,4
       End
       Tb::CatReader.open([i1, i2]) {|r|
-        assert_equal(%w[a b], r.header)
-        assert_equal([%w[1 2], %w[4 3]], r.read_all)
-        assert_equal(0, r.index_from_field("a"))
-        assert_equal("b", r.field_from_index(1))
-        assert_equal(2, r.index_from_field_ex("1"))
-        assert_equal("2", r.field_from_index_ex(3))
+        assert_equal(nil, r.header_fixed)
+        assert_equal([[['a','1'], ['b','2']], [['b','3'],['a','4']]], r.to_a.map {|pairs| pairs.to_a })
+        assert_equal(%w[a b], r.header_fixed)
       }
     }
   end

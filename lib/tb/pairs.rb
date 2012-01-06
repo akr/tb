@@ -30,7 +30,6 @@ require 'weakref'
 
 class Tb::Pairs
   def self.get_key2index(keys)
-
     wm = (Thread.current[:tb_pairs_frozen_info] ||= {})
     w = wm[keys]
     if w
@@ -65,6 +64,28 @@ class Tb::Pairs
     @k2i = k2i
     @vals = vals
   end
+
+  def pretty_print(q) # :nodoc:
+    q.object_group(self) {
+      fs = @keys
+      unless fs.empty?
+        q.text ':'
+        q.breakable
+      end
+      q.seplist(fs, nil, :each) {|f|
+        v = self[f]
+        q.group {
+          q.pp f
+          q.text '=>'
+          q.group(1) {
+            q.breakable ''
+            q.pp v
+          }
+        }
+      }
+    }
+  end
+  alias inspect pretty_print_inspect # :nodoc:
 
   def [](key)
     i = @k2i.fetch(key) {

@@ -29,6 +29,10 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class Tb::FieldSet
+  def self.normalize(header)
+    Tb::FieldSet.new(*header).header
+  end
+
   def initialize(*fs)
     @header = []
     @field2index = {}

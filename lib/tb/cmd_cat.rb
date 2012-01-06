@@ -62,18 +62,26 @@ def (Tb::Cmd).main_cat(argv)
   op_cat.parse!(argv)
   exit_if_help('cat')
   argv = ['-'] if argv.empty?
-  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
-  header = creader.header
-  if Tb::Cmd.opt_cat_with_filename
-    header = ['filename', *header]
-  end
+  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N, Tb::Cmd.opt_cat_with_filename)
+  fields = []
   with_table_stream_output {|gen|
-    gen << header if !Tb::Cmd.opt_N
-    creader.each_values_with_filename {|ary, filename|
-      if Tb::Cmd.opt_cat_with_filename
-        ary = [filename, *ary]
+    first = true
+    fields = nil
+    creader.each {|row|
+      raise "creader.header_fixed is nil: #{creader.header_fixed.inspect}" if !creader.header_fixed
+      if first
+        first = false
+        fields = creader.header_fixed.dup
+        if !Tb::Cmd.opt_N
+          gen << fields
+        end
       end
-      gen << ary
+      fields |= row.keys
+      fs = fields.dup
+      while !fs.empty? && !row.include?(fs.last)
+        fs.pop
+      end
+      gen << fs.map {|k| row[k] }
     }
   }
 end

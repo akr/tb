@@ -62,12 +62,18 @@ def (Tb::Cmd).main_group(argv)
   argv = ['-'] if argv.empty?
   h = {}
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
-    kis = kfs.map {|f| tblreader.index_from_field(f) }
     result_fields = kfs + opt_group_fields.map {|nf, maker| nf }
-    tblreader.each_values {|ary|
-      kvs = ary.values_at(*kis)
+    first = true
+    header_fixed = nil
+    tblreader.each {|pairs|
+      if first
+        first = false
+        header_fixed = tblreader.header_fixed
+      end
+      kvs = kfs.map {|kf| pairs[kf] }
+      ary = header_fixed.map {|f| pairs[f] }
       if !h.include?(kvs)
-        h[kvs] = opt_group_fields.map {|nf, maker| ag = maker.call(tblreader.header); ag.update(ary); ag }
+        h[kvs] = opt_group_fields.map {|nf, maker| ag = maker.call(header_fixed); ag.update(ary); ag }
       else
         h[kvs].each {|ag|
           ag.update(ary)

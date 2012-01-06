@@ -58,7 +58,8 @@ def (Tb::Cmd).main_mheader(argv)
   end
   with_table_stream_output {|gen|
     Tb::CatReader.open(argv, true) {|tblreader|
-      tblreader.each_values {|ary|
+      tblreader.each {|pairs|
+        ary = pairs.map {|f, v| v }
         if header
           ary.each_with_index {|v,i|
             header[i] ||= []

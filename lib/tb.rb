@@ -33,6 +33,7 @@ require 'tempfile'
 class Tb
 end
 
+require 'pp'
 require 'tb/enum'
 require 'tb/pairs'
 require 'tb/basic'

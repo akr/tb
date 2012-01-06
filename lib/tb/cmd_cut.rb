@@ -47,33 +47,34 @@ def (Tb::Cmd).main_cut(argv)
   argv = ['-'] if argv.empty?
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     if Tb::Cmd.opt_cut_v
-      h = {}
-      fs.each {|f| h[tblreader.index_from_field(f)] = true }
-      header = nil
-      if !Tb::Cmd.opt_N
-        header = []
-        tblreader.header.each_with_index {|f, i|
-          header << f if !h[i]
-        }
-      end
       with_table_stream_output {|gen|
-        gen.output_header(header)
-        tblreader.each_values {|ary|
-          values = []
-          ary.each_with_index {|v, i|
-            values << v if !h[i]
-          }
-          gen << values
+        first = true
+        header = nil
+        tblreader.each {|pairs|
+          if first
+            first = false
+            header = tblreader.header_fixed - fs
+            gen.output_header(header)
+          end
+          header |= pairs.map {|k, v| k } - fs
+          gen << header.map {|k| pairs[k] }
         }
       }
     else
-      header = tblreader.header
-      is = []
-      is = fs.map {|f| tblreader.index_from_field_ex(f) }
       with_table_stream_output {|gen|
-        gen.output_header(is.map {|i| tblreader.field_from_index_ex(i) })
-        tblreader.each_values {|ary|
-          gen << ary.values_at(*is)
+        first = true
+        tblreader.each {|pairs|
+          if first
+            first = false
+            if tblreader.header_fixed
+              fieldset = Tb::FieldSet.new(*tblreader.header_fixed)
+              fs.each {|f|
+                fieldset.index_from_field_ex(f)
+              }
+            end
+            gen.output_header(fs)
+          end
+          gen << fs.map {|f| pairs[f] }
         }
       }
     end

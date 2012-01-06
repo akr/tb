@@ -250,17 +250,7 @@ def split_csv_argument(arg)
 end
 
 def build_table(tblreader)
-  arys = []
-  tblreader.each_values {|ary|
-    arys << ary
-  }
-  header = tblreader.header
-  tbl = Tb.new(header)
-  arys.each {|ary|
-    ary << nil while ary.length < header.length
-    tbl.insert_values header, ary
-  }
-  tbl
+  return tblreader.to_tb
 end
 
 def load_table(filename)

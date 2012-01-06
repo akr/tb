@@ -28,131 +28,21 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-class Tb::CatReader
-  def self.open(filenames, numeric=false)
+module Tb::CatReader
+  def self.open(filenames, numeric=false, with_filename=false)
     readers = []
     filenames.each {|f|
-      readers << Tb::Reader.open(f, numeric ? {:numeric=>true} : {})
-    }
-    r = Tb::CatReader.new(readers, readers, numeric)
-    if block_given?
-      begin
-        yield r
-      ensure
-        r.close
+      r = Tb::Reader.open(f, numeric ? {:numeric=>true} : {})
+      if with_filename
+        r = r.newfield("filename") { f }
       end
+      readers << r
+    }
+    r = readers.first.cat(*readers[1..-1])
+    if block_given?
+      yield r
     else
       r
-    end
-  end
-
-  def initialize(readers, also_close, numeric)
-    @readers = readers.dup
-    @also_close = also_close
-    @numeric = numeric
-    @fieldset = nil
-  end
-
-  def header
-    return @fieldset.header if @fieldset
-    if @numeric
-      @fieldset = Tb::FieldSet.new
-    else
-      h = {}
-      @readers.each {|r|
-        r.header.each {|f|
-          if !h[f]
-            h[f] = h.size
-          end
-        }
-      }
-      @fieldset = Tb::FieldSet.new(*h.keys.sort_by {|f| h[f] })
-    end
-    return @fieldset.header
-  end
-
-  def index_from_field_ex(f)
-    self.header
-    @fieldset.index_from_field_ex(f)
-  end
-
-  def index_from_field(f)
-    self.header
-    @fieldset.index_from_field(f)
-  end
-
-  def field_from_index_ex(i)
-    self.header
-    @fieldset.field_from_index_ex(i)
-  end
-
-  def field_from_index(i)
-    self.header
-    @fieldset.field_from_index(i)
-  end
-
-  def shift_with_filename
-    self.header
-    while !@readers.empty?
-      r = @readers.first
-      ary = r.shift
-      if ary
-        h = r.header
-        ary2 = []
-        ary.each_with_index {|v,i|
-          f = h[i]
-          i2 = @fieldset.index_from_field_ex(f)
-          ary2[i2] = v
-        }
-        return ary2, r.filename
-      else
-        @readers.shift
-      end
-    end
-    nil
-  end
-
-  def shift
-    ary, _ = shift_with_filename
-    ary
-  end
-
-  def each_values_with_filename
-    while ary_filename = self.shift_with_filename
-      yield ary_filename
-    end
-    nil
-  end
-
-  def each_values
-    while ary = self.shift
-      yield ary
-    end
-    nil
-  end
-
-  def each
-    each_values {|ary|
-      pairs = []
-      ary.each_with_index {|v, i|
-        f = field_from_index_ex(i)
-        pairs << [f, v]
-      }
-      yield pairs
-    }
-  end
-
-  def read_all
-    result = []
-    while ary = self.shift
-      result << ary
-    end
-    result
-  end
-
-  def close
-    if @also_close
-      @also_close.each {|x| x.close }
     end
   end
 end
