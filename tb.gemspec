@@ -106,4 +106,5 @@ Unix filter like operations (grep, sort, cat, cut, ls, etc.),
 SQL like operations (join, group, etc.),
 and more.
 End
+  s.required_ruby_version = '>= 1.9.2'
 end
