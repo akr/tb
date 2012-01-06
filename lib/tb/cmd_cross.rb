@@ -66,15 +66,15 @@ def (Tb::Cmd).main_cross(argv)
     hset = {}
     set = {}
     first = true
-    header_fixed = nil
+    early_header = nil
     tblreader.each {|pairs|
       if first
         first = false
-        header_fixed = tblreader.header_fixed
-        vkis = vkfs.map {|f| header_fixed.index(f) }
-        hkis = hkfs.map {|f| header_fixed.index(f) }
+        early_header = tblreader.early_header
+        vkis = vkfs.map {|f| early_header.index(f) }
+        hkis = hkfs.map {|f| early_header.index(f) }
       end
-      ary = header_fixed.map {|f| pairs[f] }
+      ary = early_header.map {|f| pairs[f] }
       vkvs = ary.values_at(*vkis)
       hkvs = ary.values_at(*hkis)
       vset[vkvs] = true if !vset.include?(vkvs)
@@ -82,7 +82,7 @@ def (Tb::Cmd).main_cross(argv)
       if !set.include?([vkvs, hkvs])
         set[[vkvs, hkvs]] = opt_cross_fields.map {|agg_spec, nf|
           begin
-            ag = make_aggregator(agg_spec, header_fixed)
+            ag = make_aggregator(agg_spec, early_header)
           rescue ArgumentError
             err($!.message)
           end

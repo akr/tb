@@ -56,15 +56,15 @@ def (Tb::Cmd).main_gsub(argv)
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     with_table_stream_output {|gen|
       first = true
-      header_fixed = nil
+      early_header = nil
       tblreader.each {|pairs|
         if first
           first = false
-          header_fixed = tblreader.header_fixed
-          gen.output_header header_fixed
+          early_header = tblreader.early_header
+          gen.output_header early_header
         end
-        header_fixed |= pairs.map {|f, v| f }
-        fs = header_fixed.dup
+        early_header |= pairs.map {|f, v| f }
+        fs = early_header.dup
         fs.pop while !fs.empty? && !pairs.include?(fs.last)
         if Tb::Cmd.opt_gsub_f
           ary = fs.map {|f|

@@ -65,9 +65,9 @@ def (Tb::Cmd).main_consecutive(argv)
     creader.each {|pairs|
       if first
         first = false
-        if header_fixed = creader.header_fixed
+        if early_header = creader.early_header
           consecutive_header = []
-          header_fixed.each {|f|
+          early_header.each {|f|
             Tb::Cmd.opt_consecutive_n.times {|i|
               consecutive_header << "#{f}_#{i+1}"
             }

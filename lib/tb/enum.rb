@@ -33,18 +33,18 @@ end
 class Tb::Enumerator < Enumerator
   include Tb::Enum
 
-  def header_fixed
-    if defined? @header_fixed
-      return @header_fixed
+  def early_header
+    if defined? @early_header
+      return @early_header
     end
     nil
   end
 
-  def set_header_fixed(header)
-    if defined? @header_fixed
-      raise ArgumentError, "@header_fixed is already set."
+  def set_early_header(header)
+    if defined? @early_header
+      raise ArgumentError, "@early_header is already set."
     end
-    @header_fixed = header.dup.freeze
+    @early_header = header.dup.freeze
   end
 end
 
@@ -66,8 +66,8 @@ module Tb::Enum
     er = nil
     rec = lambda {|y, header|
       if ers.empty?
-        if header && !er.header_fixed
-          er.set_header_fixed header
+        if header && !er.early_header
+          er.set_early_header header
         end
       else
         last_e = ers.pop
@@ -75,8 +75,8 @@ module Tb::Enum
         last_e.each {|v|
           if first
             first = false
-            if header && last_e.respond_to?(:header_fixed) && last_e.header_fixed
-              header = last_e.header_fixed | header
+            if header && last_e.respond_to?(:early_header) && last_e.early_header
+              header = last_e.early_header | header
             else
               header = nil
             end
@@ -110,8 +110,8 @@ module Tb::Enum
       self.each {|row|
         if first
           first = false
-          if self.respond_to?(:header_fixed) && self.header_fixed && !er.header_fixed
-            er.set_header_fixed(Tb::FieldSet.normalize([field, *self.header_fixed]))
+          if self.respond_to?(:early_header) && self.early_header && !er.early_header
+            er.set_early_header(Tb::FieldSet.normalize([field, *self.early_header]))
           end
         end
         keys = row.map {|k, v| k }

@@ -10,7 +10,7 @@ class TestTbEnum < Test::Unit::TestCase
     result = []
     e.each {|x|
       assert_kind_of(Tb::Record, x)
-      result << [e.header_fixed, x.to_a]
+      result << [e.early_header, x.to_a]
     }
     assert_equal(
       [[%w[a b c d], [['a', 1], ['b', 2]]],

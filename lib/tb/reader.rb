@@ -50,19 +50,19 @@ class Tb::Reader
           next
         else
           @fieldset = Tb::FieldSet.new(*ary)
-          @header_fixed = @fieldset.header.dup.freeze
+          @early_header = @fieldset.header.dup.freeze
           return @fieldset.header
         end
       end
       @fieldset = Tb::FieldSet.new
     end
-    @header_fixed = @fieldset.header.dup.freeze
+    @early_header = @fieldset.header.dup.freeze
     return @fieldset.header
   end
 
-  def header_fixed
+  def early_header
     header
-    @header_fixed
+    @early_header
   end
 
   def index_from_field_ex(f)

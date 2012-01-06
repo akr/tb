@@ -68,10 +68,10 @@ def (Tb::Cmd).main_cat(argv)
     first = true
     fields = nil
     creader.each {|row|
-      raise "creader.header_fixed is nil: #{creader.header_fixed.inspect}" if !creader.header_fixed
+      raise "creader.early_header is nil: #{creader.early_header.inspect}" if !creader.early_header
       if first
         first = false
-        fields = creader.header_fixed.dup
+        fields = creader.early_header.dup
         if !Tb::Cmd.opt_N
           gen << fields
         end

@@ -53,7 +53,7 @@ def (Tb::Cmd).main_cut(argv)
         tblreader.each {|pairs|
           if first
             first = false
-            header = tblreader.header_fixed - fs
+            header = tblreader.early_header - fs
             gen.output_header(header)
           end
           header |= pairs.map {|k, v| k } - fs
@@ -66,8 +66,8 @@ def (Tb::Cmd).main_cut(argv)
         tblreader.each {|pairs|
           if first
             first = false
-            if tblreader.header_fixed
-              fieldset = Tb::FieldSet.new(*tblreader.header_fixed)
+            if tblreader.early_header
+              fieldset = Tb::FieldSet.new(*tblreader.early_header)
               fs.each {|f|
                 fieldset.index_from_field_ex(f)
               }

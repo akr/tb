@@ -52,8 +52,8 @@ def (Tb::Cmd).main_newfield(argv)
       tblreader.each {|pairs|
         if first
           first = false
-          header = tblreader.header_fixed
-          gen.output_header([field] + tblreader.header_fixed)
+          header = tblreader.early_header
+          gen.output_header([field] + tblreader.early_header)
         end
         header |= pairs.map {|f, v| f }
         h = {}
