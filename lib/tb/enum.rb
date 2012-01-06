@@ -152,8 +152,6 @@ module Tb::Enum
   # If _with_header_ is false,
   # the header row is not generated.
   #
-  # +self.each+ should yield a pair of arrays: [fieldname_ary, value_ary].
-  #
   def write_to_csv(filename, with_header=true)
     keys_at_first = nil
     keys_at_last = nil
