@@ -34,6 +34,7 @@ class Tb
 end
 
 require 'tb/enum'
+require 'tb/pairs'
 require 'tb/basic'
 require 'tb/record'
 require 'tb/csv'
