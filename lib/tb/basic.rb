@@ -256,7 +256,6 @@ class Tb
   def list_fields
     @field_list.reject {|f| f.start_with?("_") }
   end
-  alias early_header list_fields
 
   # :call-seq:
   #   table.list_fields_all -> [field1, field2, ...]
@@ -887,6 +886,17 @@ class Tb
       vs = get_values(recordid, *fields)
       yield vs
     }
+  end
+
+  # :call-seq:
+  #   table.header_and_each(header_proc) {|record| ... }
+  #
+  # +header_and_each+ calls _header_proc_ at first.
+  # The block is called for each record after that. 
+  #
+  def header_and_each(header_proc, &block)
+    header_proc.call(list_fields) if header_proc
+    self.each(&block)
   end
 
   # :call-seq:

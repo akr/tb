@@ -60,19 +60,14 @@ def (Tb::Cmd).main_consecutive(argv)
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   er = Tb::Enumerator.new {|y|
     buf = []
-    first = true
     empty = true
     header = []
-    set_early_header = lambda {
-      if creader.early_header
-        er.set_early_header creader.early_header.map {|f| (1..Tb::Cmd.opt_consecutive_n).map {|i| "#{f}_#{i}" } }.flatten(1)
+    header_proc = lambda {|header0|
+      if header0
+        y.set_header header0.map {|f| (1..Tb::Cmd.opt_consecutive_n).map {|i| "#{f}_#{i}" } }.flatten(1)
       end
     }
-    creader.each {|pairs|
-      if first
-        first = false
-        set_early_header.call
-      end
+    creader.header_and_each(header_proc) {|pairs|
       header |= pairs.map {|f, v| f }
       buf << pairs
       if buf.length == Tb::Cmd.opt_consecutive_n
@@ -90,9 +85,6 @@ def (Tb::Cmd).main_consecutive(argv)
         buf.shift
       end
     }
-    if first
-      set_early_header.call
-    end
   }
   with_output {|out|
     er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)

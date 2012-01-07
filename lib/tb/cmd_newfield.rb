@@ -47,14 +47,12 @@ def (Tb::Cmd).main_newfield(argv)
   argv = ['-'] if argv.empty?
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     with_table_stream_output {|gen|
-      first = true
       header = nil
-      tblreader.each {|pairs|
-        if first
-          first = false
-          header = tblreader.early_header
-          gen.output_header([field] + tblreader.early_header)
-        end
+      header_proc = lambda {|header0|
+        header = header0
+        gen.output_header([field] + header0)
+      }
+      tblreader.header_and_each(header_proc) {|pairs|
         header |= pairs.map {|f, v| f }
         h = {}
         pairs.each {|f, v|

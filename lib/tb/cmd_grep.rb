@@ -64,14 +64,12 @@ def (Tb::Cmd).main_grep(argv)
   argv = ['-'] if argv.empty?
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     with_table_stream_output {|gen|
-      first = true
-      early_header = nil
-      tblreader.each {|pairs|
-        if first
-          first = false
-          early_header = tblreader.early_header
-          gen.output_header early_header
-        end
+      header = nil
+      header_proc = lambda {|header0|
+        header = header0
+        gen.output_header header
+      }
+      tblreader.header_and_each(header_proc) {|pairs|
         h = {}
         pairs.each {|f, v|
           h[f] = v
@@ -79,7 +77,7 @@ def (Tb::Cmd).main_grep(argv)
         found = pred.call(h)
         found = opt_v ^ !!(found)
         if found
-          ary = early_header.map {|f| pairs[f] }
+          ary = header.map {|f| pairs[f] }
           gen << ary
         end
       }

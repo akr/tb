@@ -30,25 +30,58 @@ module Tb::Enum
   include Enumerable
 end
 
-class Tb::Enumerator < Enumerator
+class Tb::Yielder
+  def initialize(header_proc, each_proc)
+    @header_proc_called = false
+    @header_proc = header_proc
+    @each_proc = each_proc
+  end
+  attr_reader :header_proc_called
+
+  def set_header(header)
+    raise ArgumentError, "set_header called twice" if @header_proc_called
+    @header_proc_called = true
+    @header_proc.call(header) if @header_proc
+  end
+
+  def yield(*args)
+    if !@header_proc_called
+      set_header(nil)
+    end
+    @each_proc.call(*args)
+  end
+  alias << yield
+end
+
+class Tb::Enumerator
   include Tb::Enum
 
-  def early_header
-    if defined? @early_header
-      return @early_header
-    end
+  def initialize(&enumerator_proc)
+    @enumerator_proc = enumerator_proc
+  end
+
+  def each(&each_proc)
+    yielder = Tb::Yielder.new(nil, each_proc)
+    @enumerator_proc.call(yielder)
     nil
   end
 
-  def set_early_header(header)
-    if defined? @early_header
-      raise ArgumentError, "@early_header is already set."
+  def header_and_each(header_proc, &each_proc)
+    yielder = Tb::Yielder.new(header_proc, each_proc)
+    @enumerator_proc.call(yielder)
+    if !yielder.header_proc_called
+      header_proc.call(nil)
     end
-    @early_header = header.dup.freeze
+    nil
   end
 end
 
 module Tb::Enum
+  def header_and_each(header_proc, &block)
+    header_proc.call(nil) if header_proc
+    self.each(&block)
+  end
+
   def each_arypair
     self.each {|pairs|
       ks = []
@@ -63,35 +96,24 @@ module Tb::Enum
 
   def cat(*ers, &b)
     ers = [self, *ers]
-    er = nil
-    empty = true
     rec = lambda {|y, header|
       if ers.empty?
-        if header && !er.early_header
-          er.set_early_header header
+        if header
+          y.set_header header
         end
       else
         last_e = ers.pop
-        first = true
-        update_header = lambda {
-          if header && last_e.respond_to?(:early_header) && last_e.early_header
-            header = last_e.early_header | header
+        header_proc = lambda {|last_e_header|
+          if last_e_header && header
+            header = last_e_header | header
           else
             header = nil
           end
+          rec.call(y, header)
         }
-        last_e.each {|v|
-          if first
-            first = false
-            update_header.call
-            rec.call(y, header)
-          end
+        last_e.header_and_each(header_proc) {|v|
           y.yield v
         }
-        if first
-          update_header.call
-          rec.call(y, header)
-        end
       end
     }
     er = Tb::Enumerator.new {|y|
@@ -113,27 +135,19 @@ module Tb::Enum
   #   #    #<Tb::Pairs: "x"=>107, "a"=>3, "b"=>4>]
   #
   def newfield(field)
-    er = Tb::Enumerator.new {|y|
-      first = true
-      set_early_header = lambda {
-        if self.respond_to?(:early_header) && self.early_header && !er.early_header
-          er.set_early_header(Tb::FieldSet.normalize([field, *self.early_header]))
+    Tb::Enumerator.new {|y|
+      header_proc = lambda {|header|
+        if header
+          y.set_header(Tb::FieldSet.normalize([field, *header]))
         end
       }
-      self.each {|row|
-        if first
-          first = false
-          set_early_header.call
-        end
+      self.header_and_each(header_proc) {|row|
         keys = row.map {|k, v| k }
         keys = Tb::FieldSet.normalize([field, *keys])
         vals = row.map {|k, v| v }
         vals = [yield(row), *vals]
         y << Tb::Pairs.new(keys.zip(vals))
       }
-      if first
-        set_early_header.call
-      end
     }
   end
 
@@ -161,24 +175,24 @@ module Tb::Enum
   end
 
   def write_to_csv_to_io(io, with_header=true)
-    first = true
-    early_header = nil
+    stream = nil
     header = []
     fgen = fnew = nil
-    self.each {|pairs|
-      if first
-        first = false
-        if !with_header
-          early_header = []
-        elsif early_header = self.early_header
-          io.puts Tb.csv_encode_row(early_header)
-          header = early_header.dup
-        else
-          fgen, fnew = Tb::FileEnumerator.gen_new
-        end
+    header_proc = lambda {|header0|
+      if !with_header
+        stream = true
+      elsif header0
+        stream = true
+        io.puts Tb.csv_encode_row(header0)
+        header = header0.dup
+      else
+        stream = false
+        fgen, fnew = Tb::FileEnumerator.gen_new
       end
+    }
+    self.header_and_each(header_proc) {|pairs|
       header |= pairs.map {|f, v| f }
-      if early_header
+      if stream
         fs = header.dup
         while !fs.empty? && !pairs.include?(fs.last)
           fs.pop
@@ -189,11 +203,7 @@ module Tb::Enum
         fgen.call Tb::Pairs.new(pairs)
       end
     }
-    if first
-      if self.early_header
-        io.puts Tb.csv_encode_row(self.early_header)
-      end
-    elsif !early_header
+    if !stream
       if with_header
         io.puts Tb.csv_encode_row(header)
       end

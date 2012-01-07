@@ -8,15 +8,19 @@ class TestTbEnum < Test::Unit::TestCase
     t2 = Tb.new(%w[c d], [5, 6], [7, 8])
     e = t1.cat(t2)
     result = []
-    e.each {|x|
+    header_proc = lambda {|header|
+      result << [:header, header]
+    }
+    e.header_and_each(header_proc) {|x|
       assert_kind_of(Tb::Record, x)
-      result << [e.early_header, x.to_a]
+      result << [x.to_a]
     }
     assert_equal(
-      [[%w[a b c d], [['a', 1], ['b', 2]]],
-       [%w[a b c d], [['a', 3], ['b', 4]]],
-       [%w[a b c d], [['c', 5], ['d', 6]]],
-       [%w[a b c d], [['c', 7], ['d', 8]]]],
+      [[:header, %w[a b c d]],
+       [[['a', 1], ['b', 2]]],
+       [[['a', 3], ['b', 4]]],
+       [[['c', 5], ['d', 6]]],
+       [[['c', 7], ['d', 8]]]],
       result)
   end
 

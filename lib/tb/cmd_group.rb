@@ -63,17 +63,15 @@ def (Tb::Cmd).main_group(argv)
   h = {}
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     result_fields = kfs + opt_group_fields.map {|nf, maker| nf }
-    first = true
-    early_header = nil
-    tblreader.each {|pairs|
-      if first
-        first = false
-        early_header = tblreader.early_header
-      end
+    header = nil
+    header_proc = lambda {|header0|
+      header = header0
+    }
+    tblreader.header_and_each(header_proc) {|pairs|
       kvs = kfs.map {|kf| pairs[kf] }
-      ary = early_header.map {|f| pairs[f] }
+      ary = header.map {|f| pairs[f] }
       if !h.include?(kvs)
-        h[kvs] = opt_group_fields.map {|nf, maker| ag = maker.call(early_header); ag.update(ary); ag }
+        h[kvs] = opt_group_fields.map {|nf, maker| ag = maker.call(header); ag.update(ary); ag }
       else
         h[kvs].each {|ag|
           ag.update(ary)

@@ -48,32 +48,28 @@ def (Tb::Cmd).main_cut(argv)
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     if Tb::Cmd.opt_cut_v
       with_table_stream_output {|gen|
-        first = true
         header = nil
-        tblreader.each {|pairs|
-          if first
-            first = false
-            header = tblreader.early_header - fs
-            gen.output_header(header)
-          end
+        header_proc = lambda {|header0|
+          header = header0 - fs
+          gen.output_header(header)
+        }
+        tblreader.header_and_each(header_proc) {|pairs|
           header |= pairs.map {|k, v| k } - fs
           gen << header.map {|k| pairs[k] }
         }
       }
     else
       with_table_stream_output {|gen|
-        first = true
-        tblreader.each {|pairs|
-          if first
-            first = false
-            if tblreader.early_header
-              fieldset = Tb::FieldSet.new(*tblreader.early_header)
-              fs.each {|f|
-                fieldset.index_from_field_ex(f)
-              }
-            end
-            gen.output_header(fs)
+        header_proc = lambda {|header0|
+          if header0
+            fieldset = Tb::FieldSet.new(*header0)
+            fs.each {|f|
+              fieldset.index_from_field_ex(f)
+            }
           end
+          gen.output_header(fs)
+        }
+        tblreader.header_and_each(header_proc) {|pairs|
           gen << fs.map {|f| pairs[f] }
         }
       }
