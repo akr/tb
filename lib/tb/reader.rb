@@ -35,9 +35,7 @@ class Tb::Reader
     @opt_n = opts[:numeric]
     @reader_open = rawreader_open
     @fieldset = nil
-    @filename = nil
   end
-  attr_accessor :filename
 
   def internal_header(rawreader)
     return @fieldset.header if @fieldset
