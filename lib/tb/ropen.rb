@@ -66,11 +66,7 @@ class Tb::Reader
     }
     reader.filename = filename
     if block_given?
-      begin
-        yield reader
-      ensure
-        reader.close
-      end
+      yield reader
     else
       reader
     end

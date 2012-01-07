@@ -110,7 +110,4 @@ class Tb::Reader
   def each(&block)
     header_and_each(nil, &block)
   end
-
-  def close
-  end
 end
