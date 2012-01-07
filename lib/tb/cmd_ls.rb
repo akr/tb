@@ -55,15 +55,16 @@ def (Tb::Cmd).main_ls(argv)
     :l => Tb::Cmd.opt_ls_l,
     :R => Tb::Cmd.opt_ls_R,
   }
-  ls = Tb::Cmd::Ls.new(opts)
+  ls = nil
   with_table_stream_output {|gen|
+    ls = Tb::Cmd::Ls.new(gen, opts)
     if Tb::Cmd.opt_ls_l == 0
       gen.output_header ['filename'] # don't generate the header when -N.
     else
       gen.output_header(ls.ls_long_header()) # don't generate the header when -N.
     end
     argv.each {|arg|
-      ls.ls_run(gen, Pathname(ls.real_pathname_string(arg)))
+      ls.ls_run(Pathname(ls.real_pathname_string(arg)))
     }
   }
   if ls.fail
@@ -72,23 +73,24 @@ def (Tb::Cmd).main_ls(argv)
 end
 
 class Tb::Cmd::Ls
-  def initialize(opts)
+  def initialize(gen, opts)
+    @gen = gen
     @opts = opts
     @fail = false
   end
   attr_reader :fail
 
-  def ls_run(gen, path)
+  def ls_run(path)
     st = ls_get_stat(path)
     return if !st
     if st.directory?
-      ls_dir(gen, path, st)
+      ls_dir(path, st)
     else
-      ls_file(gen, path, st)
+      ls_file(path, st)
     end
   end
 
-  def ls_dir(gen, dir, st)
+  def ls_dir(dir, st)
     begin
       entries = Dir.entries(dir)
     rescue SystemCallError
@@ -112,7 +114,7 @@ class Tb::Cmd::Ls
     end
     if !@opts[:R]
       entries.each {|filename|
-        ls_file(gen, dir + filename, nil)
+        ls_file(dir + filename, nil)
       }
     else
       dirs = []
@@ -124,29 +126,29 @@ class Tb::Cmd::Ls
           if dir.to_s != '.'
             path = Pathname(dir.to_s + "/" + filename)
           end
-          ls_file(gen, path, st2)
+          ls_file(path, st2)
         elsif st2.directory?
           dirs << [path, st2]
         else
-          ls_file(gen, path, st2)
+          ls_file(path, st2)
         end
       }
       dirs.each {|path, st2|
-        ls_file(gen, path, st2)
-        ls_dir(gen, path, st2)
+        ls_file(path, st2)
+        ls_dir(path, st2)
       }
     end
   end
 
-  def ls_file(gen, path, st)
+  def ls_file(path, st)
     if 0 < @opts[:l]
       if !st
         st = ls_get_stat(path)
         return if !st
       end
-      gen << ls_long_info(path, st)
+      @gen << ls_long_info(path, st)
     else
-      gen << [path.to_s]
+      @gen << [path.to_s]
     end
   end
 
