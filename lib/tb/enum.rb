@@ -115,20 +115,25 @@ module Tb::Enum
   def newfield(field)
     er = Tb::Enumerator.new {|y|
       first = true
+      set_early_header = lambda {
+        if self.respond_to?(:early_header) && self.early_header && !er.early_header
+          er.set_early_header(Tb::FieldSet.normalize([field, *self.early_header]))
+        end
+      }
       self.each {|row|
         if first
           first = false
-          if self.respond_to?(:early_header) && self.early_header && !er.early_header
-            er.set_early_header(Tb::FieldSet.normalize([field, *self.early_header]))
-          end
+          set_early_header.call
         end
         keys = row.map {|k, v| k }
         keys = Tb::FieldSet.normalize([field, *keys])
         vals = row.map {|k, v| v }
         vals = [yield(row), *vals]
-
         y << Tb::Pairs.new(keys.zip(vals))
       }
+      if first
+        set_early_header.call
+      end
     }
   end
 

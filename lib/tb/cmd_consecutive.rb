@@ -63,12 +63,15 @@ def (Tb::Cmd).main_consecutive(argv)
     first = true
     empty = true
     header = []
+    set_early_header = lambda {
+      if creader.early_header
+        er.set_early_header creader.early_header.map {|f| (1..Tb::Cmd.opt_consecutive_n).map {|i| "#{f}_#{i}" } }.flatten(1)
+      end
+    }
     creader.each {|pairs|
       if first
         first = false
-        if creader.early_header
-          er.set_early_header creader.early_header.map {|f| (1..Tb::Cmd.opt_consecutive_n).map {|i| "#{f}_#{i}" } }.flatten(1)
-        end
+        set_early_header.call
       end
       header |= pairs.map {|f, v| f }
       buf << pairs
@@ -87,8 +90,8 @@ def (Tb::Cmd).main_consecutive(argv)
         buf.shift
       end
     }
-    if first && creader.early_header
-      er.set_early_header creader.early_header.map {|f| (1..Tb::Cmd.opt_consecutive_n).map {|i| "#{f}_#{i}" } }.flatten(1)
+    if first
+      set_early_header.call
     end
   }
   with_output {|out|
