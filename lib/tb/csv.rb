@@ -102,9 +102,6 @@ class Tb
       end
       nil
     end
-
-    def close
-    end
   end
 
   def Tb.csv_stream_output(out)

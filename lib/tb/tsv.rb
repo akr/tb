@@ -80,9 +80,6 @@ class Tb
       line = line.chomp("\r")
       line.split(/\t/, -1)
     end
-
-    def close
-    end
   end
 
   def Tb.tsv_stream_output(out)

@@ -179,9 +179,6 @@ class Tb
       each {|ary| result << ary }
       result
     end
-
-    def close
-    end
   end
 
   # :call-seq:
