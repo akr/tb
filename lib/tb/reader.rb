@@ -64,56 +64,49 @@ class Tb::Reader
   end
 
   def index_from_field_ex(f)
-    self.internal_header
+    raise TypeError if !@fieldset
     @fieldset.index_from_field_ex(f)
   end
 
   def index_from_field(f)
-    self.internal_header
+    raise TypeError if !@fieldset
     @fieldset.index_from_field(f)
   end
 
   def field_from_index_ex(i)
+    raise TypeError if !@fieldset
     raise ArgumentError, "negative index: #{i}" if i < 0
-    self.internal_header
     @fieldset.field_from_index_ex(i)
   end
 
   def field_from_index(i)
+    raise TypeError if !@fieldset
     raise ArgumentError, "negative index: #{i}" if i < 0
-    self.internal_header
     @fieldset.field_from_index(i)
   end
 
   def internal_shift
-    self.internal_header
+    raise TypeError if !@fieldset
     ary = @reader.shift
     field_from_index_ex(ary.length-1) if ary && !ary.empty?
     ary
   end
 
-  def header_and_each(header_proc, &block)
+  def header_and_each(header_proc)
     h = self.internal_header
     header_proc.call(h) if header_proc
-    self.each(&block)
-  end
-
-  def each
-    each_values {|ary|
+    while ary = self.internal_shift
       pairs = []
       ary.each_with_index {|v, i|
         f = field_from_index_ex(i)
         pairs << [f, v]
       }
       yield Tb::Pairs.new(pairs)
-    }
+    end
   end
 
-  def each_values
-    while ary = self.internal_shift
-      yield ary
-    end
-    nil
+  def each(&block)
+    header_and_each(nil, &block)
   end
 
   def close
