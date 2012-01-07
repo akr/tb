@@ -87,4 +87,14 @@ class TestTbCmdConsecutive < Test::Unit::TestCase
     End
   end
 
+  def test_header_only
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+    End
+    Tb::Cmd.main_consecutive(['-o', o="o.csv", i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a_1,a_2,b_1,b_2,c_1,c_2
+    End
+  end
+
 end

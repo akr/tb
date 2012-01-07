@@ -64,6 +64,7 @@ module Tb::Enum
   def cat(*ers, &b)
     ers = [self, *ers]
     er = nil
+    empty = true
     rec = lambda {|y, header|
       if ers.empty?
         if header && !er.early_header
@@ -84,6 +85,14 @@ module Tb::Enum
           end
           y.yield v
         }
+        if first
+          if header && last_e.respond_to?(:early_header) && last_e.early_header
+            header = last_e.early_header | header
+          else
+            header = nil
+          end
+          rec.call(y, header)
+        end
       end
     }
     er = Tb::Enumerator.new {|y|
@@ -150,20 +159,18 @@ module Tb::Enum
   def write_to_csv_to_io(io, with_header=true)
     first = true
     early_header = nil
-    header = nil
+    header = []
     fgen = fnew = nil
     self.each {|pairs|
       if first
         first = false
         if !with_header
           early_header = []
-          header = []
         elsif early_header = self.early_header
           io.puts Tb.csv_encode_row(early_header)
           header = early_header.dup
         else
           fgen, fnew = Tb::FileEnumerator.gen_new
-          header = []
         end
       end
       header |= pairs.map {|f, v| f }
@@ -175,10 +182,17 @@ module Tb::Enum
         ary = fs.map {|f| pairs[f] }
         io.puts Tb.csv_encode_row(ary)
       else
-        fgen << Tb::Pairs.new(pairs)
+        fgen.call Tb::Pairs.new(pairs)
       end
     }
-    if !early_header
+    if first
+      if self.early_header
+        io.puts Tb.csv_encode_row(self.early_header)
+      end
+    elsif !early_header
+      if with_header
+        io.puts Tb.csv_encode_row(header)
+      end
       fnew.call.each {|pairs|
         fs = header.dup
         while !fs.empty? && !pairs.include?(fs.last)
