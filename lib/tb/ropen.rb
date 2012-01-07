@@ -50,7 +50,7 @@ class Tb::Reader
     else
       rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
     end
-    unless filename.respond_to? :to_str
+    if !filename.respond_to?(:to_str) && !filename.respond_to?(:to_path)
       raise ArgumentError, "unexpected filename: #{filename.inspect}"
     end
     reader = self.new(opts) {|body|
