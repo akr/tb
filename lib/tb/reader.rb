@@ -31,26 +31,25 @@
 class Tb::Reader
   include Tb::Enum
 
-  def initialize(rawreader, *rest)
+  def initialize(*rest, &rawreader_open)
     if rest.last.kind_of? Hash
       opts = rest.pop 
     else
       opts = {}
     end
     @opt_n = opts[:numeric]
-    @opt_close = opts[:close]
-    @reader = rawreader
+    @reader_open = rawreader_open
     @fieldset = nil
     @filename = nil
   end
   attr_accessor :filename
 
-  def internal_header
+  def internal_header(rawreader)
     return @fieldset.header if @fieldset
     if @opt_n
       @fieldset = Tb::FieldSet.new
     else
-      while ary = @reader.shift
+      while ary = rawreader.shift
         if ary.all? {|elt| elt.nil? || elt == '' }
           next
         else
@@ -85,24 +84,27 @@ class Tb::Reader
     @fieldset.field_from_index(i)
   end
 
-  def internal_shift
+  def internal_shift(rawreader)
     raise TypeError if !@fieldset
-    ary = @reader.shift
+    ary = rawreader.shift
     field_from_index_ex(ary.length-1) if ary && !ary.empty?
     ary
   end
 
   def header_and_each(header_proc)
-    h = self.internal_header
-    header_proc.call(h) if header_proc
-    while ary = self.internal_shift
-      pairs = []
-      ary.each_with_index {|v, i|
-        f = field_from_index_ex(i)
-        pairs << [f, v]
-      }
-      yield Tb::Pairs.new(pairs)
-    end
+    body = lambda {|rawreader|
+      h = self.internal_header(rawreader)
+      header_proc.call(h) if header_proc
+      while ary = self.internal_shift(rawreader)
+        pairs = []
+        ary.each_with_index {|v, i|
+          f = field_from_index_ex(i)
+          pairs << [f, v]
+        }
+        yield Tb::Pairs.new(pairs)
+      end
+    }
+    @reader_open.call(body)
   end
 
   def each(&block)
@@ -110,9 +112,5 @@ class Tb::Reader
   end
 
   def close
-    @reader.close
-    if @opt_close
-      @opt_close.close
-    end
   end
 end

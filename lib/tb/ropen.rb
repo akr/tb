@@ -53,14 +53,17 @@ class Tb::Reader
     unless filename.respond_to? :to_str
       raise ArgumentError, "unexpected filename: #{filename.inspect}"
     end
-    if filename == '-'
-      rawreader = rawreader_maker.call($stdin)
-    else
-      io = File.open(filename)
-      opts[:close] = io
-      rawreader = rawreader_maker.call(io)
-    end
-    reader = self.new(rawreader, opts)
+    reader = self.new(opts) {|body|
+      if filename == '-'
+        rawreader = rawreader_maker.call($stdin)
+        body.call(rawreader)
+      else
+        File.open(filename) {|io|
+          rawreader = rawreader_maker.call(io)
+          body.call(rawreader)
+        }
+      end
+    }
     reader.filename = filename
     if block_given?
       begin
