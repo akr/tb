@@ -86,7 +86,7 @@ class Tb::Reader
     @fieldset.field_from_index(i)
   end
 
-  def shift
+  def internal_shift
     header
     ary = @reader.shift
     field_from_index_ex(ary.length-1) if ary && !ary.empty?
@@ -105,7 +105,7 @@ class Tb::Reader
   end
 
   def each_values
-    while ary = self.shift
+    while ary = self.internal_shift
       yield ary
     end
     nil
@@ -113,7 +113,7 @@ class Tb::Reader
 
   def read_all
     result = []
-    while ary = self.shift
+    while ary = self.internal_shift
       result << ary
     end
     result
