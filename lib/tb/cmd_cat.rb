@@ -63,25 +63,7 @@ def (Tb::Cmd).main_cat(argv)
   exit_if_help('cat')
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N, Tb::Cmd.opt_cat_with_filename)
-  fields = []
-  with_table_stream_output {|gen|
-    first = true
-    fields = nil
-    creader.each {|row|
-      raise "creader.early_header is nil: #{creader.early_header.inspect}" if !creader.early_header
-      if first
-        first = false
-        fields = creader.early_header.dup
-        if !Tb::Cmd.opt_N
-          gen << fields
-        end
-      end
-      fields |= row.keys
-      fs = fields.dup
-      while !fs.empty? && !row.include?(fs.last)
-        fs.pop
-      end
-      gen << fs.map {|k| row[k] }
-    }
+  with_output {|out|
+    creader.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end

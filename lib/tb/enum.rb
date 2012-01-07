@@ -147,6 +147,49 @@ module Tb::Enum
     }
   end
 
+  def write_to_csv_to_io(io, with_header=true)
+    first = true
+    early_header = nil
+    header = nil
+    fgen = fnew = nil
+    self.each {|pairs|
+      if first
+        first = false
+        if !with_header
+          early_header = []
+          header = []
+        elsif early_header = self.early_header
+          io.puts Tb.csv_encode_row(early_header)
+          header = early_header.dup
+        else
+          fgen, fnew = Tb::FileEnumerator.gen_new
+          header = []
+        end
+      end
+      header |= pairs.map {|f, v| f }
+      if early_header
+        fs = header.dup
+        while !fs.empty? && !pairs.include?(fs.last)
+          fs.pop
+        end
+        ary = fs.map {|f| pairs[f] }
+        io.puts Tb.csv_encode_row(ary)
+      else
+        fgen << Tb::Pairs.new(pairs)
+      end
+    }
+    if !early_header
+      fnew.call.each {|pairs|
+        fs = header.dup
+        while !fs.empty? && !pairs.include?(fs.last)
+          fs.pop
+        end
+        ary = fs.map {|f| pairs[f] }
+        io.puts Tb.csv_encode_row(ary)
+      }
+    end
+  end
+
   # creates a CSV file named as _filename_.
   #
   # If _with_header_ is false,

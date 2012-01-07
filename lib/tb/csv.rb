@@ -129,6 +129,21 @@ class Tb
     end
   end
 
+  def Tb.csv_encode_row(ary)
+    require 'csv'
+    if defined? CSV::Writer
+      # Ruby 1.8
+      out = ''
+      CSV::Writer.generate(out) {|csvgen|
+        csvgen << ary
+      }
+      out
+    else
+      # Ruby 1.9
+      ary.to_csv
+    end
+  end
+
   # :call-seq:
   #   generate_csv(out='', fields=nil) {|recordids| modified_recordids }
   #   generate_csv(out='', fields=nil)

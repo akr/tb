@@ -51,6 +51,20 @@ class Tb::FileEnumerator
       lambda { tempfile.close(true) })
   end
 
+  def self.gen_new
+    tempfile = Tempfile.new("tb")
+    tempfile.binmode
+    gen = lambda {|*objs|
+      Marshal.dump(objs, tempfile)
+    }
+    return gen, lambda {
+      tempfile.close
+      self.new(
+        lambda { open(tempfile.path, "rb") },
+        lambda { tempfile.close(true) })
+    }
+  end
+
   def initialize(open_func, close_func)
     @use_count = 0
     @open_func = open_func
