@@ -175,16 +175,19 @@ def (Tb::Cmd).main_git_log(argv)
   op_git_log.parse!(argv)
   exit_if_help('git-log')
   argv = ['.'] if argv.empty?
-  with_table_stream_output {|gen|
-    gen.output_header Tb::Cmd::GIT_LOG_HEADER
+  er = Tb::Enumerator.new {|y|
+    y.set_header Tb::Cmd::GIT_LOG_HEADER
     argv.each {|dir|
       git_log_with_git_log(dir) {|f|
         f.set_encoding("ASCII-8BIT") if f.respond_to? :set_encoding
         git_log_each_commit(f) {|h|
-          gen << h.values_at(*Tb::Cmd::GIT_LOG_HEADER)
+          y.yield h
         }
       }
     }
+  }
+  with_output {|out|
+    er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end
 
