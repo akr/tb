@@ -80,16 +80,25 @@ class TestTbReader < Test::Unit::TestCase
         1\t3
       End
       Tb::Reader.open("csv:#{ic}") {|r|
-        assert_equal(%w[a b], r.header)
-        assert_equal([%w[1 3]], r.read_all)
+        header = nil
+        all = []
+        r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
+        assert_equal(%w[a b], header)
+        assert_equal([%w[1 3]], all)
       }
       Tb::Reader.open("tsv:#{it}") {|r|
-        assert_equal(%w[a b], r.header)
-        assert_equal([%w[1 3]], r.read_all)
+        header = nil
+        all = []
+        r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
+        assert_equal(%w[a b], header)
+        assert_equal([%w[1 3]], all)
       }
       Tb::Reader.open(ic) {|r|
-        assert_equal(%w[a b], r.header)
-        assert_equal([%w[1 3]], r.read_all)
+        header = nil
+        all = []
+        r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
+        assert_equal(%w[a b], header)
+        assert_equal([%w[1 3]], all)
       }
       assert_raise(ArgumentError) { Tb::Reader.open(Object.new) }
     }
@@ -102,8 +111,11 @@ class TestTbReader < Test::Unit::TestCase
         1,3
       End
       Tb::Reader.open(i) {|r|
-        assert_equal(%w[a b], r.header)
-        assert_equal([%w[1 3]], r.read_all)
+        header = nil
+        all = []
+        r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
+        assert_equal(%w[a b], header)
+        assert_equal([%w[1 3]], all)
         assert_equal("a", r.field_from_index(0))
         assert_equal("b", r.field_from_index(1))
         assert_raise(ArgumentError) { r.field_from_index(2) }

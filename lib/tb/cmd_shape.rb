@@ -43,11 +43,15 @@ def (Tb::Cmd).main_shape(argv)
   result = Tb.new(%w[header_fields min_fields max_fields records filename])
   filenames.each {|filename|
     tablereader_open(filename) {|tblreader|
-      num_header_fields = tblreader.header.length
       min_num_fields = nil
       max_num_fields = nil
       num_records = 0
-      tblreader.each_values {|ary|
+      num_header_fields = nil
+      header_proc = lambda {|header|
+        num_header_fields = header.length
+      }
+      tblreader.header_and_each(header_proc) {|pairs|
+        ary = pairs.map {|f, v| v }
         num_records += 1
         n = ary.length
         if min_num_fields.nil?

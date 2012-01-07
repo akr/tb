@@ -47,14 +47,9 @@ def (Tb::Cmd).main_to_json(argv)
     argv.each {|filename|
       sep = ",\n\n" if sep
       tablereader_open(filename) {|tblreader|
-        tblreader.each_values {|ary|
+        tblreader.each {|pairs|
           out.print sep if sep
-          header = tblreader.header
-          h = {}
-          ary.each_with_index {|e, i|
-            h[header[i]] = e if !e.nil?
-          }
-          out.print JSON.pretty_generate(h)
+          out.print JSON.pretty_generate(pairs.to_h)
           sep = ",\n"
         }
       }

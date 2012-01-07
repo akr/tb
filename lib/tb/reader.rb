@@ -31,7 +31,13 @@
 class Tb::Reader
   include Tb::Enum
 
-  def initialize(rawreader, opts={})
+  def initialize(rawreader, *rest)
+    #warn caller[0]
+    if rest.last.kind_of? Hash
+      opts = rest.pop 
+    else
+      opts = {}
+    end
     @opt_n = opts[:numeric]
     @opt_close = opts[:close]
     @reader = rawreader
@@ -40,7 +46,8 @@ class Tb::Reader
   end
   attr_accessor :filename
 
-  def header
+  def internal_header
+    warn caller[0]
     return @fieldset.header if @fieldset
     if @opt_n
       @fieldset = Tb::FieldSet.new
@@ -59,35 +66,35 @@ class Tb::Reader
   end
 
   def header_and_each(header_proc, &block)
-    h = header
+    h = self.internal_header
     header_proc.call(h) if header_proc
     self.each(&block)
   end
 
   def index_from_field_ex(f)
-    self.header
+    self.internal_header
     @fieldset.index_from_field_ex(f)
   end
 
   def index_from_field(f)
-    self.header
+    self.internal_header
     @fieldset.index_from_field(f)
   end
 
   def field_from_index_ex(i)
     raise ArgumentError, "negative index: #{i}" if i < 0
-    self.header
+    self.internal_header
     @fieldset.field_from_index_ex(i)
   end
 
   def field_from_index(i)
     raise ArgumentError, "negative index: #{i}" if i < 0
-    self.header
+    self.internal_header
     @fieldset.field_from_index(i)
   end
 
   def internal_shift
-    header
+    self.internal_header
     ary = @reader.shift
     field_from_index_ex(ary.length-1) if ary && !ary.empty?
     ary

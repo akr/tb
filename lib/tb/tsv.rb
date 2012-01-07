@@ -43,21 +43,17 @@ class Tb
     aa = yield aa if block_given?
     if header_fields.empty?
       reader = Tb::Reader.new(aa)
-      arys = []
-      reader.each_values {|ary|
-        arys << ary
-      }
-      header = reader.header
+      reader.to_tb
     else
       header = header_fields
       arys = aa
+      t = Tb.new(header)
+      arys.each {|ary|
+        ary << nil while ary.length < header.length
+        t.insert_values header, ary
+      }
+      t
     end
-    t = Tb.new(header)
-    arys.each {|ary|
-      ary << nil while ary.length < header.length
-      t.insert_values header, ary
-    }
-    t
   end
 
   def Tb.tsv_stream_input(tsv)

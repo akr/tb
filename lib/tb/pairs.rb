@@ -108,6 +108,15 @@ class Tb::Pairs
     @vals.each(&b)
   end
 
+  def to_h
+    h = {}
+    @keys.each_with_index {|k, i|
+      v = @vals[i]
+      h[k] = v
+    }
+    h
+  end
+
   def empty?
     @keys.empty?
   end
