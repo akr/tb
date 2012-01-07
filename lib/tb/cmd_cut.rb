@@ -47,19 +47,21 @@ def (Tb::Cmd).main_cut(argv)
   argv = ['-'] if argv.empty?
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     if Tb::Cmd.opt_cut_v
-      with_table_stream_output {|gen|
-        header = nil
+      er = Tb::Enumerator.new {|y|
         header_proc = lambda {|header0|
-          header = header0 - fs
-          gen.output_header(header)
+          if header0
+            y.set_header header0 - fs
+          end
         }
         tblreader.header_and_each(header_proc) {|pairs|
-          header |= pairs.map {|k, v| k } - fs
-          gen << header.map {|k| pairs[k] }
+          y.yield pairs.reject {|k, v| fs.include? k }
         }
       }
+      with_output {|out|
+        er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
+      }
     else
-      with_table_stream_output {|gen|
+      er = Tb::Enumerator.new {|y|
         header_proc = lambda {|header0|
           if header0
             fieldset = Tb::FieldSet.new(*header0)
@@ -67,11 +69,14 @@ def (Tb::Cmd).main_cut(argv)
               fieldset.index_from_field_ex(f)
             }
           end
-          gen.output_header(fs)
+          y.set_header fs
         }
         tblreader.header_and_each(header_proc) {|pairs|
-          gen << fs.map {|f| pairs[f] }
+          y.yield pairs.reject {|k, v| !fs.include?(k) }
         }
+      }
+      with_output {|out|
+        er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
       }
     end
   }
