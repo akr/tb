@@ -49,7 +49,13 @@ def (Tb::Cmd).main_ls(argv)
   op_ls.parse!(argv)
   exit_if_help('ls')
   argv = ['.'] if argv.empty?
-  ls = Tb::Cmd::Ls.new
+  opts = {
+    :a => Tb::Cmd.opt_ls_a,
+    :A => Tb::Cmd.opt_ls_A,
+    :l => Tb::Cmd.opt_ls_l,
+    :R => Tb::Cmd.opt_ls_R,
+  }
+  ls = Tb::Cmd::Ls.new(opts)
   with_table_stream_output {|gen|
     if Tb::Cmd.opt_ls_l == 0
       gen.output_header ['filename'] # don't generate the header when -N.
@@ -66,7 +72,8 @@ def (Tb::Cmd).main_ls(argv)
 end
 
 class Tb::Cmd::Ls
-  def initialize
+  def initialize(opts)
+    @opts = opts
     @fail = false
   end
   attr_reader :fail
@@ -91,11 +98,11 @@ class Tb::Cmd::Ls
     end
     entries.map! {|filename| real_pathname_string(filename) }
     entries = entries.sort_by {|filename| smart_cmp_value(filename) }
-    if Tb::Cmd.opt_ls_a || Tb::Cmd.opt_ls_A
+    if @opts[:a] || @opts[:A]
       entries1, entries2 = entries.partition {|filename| /\A\./ =~ filename }
       entries0, entries1 = entries1.partition {|filename| filename == '.' || filename == '..' }
       entries0.sort!
-      if Tb::Cmd.opt_ls_A
+      if @opts[:A]
         entries = entries1 + entries2
       else
         entries = entries0 + entries1 + entries2
@@ -103,7 +110,7 @@ class Tb::Cmd::Ls
     else
       entries.reject! {|filename| /\A\./ =~ filename }
     end
-    if !Tb::Cmd.opt_ls_R
+    if !@opts[:R]
       entries.each {|filename|
         ls_file(gen, dir + filename, nil)
       }
@@ -132,7 +139,7 @@ class Tb::Cmd::Ls
   end
 
   def ls_file(gen, path, st)
-    if 0 < Tb::Cmd.opt_ls_l
+    if 0 < @opts[:l]
       if !st
         st = ls_get_stat(path)
         return if !st
@@ -155,7 +162,7 @@ class Tb::Cmd::Ls
   end
 
   def ls_long_header
-    if 1 < Tb::Cmd.opt_ls_l
+    if 1 < @opts[:l]
       %w[dev ino mode filemode nlink uid user gid group rdev size blksize blocks atime mtime ctime filename symlink]
     else
       %w[filemode nlink user group size mtime filename symlink]
@@ -236,7 +243,7 @@ class Tb::Cmd::Ls
   end
 
   def ls_info_atime(path, st)
-    if 1 < Tb::Cmd.opt_ls_l
+    if 1 < @opts[:l]
       st.atime.iso8601(9)
     else
       st.atime.iso8601
@@ -244,7 +251,7 @@ class Tb::Cmd::Ls
   end
 
   def ls_info_mtime(path, st)
-    if 1 < Tb::Cmd.opt_ls_l
+    if 1 < @opts[:l]
       st.mtime.iso8601(9)
     else
       st.mtime.iso8601
@@ -252,7 +259,7 @@ class Tb::Cmd::Ls
   end
 
   def ls_info_ctime(path, st)
-    if 1 < Tb::Cmd.opt_ls_l
+    if 1 < @opts[:l]
       st.ctime.iso8601(9)
     else
       st.ctime.iso8601
