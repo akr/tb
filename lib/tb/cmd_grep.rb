@@ -62,26 +62,27 @@ def (Tb::Cmd).main_grep(argv)
   end
   opt_v = Tb::Cmd.opt_grep_v ? true : false
   argv = ['-'] if argv.empty?
-  Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
-    with_table_stream_output {|gen|
-      header = nil
-      header_proc = lambda {|header0|
-        header = header0
-        gen.output_header header
-      }
-      tblreader.header_and_each(header_proc) {|pairs|
-        h = {}
-        pairs.each {|f, v|
-          h[f] = v
-        }
-        found = pred.call(h)
-        found = opt_v ^ !!(found)
-        if found
-          ary = header.map {|f| pairs[f] }
-          gen << ary
-        end
-      }
+  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
+  er = Tb::Enumerator.new {|y|
+    header = nil
+    header_proc = lambda {|header0|
+      header = header0
+      y.set_header header
     }
+    creader.header_and_each(header_proc) {|pairs|
+      h = {}
+      pairs.each {|f, v|
+        h[f] = v
+      }
+      found = pred.call(h)
+      found = opt_v ^ !!(found)
+      if found
+        y.yield pairs
+      end
+    }
+  }
+  with_output {|out|
+    er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end
 
