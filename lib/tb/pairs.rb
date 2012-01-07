@@ -50,7 +50,7 @@ class Tb::Pairs
     info
   end
 
-  include Tb::Enum
+  include Enumerable
 
   def initialize(pairs)
     keys = []
