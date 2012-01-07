@@ -32,7 +32,6 @@ class Tb::Reader
   include Tb::Enum
 
   def initialize(rawreader, *rest)
-    #warn caller[0]
     if rest.last.kind_of? Hash
       opts = rest.pop 
     else
@@ -47,7 +46,6 @@ class Tb::Reader
   attr_accessor :filename
 
   def internal_header
-    warn caller[0]
     return @fieldset.header if @fieldset
     if @opt_n
       @fieldset = Tb::FieldSet.new
