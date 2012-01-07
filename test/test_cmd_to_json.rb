@@ -40,6 +40,34 @@ class TestTbCmdToJSON < Test::Unit::TestCase
     End
   end
 
+  def test_json_to_json
+    File.open(i="i.json", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      [{
+        "a": "0",
+        "b": "1",
+        "c": "2"
+      },
+      {
+        "a": "4",
+        "b": "5",
+        "c": "6"
+      }]
+    End
+    Tb::Cmd.main_to_json(['-o', o="o.json", i])
+    assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, ''))
+      [{
+        "a": "0",
+        "b": "1",
+        "c": "2"
+      },
+      {
+        "a": "4",
+        "b": "5",
+        "c": "6"
+      }]
+    End
+  end
+
   def test_twofile
     File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b
