@@ -73,24 +73,23 @@ module Tb::Enum
       else
         last_e = ers.pop
         first = true
-        last_e.each {|v|
-          if first
-            first = false
-            if header && last_e.respond_to?(:early_header) && last_e.early_header
-              header = last_e.early_header | header
-            else
-              header = nil
-            end
-            rec.call(y, header)
-          end
-          y.yield v
-        }
-        if first
+        update_header = lambda {
           if header && last_e.respond_to?(:early_header) && last_e.early_header
             header = last_e.early_header | header
           else
             header = nil
           end
+        }
+        last_e.each {|v|
+          if first
+            first = false
+            update_header.call
+            rec.call(y, header)
+          end
+          y.yield v
+        }
+        if first
+          update_header.call
           rec.call(y, header)
         end
       end
