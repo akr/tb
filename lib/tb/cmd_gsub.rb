@@ -53,37 +53,39 @@ def (Tb::Cmd).main_gsub(argv)
   err('no substitution given.') if argv.empty?
   repl = argv.shift
   argv = ['-'] if argv.empty?
-  Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
-    with_table_stream_output {|gen|
-      header = nil
-      header_proc = lambda {|header0|
+  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
+  er = Tb::Enumerator.new {|y|
+    header = nil
+    header_proc = lambda {|header0|
+      if header0
         header = header0
-        gen.output_header header
-      }
-      tblreader.header_and_each(header_proc) {|pairs|
-        header |= pairs.map {|f, v| f }
-        fs = header.dup
-        fs.pop while !fs.empty? && !pairs.include?(fs.last)
-        if Tb::Cmd.opt_gsub_f
-          ary = fs.map {|f|
-            v = pairs[f]
-            if f == Tb::Cmd.opt_gsub_f
-              v ||= ''
-              v.gsub(re, repl)
-            else
-              v
-            end
-          }
-        else
-          ary = fs.map {|f|
-            v = pairs[f]
-            v ||= ''
-            v.gsub(re, repl)
-          }
-        end
-        gen << ary
-      }
+        y.set_header header
+      end
     }
+    creader.header_and_each(header_proc) {|pairs|
+      header |= pairs.map {|f, v| f }
+      fs = header.dup
+      fs.pop while !fs.empty? && !pairs.include?(fs.last)
+      if Tb::Cmd.opt_gsub_f
+        pairs2 = pairs.map {|f, v|
+          if f == Tb::Cmd.opt_gsub_f
+            v ||= ''
+            [f, v.gsub(re, repl)]
+          else
+            [f, v]
+          end
+        }
+      else
+        pairs2 = pairs.map {|f, v|
+          v ||= ''
+          [f, v.gsub(re, repl)]
+        }
+      end
+      y.yield Tb::Pairs.new(pairs2)
+    }
+  }
+  with_output {|out|
+    er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end
 
