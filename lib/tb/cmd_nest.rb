@@ -28,16 +28,11 @@
 
 Tb::Cmd.subcommands << 'nest'
 
-#Tb::Cmd.default_option[:opt_unnest_prefix] = ''
-#Tb::Cmd.default_option[:opt_unnest_outer] = nil
-
 def (Tb::Cmd).op_nest
   op = OptionParser.new
   op.banner = "Usage: tb nest [OPTS] NEWFIELD,OLDFIELD1,OLDFIELD2,... [TABLE ...]\n" +
     "Nest fields."
   define_common_option(op, "hNo", "--no-pager")
-  #op.def_option('--prefix PREFIX', 'field prefix') {|prefix| Tb::Cmd.opt_unnest_prefix = prefix }
-  #op.def_option('--outer', 'retain rows for empty nested table') { Tb::Cmd.opt_unnest_outer = true }
   op
 end
 
