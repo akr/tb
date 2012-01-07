@@ -45,23 +45,10 @@ def (Tb::Cmd).main_newfield(argv)
   rubyexp = argv.shift
   pr = eval("lambda {|_| #{rubyexp} }")
   argv = ['-'] if argv.empty?
-  Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
-    with_table_stream_output {|gen|
-      header = nil
-      header_proc = lambda {|header0|
-        header = header0
-        gen.output_header([field] + header0)
-      }
-      tblreader.header_and_each(header_proc) {|pairs|
-        header |= pairs.map {|f, v| f }
-        h = {}
-        pairs.each {|f, v|
-          h[f] = v
-        }
-        ary = header.map {|f| pairs[f] }
-        gen << [pr.call(h), *ary]
-      }
-    }
+  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
+  er = creader.newfield(field) {|pairs| pr.call(pairs) }
+  with_output {|out|
+    er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end
 
