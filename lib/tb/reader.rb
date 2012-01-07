@@ -31,12 +31,7 @@
 class Tb::Reader
   include Tb::Enum
 
-  def initialize(*rest, &rawreader_open)
-    if rest.last.kind_of? Hash
-      opts = rest.pop 
-    else
-      opts = {}
-    end
+  def initialize(opts={}, &rawreader_open)
     @opt_n = opts[:numeric]
     @reader_open = rawreader_open
     @fieldset = nil
