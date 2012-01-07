@@ -1,6 +1,4 @@
-# lib/tb.rb - entry file for table library
-#
-# Copyright (C) 2010-2012 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2012 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,24 +26,25 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'tempfile'
+require 'json'
 
 class Tb
-end
+  class JSONReader
+    include Tb::Enum
 
-require 'pp'
-require 'tb/enum'
-require 'tb/pairs'
-require 'tb/basic'
-require 'tb/record'
-require 'tb/csv'
-require 'tb/tsv'
-require 'tb/pnm'
-require 'tb/json'
-require 'tb/reader'
-require 'tb/ropen'
-require 'tb/catreader'
-require 'tb/fieldset'
-require 'tb/search'
-require 'tb/enumerable'
-require 'tb/fileenumerator'
+    def initialize(string)
+      @ary = JSON.parse(string)
+    end
+
+    def header_and_each(header_proc)
+      header_proc.call(nil)
+      @ary.each {|obj|
+        yield obj
+      }
+    end
+
+    def each(&block)
+      header_and_each(nil, &block)
+    end
+  end
+end

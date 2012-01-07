@@ -79,6 +79,9 @@ class TestTbReader < Test::Unit::TestCase
         a\tb
         1\t3
       End
+      open(ij="#{d}/j", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+        [{"a":1,"b":3}]
+      End
       Tb.open_reader("csv:#{ic}") {|r|
         header = nil
         all = []
@@ -92,6 +95,13 @@ class TestTbReader < Test::Unit::TestCase
         r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
         assert_equal(%w[a b], header)
         assert_equal([%w[1 3]], all)
+      }
+      Tb.open_reader("json:#{ij}") {|r|
+        header = nil
+        all = []
+        r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
+        assert_equal(nil, header)
+        assert_equal([[1, 3]], all)
       }
       Tb.open_reader(ic) {|r|
         header = nil

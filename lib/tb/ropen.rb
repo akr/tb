@@ -33,36 +33,52 @@ def Tb.open_reader(filename, opts={})
   case filename
   when /\Acsv:/
     filename = $'
-    rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
+    rawreader_maker_for_tb_reader = lambda {|io| Tb::CSVReader.new(io) }
   when /\Atsv:/
     filename = $'
-    rawreader_maker = lambda {|io| Tb::TSVReader.new(io) }
+    rawreader_maker_for_tb_reader = lambda {|io| Tb::TSVReader.new(io) }
   when /\Ap[pgbn]m:/
     filename = $'
-    rawreader_maker = lambda {|io| Tb.pnm_stream_input(io) }
+    rawreader_maker_for_tb_reader = lambda {|io| Tb.pnm_stream_input(io) }
+  when /\Ajson:/
+    filename = $'
+    json_reader_maker = lambda {|io| Tb::JSONReader.new(io.read) }
   when /\.csv\z/
-    rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
+    rawreader_maker_for_tb_reader = lambda {|io| Tb::CSVReader.new(io) }
   when /\.tsv\z/
-    rawreader_maker = lambda {|io| Tb::TSVReader.new(io) }
+    rawreader_maker_for_tb_reader = lambda {|io| Tb::TSVReader.new(io) }
   when /\.p[pgbn]m\z/
-    rawreader_maker = lambda {|io| Tb.pnm_stream_input(io) }
+    rawreader_maker_for_tb_reader = lambda {|io| Tb.pnm_stream_input(io) }
+  when /\.json\z/
+    json_reader_maker = lambda {|io| Tb::JSONReader.new(io.read) }
   else
-    rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
+    rawreader_maker_for_tb_reader = lambda {|io| Tb::CSVReader.new(io) }
   end
   if !filename.respond_to?(:to_str) && !filename.respond_to?(:to_path)
     raise ArgumentError, "unexpected filename: #{filename.inspect}"
   end
-  reader = Tb::Reader.new(opts) {|body|
+  if json_reader_maker
     if filename == '-'
-      rawreader = rawreader_maker.call($stdin)
-      body.call(rawreader)
+      reader = json_reader_maker.call($stdin)
     else
-      File.open(filename) {|io|
-        rawreader = rawreader_maker.call(io)
-        body.call(rawreader)
+      reader = File.open(filename) {|io|
+        json_reader_maker.call(io)
       }
     end
-  }
+  else
+    # rawreader_maker_for_tb_reader should be available.
+    reader = Tb::Reader.new(opts) {|body|
+      if filename == '-'
+        rawreader = rawreader_maker_for_tb_reader.call($stdin)
+        body.call(rawreader)
+      else
+        File.open(filename) {|io|
+          rawreader = rawreader_maker_for_tb_reader.call(io)
+          body.call(rawreader)
+        }
+      end
+    }
+  end
   if block_given?
     yield reader
   else
