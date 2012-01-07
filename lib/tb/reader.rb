@@ -63,12 +63,6 @@ class Tb::Reader
     return @fieldset.header
   end
 
-  def header_and_each(header_proc, &block)
-    h = self.internal_header
-    header_proc.call(h) if header_proc
-    self.each(&block)
-  end
-
   def index_from_field_ex(f)
     self.internal_header
     @fieldset.index_from_field_ex(f)
@@ -98,6 +92,12 @@ class Tb::Reader
     ary
   end
 
+  def header_and_each(header_proc, &block)
+    h = self.internal_header
+    header_proc.call(h) if header_proc
+    self.each(&block)
+  end
+
   def each
     each_values {|ary|
       pairs = []
@@ -114,14 +114,6 @@ class Tb::Reader
       yield ary
     end
     nil
-  end
-
-  def read_all
-    result = []
-    while ary = self.internal_shift
-      result << ary
-    end
-    result
   end
 
   def close
