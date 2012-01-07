@@ -64,6 +64,7 @@ def (Tb::Cmd).main_consecutive(argv)
     header = []
     header_proc = lambda {|header0|
       if header0
+        header = header0.dup
         y.set_header header0.map {|f| (1..Tb::Cmd.opt_consecutive_n).map {|i| "#{f}_#{i}" } }.flatten(1)
       end
     }
