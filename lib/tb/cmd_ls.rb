@@ -56,16 +56,15 @@ def (Tb::Cmd).main_ls(argv)
     :R => Tb::Cmd.opt_ls_R,
   }
   ls = nil
-  with_table_stream_output {|gen|
-    ls = Tb::Cmd::Ls.new(gen, opts)
-    if Tb::Cmd.opt_ls_l == 0
-      gen.output_header ['filename'] # don't generate the header when -N.
-    else
-      gen.output_header(ls.ls_long_header()) # don't generate the header when -N.
-    end
+  er = Tb::Enumerator.new {|y|
+    ls = Tb::Cmd::Ls.new(y, opts)
+    ls.set_header
     argv.each {|arg|
       ls.ls_run(Pathname(ls.real_pathname_string(arg)))
     }
+  }
+  with_output {|out|
+    er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
   if ls.fail
     exit false
@@ -73,12 +72,20 @@ def (Tb::Cmd).main_ls(argv)
 end
 
 class Tb::Cmd::Ls
-  def initialize(gen, opts)
-    @gen = gen
+  def initialize(y, opts)
+    @y = y
     @opts = opts
     @fail = false
   end
   attr_reader :fail
+
+  def set_header
+    if @opts[:l] == 0
+      @y.set_header ['filename']
+    else
+      @y.set_header(ls_long_header())
+    end
+  end
 
   def ls_run(path)
     st = ls_get_stat(path)
@@ -146,9 +153,9 @@ class Tb::Cmd::Ls
         st = ls_get_stat(path)
         return if !st
       end
-      @gen << ls_long_info(path, st)
+      @y.yield ls_long_info(path, st)
     else
-      @gen << [path.to_s]
+      @y.yield Tb::Pairs.new([['filename', path.to_s]])
     end
   end
 
@@ -172,9 +179,9 @@ class Tb::Cmd::Ls
   end
 
   def ls_long_info(path, st)
-    ls_long_header.map {|info_type|
-      self.send("ls_info_#{info_type}", path, st)
-    }
+    Tb::Pairs.new(ls_long_header.map {|info_type|
+      [info_type, self.send("ls_info_#{info_type}", path, st)]
+    })
   end
 
   def ls_info_dev(path, st) sprintf("0x%x", st.dev) end
