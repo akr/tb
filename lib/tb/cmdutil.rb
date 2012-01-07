@@ -260,7 +260,7 @@ def load_table(filename)
 end
 
 def tablereader_open(filename, &b)
-  Tb::Reader.open(filename, {:numeric=>Tb::Cmd.opt_N}, &b)
+  Tb.open_reader(filename, {:numeric=>Tb::Cmd.opt_N}, &b)
 end
 
 def with_table_stream_output

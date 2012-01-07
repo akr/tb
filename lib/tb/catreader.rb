@@ -32,7 +32,7 @@ module Tb::CatReader
   def self.open(filenames, numeric=false, with_filename=false)
     readers = []
     filenames.each {|f|
-      r = Tb::Reader.open(f, numeric ? {:numeric=>true} : {})
+      r = Tb.open_reader(f, numeric ? {:numeric=>true} : {})
       if with_filename
         r = r.newfield("filename") { f }
       end

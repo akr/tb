@@ -71,3 +71,7 @@ class Tb::Reader
     end
   end
 end
+
+def Tb.open_reader(filename, opts={}, &block)
+  Tb::Reader.open(filename, opts, &block)
+end

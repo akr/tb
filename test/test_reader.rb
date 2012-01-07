@@ -79,28 +79,28 @@ class TestTbReader < Test::Unit::TestCase
         a\tb
         1\t3
       End
-      Tb::Reader.open("csv:#{ic}") {|r|
+      Tb.open_reader("csv:#{ic}") {|r|
         header = nil
         all = []
         r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
         assert_equal(%w[a b], header)
         assert_equal([%w[1 3]], all)
       }
-      Tb::Reader.open("tsv:#{it}") {|r|
+      Tb.open_reader("tsv:#{it}") {|r|
         header = nil
         all = []
         r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
         assert_equal(%w[a b], header)
         assert_equal([%w[1 3]], all)
       }
-      Tb::Reader.open(ic) {|r|
+      Tb.open_reader(ic) {|r|
         header = nil
         all = []
         r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
         assert_equal(%w[a b], header)
         assert_equal([%w[1 3]], all)
       }
-      assert_raise(ArgumentError) { Tb::Reader.open(Object.new) }
+      assert_raise(ArgumentError) { Tb.open_reader(Object.new) }
     }
   end
 
@@ -110,7 +110,7 @@ class TestTbReader < Test::Unit::TestCase
         a,b
         1,3
       End
-      Tb::Reader.open(i) {|r|
+      Tb.open_reader(i) {|r|
         header = nil
         all = []
         r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
