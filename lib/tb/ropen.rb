@@ -28,50 +28,44 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-class Tb::Reader
-  def self.open(filename, opts={})
-    opts = opts.dup
-    case filename
-    when /\Acsv:/
-      filename = $'
-      rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
-    when /\Atsv:/
-      filename = $'
-      rawreader_maker = lambda {|io| Tb::TSVReader.new(io) }
-    when /\Ap[pgbn]m:/
-      filename = $'
-      rawreader_maker = lambda {|io| Tb.pnm_stream_input(io) }
-    when /\.csv\z/
-      rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
-    when /\.tsv\z/
-      rawreader_maker = lambda {|io| Tb::TSVReader.new(io) }
-    when /\.p[pgbn]m\z/
-      rawreader_maker = lambda {|io| Tb.pnm_stream_input(io) }
-    else
-      rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
-    end
-    if !filename.respond_to?(:to_str) && !filename.respond_to?(:to_path)
-      raise ArgumentError, "unexpected filename: #{filename.inspect}"
-    end
-    reader = self.new(opts) {|body|
-      if filename == '-'
-        rawreader = rawreader_maker.call($stdin)
-        body.call(rawreader)
-      else
-        File.open(filename) {|io|
-          rawreader = rawreader_maker.call(io)
-          body.call(rawreader)
-        }
-      end
-    }
-    if block_given?
-      yield reader
-    else
-      reader
-    end
+def Tb.open_reader(filename, opts={})
+  opts = opts.dup
+  case filename
+  when /\Acsv:/
+    filename = $'
+    rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
+  when /\Atsv:/
+    filename = $'
+    rawreader_maker = lambda {|io| Tb::TSVReader.new(io) }
+  when /\Ap[pgbn]m:/
+    filename = $'
+    rawreader_maker = lambda {|io| Tb.pnm_stream_input(io) }
+  when /\.csv\z/
+    rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
+  when /\.tsv\z/
+    rawreader_maker = lambda {|io| Tb::TSVReader.new(io) }
+  when /\.p[pgbn]m\z/
+    rawreader_maker = lambda {|io| Tb.pnm_stream_input(io) }
+  else
+    rawreader_maker = lambda {|io| Tb::CSVReader.new(io) }
   end
-end
-
-def Tb.open_reader(filename, opts={}, &block)
-  Tb::Reader.open(filename, opts, &block)
+  if !filename.respond_to?(:to_str) && !filename.respond_to?(:to_path)
+    raise ArgumentError, "unexpected filename: #{filename.inspect}"
+  end
+  reader = Tb::Reader.new(opts) {|body|
+    if filename == '-'
+      rawreader = rawreader_maker.call($stdin)
+      body.call(rawreader)
+    else
+      File.open(filename) {|io|
+        rawreader = rawreader_maker.call(io)
+        body.call(rawreader)
+      }
+    end
+  }
+  if block_given?
+    yield reader
+  else
+    reader
+  end
 end
