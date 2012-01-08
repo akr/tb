@@ -67,45 +67,72 @@ def (Tb::Cmd).main_crop(argv)
     end
   end
   if stream
-    with_table_stream_output {|gen|
-      Tb::CatReader.open(argv, true) {|tblreader|
-        rownum = 1
-        tblreader.each {|pairs|
-          ary = pairs.map {|k, v| v }
-          if range_row2 < rownum
-            break
-          end
-          if range_row1 <= rownum
-            if range_col2 < ary.length
-              ary[range_col2..-1] = []
-            end
-            if 1 < range_col1
-              ary[0...(range_col1-1)] = []
-            end
-            gen << ary
-          end
-          rownum += 1
-        }
+    creader = Tb::CatReader.open(argv, true)
+    er = Tb::Enumerator.new {|y|
+      rownum = 1
+      creader.each {|pairs|
+        if range_row2 < rownum
+          break
+        end
+        if range_row1 <= rownum
+          pairs2 = pairs.reject {|f, v|
+            f = f.to_i
+            f < range_col1 || range_col2 < f
+          }
+          y.yield pairs2
+        end
+        rownum += 1
       }
+    }
+    with_output {|out|
+      er.write_to_csv_to_io(out, false)
     }
   else
-    arys = []
-    Tb::CatReader.open(argv, true) {|tblreader|
-      tblreader.each {|pairs|
-        a = pairs.map {|k, v| v }
-        a.pop while !a.empty? && (a.last.nil? || a.last == '')
-        arys << a
+    creader = Tb::CatReader.open(argv, true)
+    last_nonempty_row = nil
+    lmargin_min = nil
+    ter = Tb::Enumerator.new {|y|
+      numrows = 0
+      creader.each {|pairs|
+        ary = []
+        pairs.each {|f, v|
+          ary[f.to_i-1] = v
+        }
+        while !ary.empty? && (ary.last.nil? || ary.last == '')
+          ary.pop
+        end
+        if numrows == 0 && ary.empty?
+          next
+        end
+        if !ary.empty?
+          lmargin = 0
+          while lmargin < ary.length
+            if !ary[lmargin].nil? && ary[lmargin] != ''
+              break 
+            end
+            lmargin += 1
+          end
+          if lmargin_min.nil? || lmargin < lmargin_min
+            lmargin_min = lmargin
+          end
+        end
+        last_nonempty_row = numrows if !ary.empty?
+        y.yield ary
+        numrows += 1
+      }
+    }.to_fileenumerator
+    er = Tb::Enumerator.new {|y|
+      ter.each_with_index {|ary, rownum|
+        if last_nonempty_row < rownum
+          break
+        end
+        ary.slice!(0, lmargin_min)
+        pairs = Tb::Pairs.new(ary.map.with_index {|v, i| ["#{i+1}", v]})
+        y.yield pairs
       }
     }
-    arys.pop while !arys.empty? && arys.last.all? {|v| v.nil? || v == '' }
-    arys.shift while !arys.empty? && arys.first.all? {|v| v.nil? || v == '' }
-    if !arys.empty?
-      while arys.all? {|a| a.empty? || (a.first.nil? || a.first == '') }
-        arys.each {|a| a.shift }
-      end
-    end
-    with_table_stream_output {|gen|
-      arys.each {|a| gen << a }
+    with_output {|out|
+      er.write_to_csv_to_io(out, false)
     }
   end
 end
