@@ -56,25 +56,29 @@ def (Tb::Cmd).main_mheader(argv)
       header.length == h2.length ? h2 : nil
     }
   end
-  with_table_stream_output {|gen|
-    Tb::CatReader.open(argv, true) {|tblreader|
-      tblreader.each {|pairs|
-        ary = pairs.map {|f, v| v }
-        if header
-          ary.each_with_index {|v,i|
-            header[i] ||= []
-            header[i] << v if header[i].empty? || header[i].last != v
-          }
-          h2 = header_end_p.call
-          if h2
-            gen << h2
-            header = nil
-          end
-        else
-          gen << ary
+  creader = Tb::CatReader.open(argv, true)
+  er = Tb::Enumerator.new {|y|
+    creader.each {|pairs|
+      if header
+        ary = []
+        pairs.each {|f, v| ary[f.to_i-1] = v }
+        ary.each_with_index {|v,i|
+          header[i] ||= []
+          header[i] << v if header[i].empty? || header[i].last != v
+        }
+        h2 = header_end_p.call
+        if h2
+          pairs2 = Tb::Pairs.new(h2.map.with_index {|v, i| ["#{i+1}", v] })
+          y.yield pairs2
+          header = nil
         end
-      }
+      else
+        y.yield pairs
+      end
     }
+  }
+  with_output {|out|
+    er.write_to_csv_to_io(out, false)
   }
   if header
     warn "unique header fields not recognized."
