@@ -402,13 +402,13 @@ def (Tb::Cmd).main_tar_tvf(argv)
   op_tar_tvf.parse!(argv)
   exit_if_help('tar-tvf')
   argv = ['-'] if argv.empty?
-  with_table_stream_output {|gen|
+  er = Tb::Enumerator.new {|y|
     if Tb::Cmd.opt_tar_tvf_l == 0
       header = Tb::Cmd::TAR_CSV_HEADER
     else
       header = Tb::Cmd::TAR_CSV_LONG_HEADER
     end
-    gen.output_header header
+    y.set_header header
     argv.each {|filename|
       tar_tvf_open_with(filename) {|f|
         tar_tvf_each(f) {|h|
@@ -432,9 +432,12 @@ def (Tb::Cmd).main_tar_tvf(argv)
           formatted["tar_typeflag"] = h[:typeflag]
           formatted["tar_magic"] = h[:magic]
           formatted["tar_version"] = h[:version]
-          gen << formatted.values_at(*header)
+          y.yield Tb::Pairs.new(header.map {|f| [f, formatted[f]] })
         }
       }
     }
+  }
+  with_output {|out|
+    er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end
