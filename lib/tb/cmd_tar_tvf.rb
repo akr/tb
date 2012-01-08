@@ -201,7 +201,11 @@ end
 def (Tb::Cmd).tar_tvf_read_end_of_archive_indicator(reader)
   # The end of archive indicator is two consecutive records of NULs.
   # The first record is already read.
-  second_end_of_archive_indicator_record = reader.read_single_record("second record of the end of archive indicator")
+  second_end_of_archive_indicator_record = reader.get_single_record("second record of the end of archive indicator")
+  if !second_end_of_archive_indicator_record
+    # some tarballs have only one record of NULs.
+    return
+  end
   if /\A\0*\z/ !~ second_end_of_archive_indicator_record
     warn "The second record of end of tar archive indicator is not zero"
     raise Tb::Cmd::TarFormatError
