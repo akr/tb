@@ -65,7 +65,7 @@ class TestTbCmdMheader < Test::Unit::TestCase
       }
     }
     assert_equal('', File.read(o))
-    assert_match(/no header found/, File.read(log))
+    assert_match(/unique header fields not recognized/, File.read(log))
   end
 
   def test_twofile
