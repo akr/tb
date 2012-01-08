@@ -77,7 +77,7 @@ def (Tb::Cmd).main_mheader(argv)
     }
   }
   if header
-    warn "no header found."
+    warn "unique header fields not recognized."
   end
 end
 
