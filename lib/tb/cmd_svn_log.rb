@@ -44,8 +44,8 @@ def (Tb::Cmd).op_svn_log
 end
 
 class Tb::Cmd::SVNLOGListener
-  def initialize(gen)
-    @gen = gen
+  def initialize(y)
+    @y = y
     @header = nil
     @elt_stack = []
     @att_stack = []
@@ -87,14 +87,17 @@ class Tb::Cmd::SVNLOGListener
         else
           @header = %w[rev author date msg]
         end
-        @gen.output_header @header
+        @y.set_header @header
       end
       if @log['paths']
         @log['paths'].each {|h|
-          @gen << (@log.values_at(*%w[rev author date msg]) + h.values_at(*%w[kind action path]))
+          assoc = @log.to_a.reject {|f, v| !%w[rev author date msg].include?(f) }
+          assoc += h.to_a.reject {|f, v| !%w[kind action path].include?(f) }
+          @y.yield Tb::Pairs.new(assoc)
         }
       else
-        @gen << @log.values_at(*%w[rev author date msg])
+        assoc = @log.to_a.reject {|f, v| !%w[rev author date msg].include?(f) }
+        @y.yield Tb::Pairs.new(assoc)
       end
       @log = nil
     end
@@ -153,11 +156,14 @@ end
 def (Tb::Cmd).main_svn_log(argv)
   op_svn_log.parse!(argv)
   exit_if_help('svn-log')
-  with_table_stream_output {|gen|
+  er = Tb::Enumerator.new {|y|
     svn_log_with_svn_log(argv) {|f|
-      listener = Tb::Cmd::SVNLOGListener.new(gen)
+      listener = Tb::Cmd::SVNLOGListener.new(y)
       REXML::Parsers::StreamParser.new(f, listener).parse
     }
+  }
+  with_output {|out|
+    er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end
 
