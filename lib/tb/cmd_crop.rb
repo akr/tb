@@ -91,7 +91,7 @@ def (Tb::Cmd).main_crop(argv)
     creader = Tb::CatReader.open(argv, true)
     last_nonempty_row = nil
     lmargin_min = nil
-    ter = Tb::Enumerator.new {|y|
+    ter = Enumerator.new {|y|
       numrows = 0
       creader.each {|pairs|
         ary = []

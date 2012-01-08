@@ -164,16 +164,6 @@ module Tb::Enum
     tb
   end
 
-  # creates a Tb::FileEnumerator object.
-  #
-  def to_fileenumerator
-    Tb::FileEnumerator.new_tempfile {|gen|
-      self.each {|*objs|
-        gen.call(*objs)
-      }
-    }
-  end
-
   def write_to_csv_to_io(io, with_header=true)
     stream = nil
     header = []

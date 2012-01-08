@@ -40,17 +40,6 @@ class TestTbEnum < Test::Unit::TestCase
       result)
   end
 
-  def test_to_fileenumerator
-    obj = [1,2,3]
-    obj.extend Tb::Enum
-    en = obj.to_fileenumerator
-    ary = []
-    en.each {|v|
-      ary << v
-    }
-    assert_equal([1, 2, 3], ary)
-  end
-
   def test_write_to_csv_basic
     obj = [
       [['a', 0], ['b', 1], ['c', 2]],
