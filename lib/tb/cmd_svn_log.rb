@@ -43,6 +43,14 @@ def (Tb::Cmd).op_svn_log
   op
 end
 
+Tb::Cmd.def_vhelp('svn-log', <<'End')
+Example:
+
+  % tb svn-log
+  % tb svn-log -- -v
+  % tb svn-log -- -v http://svn.ruby-lang.org/repos/ruby/trunk
+End
+
 class Tb::Cmd::SVNLOGListener
   def initialize(y)
     @y = y
