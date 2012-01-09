@@ -181,7 +181,7 @@ module Tb::Enum
       end
     }
     self.header_and_each(header_proc) {|pairs|
-      pairs = Tb::Pairs.new(pairs) if pairs.kind_of? Array
+      pairs = Tb::Pairs.new(pairs) unless pairs.respond_to? :has_key?
       header |= pairs.map {|f, v| f }
       if stream
         fs = header.dup
