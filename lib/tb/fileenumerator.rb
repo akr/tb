@@ -36,7 +36,7 @@
 # as usual Tempfile object.
 #
 class Tb::FileEnumerator
-  include Tb::Enum
+  include Enumerable
 
   def self.new_tempfile
     tempfile = Tempfile.new("tb")
