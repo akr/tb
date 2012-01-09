@@ -58,6 +58,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
   end
 
   def test_ttyout_multiscreen
+    return unless IO.instance_methods.include?(:raw!)
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c
       0,1,2
@@ -83,6 +84,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
   end
 
   def test_ttyout_singlescreen
+    return unless IO.instance_methods.include?(:raw!)
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c
       0,1,2
@@ -108,6 +110,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
   end
 
   def test_ttyout_tab
+    return unless IO.instance_methods.include?(:raw!)
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c
       0,\t,2
@@ -131,6 +134,7 @@ class TestTbCmdTTY < Test::Unit::TestCase
   end
 
   def test_ttyout_nottysize
+    return unless IO.instance_methods.include?(:raw!)
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c
       0,1,2
