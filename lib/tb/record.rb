@@ -66,6 +66,10 @@ class Tb::Record
   def has_field?(field)
     @table.has_field?(field)
   end
+  alias has_key? has_field?
+  alias include? has_field?
+  alias key? has_field?
+  alias member? has_field?
 
   def [](field)
     @table.get_cell(@recordid, field)
