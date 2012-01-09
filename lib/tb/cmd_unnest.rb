@@ -47,31 +47,32 @@ def (Tb::Cmd).main_unnest(argv)
   err('no field given.') if argv.empty?
   target_field = argv.shift
   argv = ['-'] if argv.empty?
-  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N).to_tb
-  if !tbl.list_fields.include?(target_field)
-    err("field not found: #{target_field.inspect}")
-  end
-  nested_fields = []
-  tbl.each {|rec|
-    v = rec[target_field]
-    if v
-      nested_fields |= Tb.parse_csv(v).list_fields
+  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
+  er = Tb::Enumerator.new {|y|
+    tbl = creader.to_tb
+    if !tbl.list_fields.include?(target_field)
+      err("field not found: #{target_field.inspect}")
     end
-  }
-  if Tb::Cmd.opt_unnest_prefix
-    nested_fields.map! {|f| Tb::Cmd.opt_unnest_prefix + f }
-  end
-  result_fields = tbl.list_fields.map {|f|
-    if f == target_field
-      nested_fields.map {|nf|
-        Tb::Cmd.opt_unnest_prefix + nf
-      }
-    else
-      f
+    nested_fields = []
+    tbl.each {|rec|
+      v = rec[target_field]
+      if v
+        nested_fields |= Tb.parse_csv(v).list_fields
+      end
+    }
+    if Tb::Cmd.opt_unnest_prefix
+      nested_fields.map! {|f| Tb::Cmd.opt_unnest_prefix + f }
     end
-  }.flatten
-  with_table_stream_output {|gen|
-    gen.output_header result_fields
+    result_fields = tbl.list_fields.map {|f|
+      if f == target_field
+        nested_fields.map {|nf|
+          Tb::Cmd.opt_unnest_prefix + nf
+        }
+      else
+        f
+      end
+    }.flatten
+    y.set_header result_fields
     tbl.each {|rec|
       if rec[target_field]
         ntbl = Tb.parse_csv(rec[target_field])
@@ -88,7 +89,7 @@ def (Tb::Cmd).main_unnest(argv)
               ary << rec[f]
             end
           }
-          gen << ary
+          y.yield Tb::Pairs.new(result_fields.zip(ary))
         }
       elsif Tb::Cmd.opt_unnest_outer
         ary = []
@@ -101,9 +102,12 @@ def (Tb::Cmd).main_unnest(argv)
             ary << rec[f]
           end
         }
-        gen << ary
+        y.yield Tb::Pairs.new(result_fields.zip(ary))
       end
     }
+  }
+  with_output {|out|
+    er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end
 
