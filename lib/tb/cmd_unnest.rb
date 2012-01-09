@@ -47,7 +47,7 @@ def (Tb::Cmd).main_unnest(argv)
   err('no field given.') if argv.empty?
   target_field = argv.shift
   argv = ['-'] if argv.empty?
-  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader| build_table(tblreader) }
+  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N).to_tb
   if !tbl.list_fields.include?(target_field)
     err("field not found: #{target_field.inspect}")
   end

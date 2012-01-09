@@ -40,7 +40,7 @@ def (Tb::Cmd).main_to_tsv(argv)
   op_to_tsv.parse!(argv)
   exit_if_help('to-tsv')
   argv = ['-'] if argv.empty?
-  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|creader| build_table(creader) }
+  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N).to_tb
   with_output {|out|
     tbl_generate_tsv(tbl, out)
   }

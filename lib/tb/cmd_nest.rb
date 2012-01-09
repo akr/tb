@@ -45,7 +45,7 @@ def (Tb::Cmd).main_nest(argv)
   oldfields_hash = {}
   oldfields.each {|f| oldfields_hash[f] = true }
   argv = ['-'] if argv.empty?
-  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader| build_table(tblreader) }
+  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N).to_tb
   oldfields.each {|f|
     if !tbl.list_fields.include?(f)
       err("field not found: #{f.inspect}")

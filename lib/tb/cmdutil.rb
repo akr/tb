@@ -249,14 +249,8 @@ def split_csv_argument(arg)
   return []
 end
 
-def build_table(tblreader)
-  return tblreader.to_tb
-end
-
 def load_table(filename)
-  tablereader_open(filename) {|tblreader|
-    build_table(tblreader)
-  }
+  tablereader_open(filename).to_tb
 end
 
 def tablereader_open(filename, &b)
