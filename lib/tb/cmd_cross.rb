@@ -75,9 +75,9 @@ def (Tb::Cmd).main_cross(argv)
       ary = header.map {|f| pairs[f] }
       vkvs = ary.values_at(*vkis)
       hkvs = ary.values_at(*hkis)
-      vset[vkvs] = true if !vset.include?(vkvs)
-      hset[hkvs] = true if !hset.include?(hkvs)
-      if !set.include?([vkvs, hkvs])
+      vset[vkvs] = true if !vset.has_key?(vkvs)
+      hset[hkvs] = true if !hset.has_key?(hkvs)
+      if !set.has_key?([vkvs, hkvs])
         set[[vkvs, hkvs]] = opt_cross_fields.map {|agg_spec, nf|
           begin
             ag = make_aggregator(agg_spec, header)

@@ -65,7 +65,7 @@ def (Tb::Cmd).main_gsub(argv)
     creader.header_and_each(header_proc) {|pairs|
       header |= pairs.map {|f, v| f }
       fs = header.dup
-      fs.pop while !fs.empty? && !pairs.include?(fs.last)
+      fs.pop while !fs.empty? && !pairs.has_key?(fs.last)
       if Tb::Cmd.opt_gsub_f
         pairs2 = pairs.map {|f, v|
           if f == Tb::Cmd.opt_gsub_f

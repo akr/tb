@@ -70,7 +70,7 @@ def (Tb::Cmd).main_group(argv)
     tblreader.header_and_each(header_proc) {|pairs|
       kvs = kfs.map {|kf| pairs[kf] }
       ary = header.map {|f| pairs[f] }
-      if !h.include?(kvs)
+      if !h.has_key?(kvs)
         h[kvs] = opt_group_fields.map {|nf, maker| ag = maker.call(header); ag.update(ary); ag }
       else
         h[kvs].each {|ag|

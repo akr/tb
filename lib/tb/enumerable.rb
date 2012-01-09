@@ -1,6 +1,6 @@
 # lib/tb/enumerable.rb - extensions for Enumerable
 #
-# Copyright (C) 2010 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2010-2012 Tanaka Akira  <akr@fsij.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -117,13 +117,13 @@ module Enumerable
     end
     value_selector = tb_cat_selector_proc(args.pop)
     key_selectors = args.map {|a| tb_cat_selector_proc(a) }
-    has_seed = opts.include? :seed
+    has_seed = opts.has_key? :seed
     seed_value = opts[:seed]
-    if opts.include?(:update) && opts.include?(:op)
+    if opts.has_key?(:update) && opts.has_key?(:op)
       raise ArgumentError, "both :op and :update option specified"
-    elsif opts.include? :update
+    elsif opts.has_key? :update
       update_proc = opts[:update].to_proc
-    elsif opts.include? :op
+    elsif opts.has_key? :op
       op_proc = opts[:op].to_proc
       update_proc = lambda {|ks, s, v| op_proc.call(s, v) }
     else
@@ -139,11 +139,11 @@ module Enumerable
       h = result
       0.upto(ks.length-2) {|i|
         k = ks[i]
-        h[k] = {} if !h.include?(k)
+        h[k] = {} if !h.has_key?(k)
         h = h[k]
       }
       lastk = ks.last
-      if !h.include?(lastk)
+      if !h.has_key?(lastk)
         if has_seed
           h[lastk] = update_proc.call(ks, seed_value, v)
         else

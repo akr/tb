@@ -55,7 +55,7 @@ def (Tb::Cmd).main_nest(argv)
     }
     result_fields = []
     tbl.list_fields.each {|f|
-      if !oldfields_hash.include?(f)
+      if !oldfields_hash.has_key?(f)
         result_fields << f
       end
     }
@@ -65,7 +65,7 @@ def (Tb::Cmd).main_nest(argv)
       k = []
       v = []
       tbl.list_fields.each {|f|
-        if oldfields_hash.include? f
+        if oldfields_hash.has_key? f
           v << rec[f]
         else
           k << rec[f]

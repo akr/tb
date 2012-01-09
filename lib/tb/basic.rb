@@ -144,7 +144,7 @@ class Tb
 
   def check_recordid(recordid)
     recordid = check_recordid_type(recordid)
-    if !@recordid2index.include?(recordid)
+    if !@recordid2index.has_key?(recordid)
       raise IndexError, "unexpected recordid: #{recordid.inspect}"
     end
     recordid
@@ -161,7 +161,7 @@ class Tb
 
   def check_field(field)
     field = check_field_type(field)
-    unless @tbl.include? field
+    unless @tbl.has_key? field
       raise ArgumentError, "field not defined: #{field.inspect}"
     end
     field
@@ -200,7 +200,7 @@ class Tb
     if field.start_with?("_")
       raise ArgumentError, "field begins with underscore: #{field.inspect}"
     end
-    if @tbl.include? field
+    if @tbl.has_key? field
       raise ArgumentError, "field already defined: #{field.inspect}"
     end
     @tbl[field] = []
@@ -400,7 +400,7 @@ class Tb
       @next_recordid += 1
     else
       recordid = check_recordid_type(recordid)
-      if @recordid2index.include? recordid
+      if @recordid2index.has_key? recordid
         raise ArgumentError, "recordid already used: #{recordid.inspect}"
       end
       @next_recordid = recordid + 1 if @next_recordid <= recordid

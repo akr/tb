@@ -76,7 +76,7 @@ def (Tb::Cmd).main_consecutive(argv)
         header.each {|f|
           Tb::Cmd.opt_consecutive_n.times {|i|
             ps = buf[i]
-            next if !ps.include?(f)
+            next if !ps.has_key?(f)
             v = ps[f]
             pairs2 << ["#{f}_#{i+1}", v]
           }

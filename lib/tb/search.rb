@@ -503,7 +503,7 @@ class Tb::Search::State
   def to_h
     res = {}
     each {|k, v|
-      if !res.include? k
+      if !res.has_key? k
         res[k] = v
       end
     }
@@ -557,7 +557,7 @@ class Tb::Search::State
     result = self
     needs_copy = 0
     while !pairs.empty?
-      if h.include? pairs.key
+      if h.has_key? pairs.key
         needs_copy = ary.length
         result = pairs.tail
         n += 1

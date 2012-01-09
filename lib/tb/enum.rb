@@ -185,9 +185,7 @@ module Tb::Enum
       header |= pairs.map {|f, v| f }
       if stream
         fs = header.dup
-        last_nonnil_index = nil
-        i = 0
-        while !fs.empty? && !pairs.include?(fs.last)
+        while !fs.empty? && !pairs.has_key?(fs.last)
           fs.pop
         end
         ary = fs.map {|f| pairs[f] }
@@ -202,7 +200,7 @@ module Tb::Enum
       end
       fnew.call.each {|pairs|
         fs = header.dup
-        while !fs.empty? && !pairs.include?(fs.last)
+        while !fs.empty? && !pairs.has_key?(fs.last)
           fs.pop
         end
         ary = fs.map {|f| pairs[f] }
