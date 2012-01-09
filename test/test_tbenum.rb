@@ -40,7 +40,7 @@ class TestTbEnum < Test::Unit::TestCase
       result)
   end
 
-  def test_write_to_csv_basic
+  def test_write_to_csv_to_io_basic
     obj = [
       [['a', 0], ['b', 1], ['c', 2]],
       [['a', 3], ['b', 4], ['c', 5]],
@@ -48,7 +48,9 @@ class TestTbEnum < Test::Unit::TestCase
     ]
     obj.extend Tb::Enum
     Dir.mktmpdir {|d|
-      obj.write_to_csv("#{d}/foo.csv")
+      open("#{d}/foo.csv", 'w') {|f|
+        obj.write_to_csv_to_io(f)
+      }
       assert_equal(<<-'End'.gsub(/^\s*/, ''), File.read("#{d}/foo.csv"))
         a,b,c
         0,1,2
@@ -58,7 +60,7 @@ class TestTbEnum < Test::Unit::TestCase
     }
   end
 
-  def test_write_to_csv_header_extension
+  def test_write_to_csv_to_io_header_extension
     obj = [
       [['a', 0]],
       [['b', 1]],
@@ -66,7 +68,9 @@ class TestTbEnum < Test::Unit::TestCase
     ]
     obj.extend Tb::Enum
     Dir.mktmpdir {|d|
-      obj.write_to_csv("#{d}/foo.csv")
+      open("#{d}/foo.csv", 'w') {|f|
+        obj.write_to_csv_to_io(f)
+      }
       assert_equal(<<-'End'.gsub(/^\s*/, ''), File.read("#{d}/foo.csv"))
         a,b,c
         0
@@ -76,7 +80,7 @@ class TestTbEnum < Test::Unit::TestCase
     }
   end
 
-  def test_write_to_csv_without_header
+  def test_write_to_csv_to_io_without_header
     obj = [
       [['a', 0]],
       [['b', 1]],
@@ -84,7 +88,9 @@ class TestTbEnum < Test::Unit::TestCase
     ]
     obj.extend Tb::Enum
     Dir.mktmpdir {|d|
-      obj.write_to_csv("#{d}/foo.csv", false)
+      open("#{d}/foo.csv", 'w') {|f|
+        obj.write_to_csv_to_io(f, false)
+      }
       assert_equal(<<-'End'.gsub(/^\s*/, ''), File.read("#{d}/foo.csv"))
         0
         ,1
