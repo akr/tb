@@ -45,37 +45,38 @@ def (Tb::Cmd).main_nest(argv)
   oldfields_hash = {}
   oldfields.each {|f| oldfields_hash[f] = true }
   argv = ['-'] if argv.empty?
-  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N).to_tb
-  oldfields.each {|f|
-    if !tbl.list_fields.include?(f)
-      err("field not found: #{f.inspect}")
-    end
-  }
-  result_fields = []
-  tbl.list_fields.each {|f|
-    if !oldfields_hash.include?(f)
-      result_fields << f
-    end
-  }
-  result_fields << newfield
-  h = {}
-  tbl.each {|rec|
-    k = []
-    v = []
-    tbl.list_fields.each {|f|
-      if oldfields_hash.include? f
-        v << rec[f]
-      else
-        k << rec[f]
+  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
+  er = Tb::Enumerator.new {|y|
+    tbl = creader.to_tb
+    oldfields.each {|f|
+      if !tbl.list_fields.include?(f)
+        err("field not found: #{f.inspect}")
       end
     }
-    if !h[k]
-      h[k] = [h.size, []]
-    end
-    h[k][1] << v
-  }
-  with_table_stream_output {|gen|
-    gen.output_header result_fields
+    result_fields = []
+    tbl.list_fields.each {|f|
+      if !oldfields_hash.include?(f)
+        result_fields << f
+      end
+    }
+    result_fields << newfield
+    h = {}
+    tbl.each {|rec|
+      k = []
+      v = []
+      tbl.list_fields.each {|f|
+        if oldfields_hash.include? f
+          v << rec[f]
+        else
+          k << rec[f]
+        end
+      }
+      if !h[k]
+        h[k] = [h.size, []]
+      end
+      h[k][1] << v
+    }
+    y.set_header result_fields
     h.keys.sort_by {|k| h[k][0] }.each {|k|
       vs = h[k][1]
       Tb.csv_stream_output(nested_csv="") {|ngen|
@@ -87,8 +88,11 @@ def (Tb::Cmd).main_nest(argv)
       ary = []
       ary.concat k
       ary << nested_csv
-      gen << ary
+      y.yield Tb::Pairs.new(result_fields.zip(ary))
     }
+  }
+  with_output {|out|
+    er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end
 
