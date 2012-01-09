@@ -40,8 +40,21 @@ def (Tb::Cmd).main_to_csv(argv)
   op_to_csv.parse!(argv)
   exit_if_help('to-csv')
   argv = ['-'] if argv.empty?
-  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N).to_tb
+  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
+  header = []
+  ter = Tb::Enumerator.new {|y|
+    creader.each {|pairs|
+      header |= pairs.map {|f, v| f }
+      y.yield pairs
+    }
+  }.to_fileenumerator
+  er = Tb::Enumerator.new {|y|
+    y.set_header header
+    ter.each {|pairs|
+      y.yield Tb::Pairs.new(header.map {|f| [f, pairs[f]] })
+    }
+  }
   with_output {|out|
-    tbl_generate_csv(tbl, out)
+    er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end

@@ -56,7 +56,7 @@ def (Tb::Cmd).main_sort(argv)
   end
   tbl2 = tbl.reorder_records_by(&blk)
   with_output {|out|
-    tbl_generate_csv(tbl2, out)
+    tbl2.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end
 

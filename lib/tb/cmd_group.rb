@@ -84,7 +84,7 @@ def (Tb::Cmd).main_group(argv)
       result.insert_values result_fields, k + a.map {|ag| ag.finish }
     }
     with_output {|out|
-      result.write_to_csv_to_io(out)
+      result.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
     }
   }
 end
