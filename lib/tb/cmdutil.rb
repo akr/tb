@@ -257,19 +257,6 @@ def tablereader_open(filename, &b)
   Tb.open_reader(filename, {:numeric=>Tb::Cmd.opt_N}, &b)
 end
 
-def tbl_generate_csv(tbl, out)
-  if Tb::Cmd.opt_N
-    header = tbl.list_fields
-    Tb.csv_stream_output(out) {|gen|
-      tbl.each {|rec|
-        gen << rec.values_at(*header)
-      }
-    }
-  else
-    tbl.generate_csv(out)
-  end
-end
-
 def tbl_generate_tsv(tbl, out)
   if Tb::Cmd.opt_N
     header = tbl.list_fields
