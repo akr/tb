@@ -125,22 +125,25 @@ class TestTbEnumerable < Test::Unit::TestCase
   end
 
   def test_extsort_by_exhaustive
-    #maxlen = 7
     maxlen = 3
-    (maxlen+1).times {|len|
-      (len**len).times {|i|
-        ary = []
-        len.times {|j|
-          ary << (i % len)
-          i /= len
+    #maxlen = 7
+    midsize = Marshal.dump([0,0]).size + 1
+    [0, midsize, nil].each {|memsize|
+      (maxlen+1).times {|len|
+        (len**len).times {|i|
+          ary = []
+          len.times {|j|
+            ary << (i % len)
+            i /= len
+          }
+          uary = ary.sort.uniq
+          next if uary[0] != 0 || uary[-1] != uary.length - 1
+          ary1 = ary.map.with_index.to_a
+          #p [memsize, ary1]
+          ary2 = ary1.extsort_by(:memsize => memsize) {|v, k| v }.to_a
+          assert_equal(ary1.sort, ary2,
+                       "#{ary.inspect}.extsort_by(:memsize=>#{memsize}) {|v, k| v }.to_a")
         }
-        uary = ary.sort.uniq
-        next if uary[0] != 0 || uary[-1] != uary.length - 1
-        ary1 = ary.map.with_index.to_a
-        #p ary1
-        ary2 = ary1.extsort_by {|v, k| v }.to_a
-        assert_equal(ary1.sort, ary2,
-                     "#{ary.inspect}.extsort_by {|v, k| v }.to_a")
       }
     }
   end

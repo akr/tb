@@ -295,10 +295,15 @@ module Enumerable
   end
   private :dump_objsfile
 
-  def extsort_by(&cmpvalue_from)
+  def extsort_by(opts={}, &cmpvalue_from)
+    memsize = opts[:memsize] || 1000000
+    extsort_by_internal(memsize, &cmpvalue_from)
+  end
+
+  def extsort_by_internal(memsize, &cmpvalue_from)
     tmp1 = Tempfile.new("tbsort1")
     tmp2 = Tempfile.new("tbsort2")
-    extsort_by_first_split(tmp1, tmp2, cmpvalue_from)
+    extsort_by_first_split(tmp1, tmp2, cmpvalue_from, memsize)
     if tmp1.size == 0 && tmp2.size == 0
       return Enumerator.new {|y| }
     end
@@ -327,24 +332,49 @@ module Enumerable
     tmp3.close(true) if tmp3
     tmp4.close(true) if tmp4
   end
+  private :extsort_by_internal
 
-  def extsort_by_first_split(tmp1, tmp2, cmpvalue_from)
-    first = true
-    prevobj = nil
+  def extsort_by_first_split(tmp1, tmp2, cmpvalue_from, memsize)
     prevobj_cv = nil
     tmp_current, tmp_another = tmp1, tmp2
-    self.each {|obj|
+    buf = []
+    buf_size = 0
+    buf_mode = true
+    self.each_with_index {|obj, i|
       obj_cv = cmpvalue_from.call(obj)
-      if !first && prevobj_cv > obj_cv
+      #p [prevobj_cv, buf_mode, obj, obj_cv]
+      if buf_mode
+        dumped = Marshal.dump([obj_cv, obj])
+        buf << [obj_cv, i, dumped]
+        buf_size += dumped.size
+        if memsize < buf_size
+          buf.sort!
+          buf.each {|_, _, d|
+            tmp_current.write d
+          }
+          prevobj_cv, = buf.last
+          buf.clear
+          buf_mode = false
+        end
+      elsif prevobj_cv <= obj_cv
+        Marshal.dump([obj_cv, obj], tmp_current)
+        prevobj_cv = obj_cv
+      else
+        dumped = Marshal.dump([obj_cv, obj])
         Marshal.dump(nil, tmp_current)
+        buf = [[obj_cv, i, dumped]]
+        buf_size = dumped.size
+        buf_mode = true
         tmp_current, tmp_another = tmp_another, tmp_current
       end
-      Marshal.dump([obj_cv, obj], tmp_current)
-      prevobj = obj
-      prevobj_cv = obj_cv
-      first = false
     }
-    if !first
+    if buf_mode
+      buf.sort!
+      buf.each {|_, _, d|
+        tmp_current.write d
+      }
+    end
+    if !buf_mode || !buf.empty?
       Marshal.dump(nil, tmp_current)
     end
   end
