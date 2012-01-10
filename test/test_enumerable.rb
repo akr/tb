@@ -155,4 +155,16 @@ class TestTbEnumerable < Test::Unit::TestCase
       assert_equal(ary1, ary2)
     }
   end
+
+  def test_extsort_by_block_random
+    3.times {|i|
+      len = rand(100)
+      ary = []
+      len.times { ary << rand(1000) }
+      ary1 = ary.sort.reverse
+      ary2 = ary.extsort_by {|x| -x }.to_a
+      assert_equal(ary1, ary2)
+    }
+  end
+
 end
