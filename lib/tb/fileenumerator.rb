@@ -26,6 +26,18 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+module Enumerable
+  # creates a Tb::FileEnumerator object.
+  #
+  def to_fileenumerator
+    Tb::FileEnumerator.new_tempfile {|gen|
+      self.each {|*objs|
+        gen.call(*objs)
+      }
+    }
+  end
+end
+
 # Tb::FileEnumerator is an enumerator backed by a temporally file.
 #
 # An instance of Tb::FileEnumerator can be used just once,
@@ -38,31 +50,38 @@
 class Tb::FileEnumerator
   include Enumerable
 
+  class Builder
+    def initialize(klass)
+      @klass = klass
+      @tempfile = Tempfile.new("tb")
+      @tempfile.binmode
+    end
+
+    def gen(*objs)
+      Marshal.dump(objs, @tempfile)
+    end
+
+    def new
+      @tempfile.close
+      @klass.new(
+        lambda { open(@tempfile.path, "rb") },
+        lambda { @tempfile.close(true) })
+    end
+  end
+
+  def self.builder
+    Builder.new(Tb::FileEnumerator)
+  end
+
   def self.new_tempfile
-    tempfile = Tempfile.new("tb")
-    tempfile.binmode
-    gen = lambda {|*objs|
-      Marshal.dump(objs, tempfile)
-    }
+    gen, new = self.gen_new
     yield gen
-    tempfile.close
-    self.new(
-      lambda { open(tempfile.path, "rb") },
-      lambda { tempfile.close(true) })
+    new.call
   end
 
   def self.gen_new
-    tempfile = Tempfile.new("tb")
-    tempfile.binmode
-    gen = lambda {|*objs|
-      Marshal.dump(objs, tempfile)
-    }
-    return gen, lambda {
-      tempfile.close
-      self.new(
-        lambda { open(tempfile.path, "rb") },
-        lambda { tempfile.close(true) })
-    }
+    builder = self.builder
+    return builder.method(:gen), builder.method(:new)
   end
 
   def initialize(open_func, close_func)
@@ -98,5 +117,83 @@ class Tb::FileEnumerator
         io.close 
       end
     }
+  end
+end
+
+module Tb::Enum
+  # creates a Tb::FileHeaderEnumerator object.
+  #
+  def to_fileenumerator
+    hbuilder = Tb::FileHeaderEnumerator.builder
+    header_proc = lambda {|header|
+      if header
+        hbuilder.header.concat(header - hbuilder.header)
+      end
+    }
+    self.header_and_each(header_proc) {|pairs|
+      hbuilder.gen(pairs)
+    }
+    hbuilder.new
+  end
+end
+
+class Tb::FileHeaderEnumerator < Tb::FileEnumerator
+  include Tb::Enum
+
+  class HBuilder
+    def initialize(klass)
+      @klass = klass
+      @tempfile = Tempfile.new("tb")
+      @tempfile.binmode
+      @header = []
+    end
+    attr_reader :header
+
+    def gen(*objs)
+      @header |= objs[0].map {|f, v| f }
+      Marshal.dump(objs, @tempfile)
+    end
+
+    def new
+      @tempfile.close
+      @klass.new(
+        @header,
+        lambda { open(@tempfile.path, "rb") },
+        lambda { @tempfile.close(true) })
+    end
+  end
+
+  def self.builder
+    HBuilder.new(Tb::FileHeaderEnumerator)
+  end
+
+  def self.gen_new
+    hgen = self.builder
+    return hgen.method(:gen), hgen.method(:new)
+  end
+
+  def initialize(header, open_func, close_func)
+    super open_func, close_func
+    @header = header
+  end
+
+  def header_and_each(header_proc)
+    self.use {
+      header_proc.call(@header) if header_proc
+      begin
+        io = @open_func.call
+        while true
+          objs = Marshal.load(io)
+          yield(*objs)
+        end
+      rescue EOFError
+      ensure
+        io.close 
+      end
+    }
+  end
+
+  def each(&block)
+    header_and_each(nil, &block)
   end
 end

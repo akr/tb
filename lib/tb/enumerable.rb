@@ -280,14 +280,4 @@ module Enumerable
   def tb_category_count(*args)
     tb_categorize(*(args + [lambda {|e| 1 }, {:update => lambda {|ks, s, v| s + v }}]))
   end
-
-  # creates a Tb::FileEnumerator object.
-  #
-  def to_fileenumerator
-    Tb::FileEnumerator.new_tempfile {|gen|
-      self.each {|*objs|
-        gen.call(*objs)
-      }
-    }
-  end
 end

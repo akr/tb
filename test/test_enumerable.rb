@@ -119,15 +119,4 @@ class TestTbEnumerable < Test::Unit::TestCase
     assert_equal({"sweet"=>{"yellow"=>1, "green"=>1}, "tart"=>{"yellow"=>1}},
                  a.tb_category_count(:taste, :color))
   end
-
-  def test_to_fileenumerator
-    obj = [1,2,3]
-    obj.extend Tb::Enum
-    en = obj.to_fileenumerator
-    ary = []
-    en.each {|v|
-      ary << v
-    }
-    assert_equal([1, 2, 3], ary)
-  end
 end
