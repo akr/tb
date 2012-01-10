@@ -69,7 +69,7 @@ def (Tb::Cmd).main_consecutive(argv)
       end
     }
     creader.header_and_each(header_proc) {|pairs|
-      header |= pairs.map {|f, v| f }
+      header |= pairs.keys
       buf << pairs
       if buf.length == Tb::Cmd.opt_consecutive_n
         pairs2 = []

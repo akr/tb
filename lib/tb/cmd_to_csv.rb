@@ -44,7 +44,7 @@ def (Tb::Cmd).main_to_csv(argv)
   header = []
   ter = Tb::Enumerator.new {|y|
     creader.each {|pairs|
-      header |= pairs.map {|f, v| f }
+      header |= pairs.keys
       y.yield pairs
     }
   }.to_fileenumerator

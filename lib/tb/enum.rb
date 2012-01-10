@@ -142,9 +142,9 @@ module Tb::Enum
         end
       }
       self.header_and_each(header_proc) {|row|
-        keys = row.map {|k, v| k }
+        keys = row.keys
         keys = Tb::FieldSet.normalize([field, *keys])
-        vals = row.map {|k, v| v }
+        vals = row.values
         vals = [yield(row), *vals]
         y << Tb::Pairs.new(keys.zip(vals))
       }
@@ -182,7 +182,7 @@ module Tb::Enum
     }
     self.header_and_each(header_proc) {|pairs|
       pairs = Tb::Pairs.new(pairs) unless pairs.respond_to? :has_key?
-      header |= pairs.map {|f, v| f }
+      header |= pairs.keys
       if stream
         fs = header.dup
         while !fs.empty? && !pairs.has_key?(fs.last)

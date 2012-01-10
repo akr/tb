@@ -51,7 +51,7 @@ def (Tb::Cmd).main_shape(argv)
         num_header_fields = header.length
       }
       tblreader.header_and_each(header_proc) {|pairs|
-        ary = pairs.map {|f, v| v }
+        ary = pairs.values
         num_records += 1
         n = ary.length
         if min_num_fields.nil?

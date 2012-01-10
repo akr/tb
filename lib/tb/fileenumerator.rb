@@ -150,7 +150,7 @@ class Tb::FileHeaderEnumerator < Tb::FileEnumerator
     attr_reader :header
 
     def gen(*objs)
-      @header |= objs[0].map {|f, v| f }
+      @header |= objs[0].keys
       Marshal.dump(objs, @tempfile)
     end
 
