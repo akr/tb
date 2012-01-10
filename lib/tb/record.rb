@@ -134,4 +134,25 @@ class Tb::Record
   def values_at(*fields)
     fields.map {|f| self[f] }
   end
+
+  def keys
+    a = []
+    @table.each_field {|f|
+      v = @table.get_cell(@recordid, f)
+      next if v.nil?
+      a << f
+    }
+    a
+  end
+
+  def values
+    a = []
+    @table.each_field {|f|
+      v = @table.get_cell(@recordid, f)
+      next if v.nil?
+      a << v
+    }
+    a
+  end
+
 end
