@@ -300,7 +300,7 @@ module Enumerable
     tmp2 = Tempfile.new("tbsort2")
     extsort_by_first_split(tmp1, tmp2, cmpvalue_from)
     if tmp1.size == 0 && tmp2.size == 0
-      return [].to_fileenumerator
+      return Enumerator.new {|y| }
     end
     tmp3 = Tempfile.new("tbsort3")
     tmp4 = Tempfile.new("tbsort4")
