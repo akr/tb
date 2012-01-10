@@ -280,4 +280,128 @@ module Enumerable
   def tb_category_count(*args)
     tb_categorize(*(args + [lambda {|e| 1 }, {:update => lambda {|ks, s, v| s + v }}]))
   end
+
+  def dump_objsfile(title, tempfile)
+    tempfile.flush
+    path = tempfile
+    a = []
+    open(path) {|f|
+      until f.eof?
+        pair = Marshal.load(f)
+        a << (pair ? pair.last : :sep)
+      end
+    }
+    puts "#{title}: #{a.inspect}"
+  end
+  private :dump_objsfile
+
+  def extsort_by(&cmpvalue_from)
+    tmp1 = Tempfile.new("tbsort1")
+    tmp2 = Tempfile.new("tbsort2")
+    extsort_by_first_split(tmp1, tmp2, cmpvalue_from)
+    if tmp1.size == 0 && tmp2.size == 0
+      return [].to_fileenumerator
+    end
+    tmp3 = Tempfile.new("tbsort3")
+    tmp4 = Tempfile.new("tbsort4")
+    while tmp2.size != 0
+      #dump_objsfile(:tmp1, tmp1)
+      #dump_objsfile(:tmp2, tmp2)
+      #dump_objsfile(:tmp3, tmp3)
+      #dump_objsfile(:tmp4, tmp4)
+      extsort_by_merge(tmp1, tmp2, tmp3, tmp4)
+      tmp1.rewind
+      tmp1.truncate(0)
+      tmp2.rewind
+      tmp2.truncate(0)
+      tmp1, tmp2, tmp3, tmp4 = tmp3, tmp4, tmp1, tmp2
+    end
+      #dump_objsfile(:tmp1, tmp1)
+      #dump_objsfile(:tmp2, tmp2)
+      #dump_objsfile(:tmp3, tmp3)
+      #dump_objsfile(:tmp4, tmp4)
+    extsort_by_strip_cv(tmp1)
+  ensure
+    tmp1.close(true) if tmp1
+    tmp2.close(true) if tmp2
+    tmp3.close(true) if tmp3
+    tmp4.close(true) if tmp4
+  end
+
+  def extsort_by_first_split(tmp1, tmp2, cmpvalue_from)
+    first = true
+    prevobj = nil
+    prevobj_cv = nil
+    tmp_current, tmp_another = tmp1, tmp2
+    self.each {|obj|
+      obj_cv = cmpvalue_from.call(obj)
+      if !first && prevobj_cv > obj_cv
+        Marshal.dump(nil, tmp_current)
+        tmp_current, tmp_another = tmp_another, tmp_current
+      end
+      Marshal.dump([obj_cv, obj], tmp_current)
+      prevobj = obj
+      prevobj_cv = obj_cv
+      first = false
+    }
+    if !first
+      Marshal.dump(nil, tmp_current)
+    end
+  end
+  private :extsort_by_first_split
+
+  def extsort_by_merge(src1, src2, dst1, dst2)
+    src1.rewind
+    src2.rewind
+    obj1_cv, obj1 = obj1_pair = Marshal.load(src1)
+    obj2_cv, obj2 = obj2_pair = Marshal.load(src2)
+    prefer1 = true
+    while true
+      cmp = obj1_cv <=> obj2_cv
+      if prefer1 ? cmp > 0 : cmp >= 0
+        obj1_pair, obj1_cv, obj1, src1, obj2_pair, obj2_cv, obj2, src2 = obj2_pair, obj2_cv, obj2, src2, obj1_pair, obj1_cv, obj1, src1
+        prefer1 = !prefer1
+      end
+      Marshal.dump([obj1_cv, obj1], dst1)
+      obj1_cv, obj1 = obj1_pair = Marshal.load(src1)
+      if !obj1_pair
+        begin
+          Marshal.dump(obj2_pair, dst1)
+          obj2_pair = Marshal.load(src2)
+        end until !obj2_pair
+        Marshal.dump(nil, dst1)
+        dst1, dst2 = dst2, dst1
+        break if src1.eof?
+        break if src2.eof?
+        obj1_cv, obj1 = obj1_pair = Marshal.load(src1)
+        obj2_cv, obj2 = obj2_pair = Marshal.load(src2)
+      end
+    end
+    if !src1.eof?
+      restsrc = src1
+    elsif !src2.eof?
+      restsrc = src2
+    else
+      return
+    end
+    until restsrc.eof?
+      restobj_pair = Marshal.load(restsrc)
+      Marshal.dump(restobj_pair, dst1)
+    end
+  end
+  private :extsort_by_merge
+
+  def extsort_by_strip_cv(tmp1)
+    tmp1.rewind
+    er = Enumerator.new {|y|
+      while true
+        pair = Marshal.load(tmp1)
+        break if !pair
+        _, obj = pair
+        y.yield obj
+      end
+    }
+    er.to_fileenumerator
+  end
+  private :extsort_by_strip_cv
 end

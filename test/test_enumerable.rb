@@ -1,4 +1,4 @@
-require 'tb/enumerable'
+require 'tb'
 require 'test/unit'
 
 class TestTbEnumerable < Test::Unit::TestCase
@@ -118,5 +118,41 @@ class TestTbEnumerable < Test::Unit::TestCase
   
     assert_equal({"sweet"=>{"yellow"=>1, "green"=>1}, "tart"=>{"yellow"=>1}},
                  a.tb_category_count(:taste, :color))
+  end
+
+  def test_extsort_by_empty
+    assert_equal([], [].extsort_by {|x| x }.to_a)
+  end
+
+  def test_extsort_by_exhaustive
+    #maxlen = 7
+    maxlen = 3
+    (maxlen+1).times {|len|
+      (len**len).times {|i|
+        ary = []
+        len.times {|j|
+          ary << (i % len)
+          i /= len
+        }
+        uary = ary.sort.uniq
+        next if uary[0] != 0 || uary[-1] != uary.length - 1
+        ary1 = ary.map.with_index.to_a
+        #p ary1
+        ary2 = ary1.extsort_by {|v, k| v }.to_a
+        assert_equal(ary1.sort, ary2,
+                     "#{ary.inspect}.extsort_by {|v, k| v }.to_a")
+      }
+    }
+  end
+
+  def test_extsort_by_random
+    10.times {|i|
+      len = rand(100)
+      ary = []
+      len.times { ary << rand(1000) }
+      ary1 = ary.sort
+      ary2 = ary.extsort_by {|x| x }.to_a
+      assert_equal(ary1, ary2)
+    }
   end
 end

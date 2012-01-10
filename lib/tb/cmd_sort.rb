@@ -48,7 +48,8 @@ def (Tb::Cmd).main_sort(argv)
   else
     fs = nil
   end
-  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N).to_tb
+  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
+  tbl = creader.to_tb
   if fs
     blk = lambda {|rec| fs.map {|f| smart_cmp_value(rec[f]) } }
   else
