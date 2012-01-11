@@ -160,8 +160,11 @@ end
 tmps = {}
 
 argv = ARGV.empty? ? ['-'] : ARGV
-Tb::CatReader.open(argv) {|r|
-  header0 = r.header
+r = Tb::CatReader.open(argv)
+
+checkers = {}
+uniq_fields = nil
+header_proc = lambda {|header0|
   header = header0.dup
   [$x_field, $y_field, $shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field].each {|f|
     if f && !header.include?(f)
@@ -181,117 +184,119 @@ Tb::CatReader.open(argv) {|r|
     end
     $y_field = header.shift
   end
-  checkers = {}
   uniq_fields = [$x_field, $y_field, $shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field].compact.uniq
-  r.each {|ary|
-    next if uniq_fields.any? {|f| ary[r.index_from_field(f)].nil? }
-    vs = {}
-    uniq_fields.each {|f|
-      v = ary[r.index_from_field(f)]
-      checkers[f] ||= ValueChecker.new
-      vs[f] = checkers[f].check(v)
-    }
-    x = vs[$x_field]
-    y = vs[$y_field]
+}
 
-    shape_value = color_value = nil
-    size = 1
-    facet_x_field = facet_y_field = nil
+r.header_and_each(header_proc) {|pairs|
+  ary = pairs.values
+  next if uniq_fields.any? {|f| pairs[f].nil? }
+  vs = {}
+  uniq_fields.each {|f|
+    v = pairs[f]
+    checkers[f] ||= ValueChecker.new
+    vs[f] = checkers[f].check(v)
+  }
+  x = vs[$x_field]
+  y = vs[$y_field]
+
+  shape_value = color_value = nil
+  size = 1
+  facet_x_field = facet_y_field = nil
+  if $shape_field
+    shape = vs[$shape_field]
+  end
+  if $color_field
+    color = vs[$color_field]
+  end
+  if $size_field
+    size = vs[$size_field]
+  end
+  if $facet_x_field
+    facet_x = vs[$facet_x_field]
+  end
+  if $facet_y_field
+    facet_y = vs[$facet_y_field]
+  end
+  key1 = [facet_x, facet_y]
+  key2 = [shape, color]
+  tmps[key1] ||= {}
+  tmps[key1][key2] ||= Tempfile.new('tbplot')
+  tmps[key1][key2].puts "#{x} #{y} #{size}"
+}
+
+tmps.each {|k1, h| h.each {|k2, v| v.close } }
+gnuplot_command = ''
+if 0 < checkers[$x_field].time || 0 < checkers[$y_field].time
+  gnuplot_command << 'set timefmt "%Y-%m-%dT%H:%M:%SZ"' << "\n"
+end
+if 0 < checkers[$x_field].time
+  gnuplot_command << "set xdata time\n"
+  gnuplot_command << "set format x #{gnuplot_escape_string(checkers[$x_field].tic_format)}\n"
+end
+if 0 < checkers[$y_field].time
+  gnuplot_command << "set ydata time\n"
+  gnuplot_command << "set format y #{gnuplot_escape_string(checkers[$y_field].tic_format)}\n"
+end
+gnuplot_command << "set xlabel #{gnuplot_escape_string($x_field)}\n"
+gnuplot_command << "set ylabel #{gnuplot_escape_string($y_field)}\n"
+if $size_field
+  pointsize = $max_size / checkers[$size_field].numeric_max
+  gnuplot_command << "set pointsize #{pointsize}\n"
+end
+if $facet_x_field || $facet_y_field
+  xsize = $facet_x_field ? 1.0 / checkers[$facet_x_field].values.size : 1.0
+  ysize = $facet_y_field ? 1.0 / checkers[$facet_y_field].values.size : 1.0
+  gnuplot_command << "set multiplot\n"
+  gnuplot_command << "set size #{xsize},#{ysize}\n"
+end
+tmps.each {|(facet_x, facet_y), h|
+  if $facet_x_field || $facet_y_field
+    xorigin = $facet_x_field ? (checkers[$facet_x_field].categorical_index(facet_x)-1.0)/checkers[$facet_x_field].values.size : 0
+    yorigin = $facet_y_field ? 1.0-(checkers[$facet_y_field].categorical_index(facet_y)-0.0)/checkers[$facet_y_field].values.size : 0
+    gnuplot_command << "set origin #{xorigin},#{yorigin}\n"
+  end
+  gnuplot_command << 'plot '
+  first = true
+  h.each {|(shape_value, color_value), tmp|
     if $shape_field
-      shape = vs[$shape_field]
+      shape = checkers[$shape_field].categorical_index(shape_value)
     end
     if $color_field
-      color = vs[$color_field]
+      color = checkers[$color_field].categorical_index(color_value)
     end
-    if $size_field
-      size = vs[$size_field]
+    gnuplot_command << ",\\\n" if !first
+    gnuplot_command << gnuplot_escape_string(tmp.path)
+    gnuplot_command << ' using 1:2:3 '
+    title = []
+    if shape_value
+      title << " #{$shape_field}=#{shape_value.to_s}"
     end
-    if $facet_x_field
-      facet_x = vs[$facet_x_field]
+    if color_value
+      title << " #{$color_field}=#{color_value.to_s}"
     end
-    if $facet_y_field
-      facet_y = vs[$facet_y_field]
+    title = title.uniq.join(' ')
+    gnuplot_command << ' title ' << gnuplot_escape_string(title)
+    gnuplot_command << ' with points'
+    if shape
+      gnuplot_command << " pointtype " << shape.to_s # xxx: some mapping
+    else
+      gnuplot_command << " pointtype 1"
     end
-    key1 = [facet_x, facet_y]
-    key2 = [shape, color]
-    tmps[key1] ||= {}
-    tmps[key1][key2] ||= Tempfile.new('tbplot')
-    tmps[key1][key2].puts "#{x} #{y} #{size}"
+    if color
+      gnuplot_command << " linecolor " << color.to_s # xxx: some mapping
+    else
+      gnuplot_command << " linecolor 1"
+    end
+    gnuplot_command << " pointsize variable"
+    first = false
   }
-  tmps.each {|k1, h| h.each {|k2, v| v.close } }
-  gnuplot_command = ''
-  if 0 < checkers[$x_field].time || 0 < checkers[$y_field].time
-    gnuplot_command << 'set timefmt "%Y-%m-%dT%H:%M:%SZ"' << "\n"
-  end
-  if 0 < checkers[$x_field].time
-    gnuplot_command << "set xdata time\n"
-    gnuplot_command << "set format x #{gnuplot_escape_string(checkers[$x_field].tic_format)}\n"
-  end
-  if 0 < checkers[$y_field].time
-    gnuplot_command << "set ydata time\n"
-    gnuplot_command << "set format y #{gnuplot_escape_string(checkers[$y_field].tic_format)}\n"
-  end
-  gnuplot_command << "set xlabel #{gnuplot_escape_string($x_field)}\n"
-  gnuplot_command << "set ylabel #{gnuplot_escape_string($y_field)}\n"
-  if $size_field
-    pointsize = $max_size / checkers[$size_field].numeric_max
-    gnuplot_command << "set pointsize #{pointsize}\n"
-  end
-  if $facet_x_field || $facet_y_field
-    xsize = $facet_x_field ? 1.0 / checkers[$facet_x_field].values.size : 1.0
-    ysize = $facet_y_field ? 1.0 / checkers[$facet_y_field].values.size : 1.0
-    gnuplot_command << "set multiplot\n"
-    gnuplot_command << "set size #{xsize},#{ysize}\n"
-  end
-  tmps.each {|(facet_x, facet_y), h|
-    if $facet_x_field || $facet_y_field
-      xorigin = $facet_x_field ? (checkers[$facet_x_field].categorical_index(facet_x)-1.0)/checkers[$facet_x_field].values.size : 0
-      yorigin = $facet_y_field ? 1.0-(checkers[$facet_y_field].categorical_index(facet_y)-0.0)/checkers[$facet_y_field].values.size : 0
-      gnuplot_command << "set origin #{xorigin},#{yorigin}\n"
-    end
-    gnuplot_command << 'plot '
-    first = true
-    h.each {|(shape_value, color_value), tmp|
-      if $shape_field
-        shape = checkers[$shape_field].categorical_index(shape_value)
-      end
-      if $color_field
-        color = checkers[$color_field].categorical_index(color_value)
-      end
-      gnuplot_command << ",\\\n" if !first
-      gnuplot_command << gnuplot_escape_string(tmp.path)
-      gnuplot_command << ' using 1:2:3 '
-      title = []
-      if shape_value
-        title << " #{$shape_field}=#{shape_value.to_s}"
-      end
-      if color_value
-        title << " #{$color_field}=#{color_value.to_s}"
-      end
-      title = title.uniq.join(' ')
-      gnuplot_command << ' title ' << gnuplot_escape_string(title)
-      gnuplot_command << ' with points'
-      if shape
-        gnuplot_command << " pointtype " << shape.to_s # xxx: some mapping
-      else
-        gnuplot_command << " pointtype 1"
-      end
-      if color
-        gnuplot_command << " linecolor " << color.to_s # xxx: some mapping
-      else
-        gnuplot_command << " linecolor 1"
-      end
-      gnuplot_command << " pointsize variable"
-      first = false
-    }
-    gnuplot_command << "\n"
-  }
-  if $facet_x_field || $facet_y_field
-    gnuplot_command << "unset multiplot\n"
-  end
-  gnuplot_command << "pause mouse any\n"
-  tmp_gnuplot_command = Tempfile.new(['tbplot', '.gp'])
-  tmp_gnuplot_command << gnuplot_command
-  tmp_gnuplot_command.close
-  system('gnuplot', tmp_gnuplot_command.path)
+  gnuplot_command << "\n"
 }
+if $facet_x_field || $facet_y_field
+  gnuplot_command << "unset multiplot\n"
+end
+gnuplot_command << "pause mouse any\n"
+tmp_gnuplot_command = Tempfile.new(['tbplot', '.gp'])
+tmp_gnuplot_command << gnuplot_command
+tmp_gnuplot_command.close
+system('gnuplot', tmp_gnuplot_command.path)
