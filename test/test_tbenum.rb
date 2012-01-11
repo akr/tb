@@ -99,4 +99,17 @@ class TestTbEnum < Test::Unit::TestCase
     }
   end
 
+  def test_extsort_by
+    er = Tb::Enumerator.new {|y|
+      y.yield("a" => 1, "b" => 2)
+      y.yield("b" => 3, "c" => 4)
+    }
+    er2 = er.extsort_by {|pairs| -pairs["b"] }
+    result = []
+    er2.header_and_each(lambda {|h| result << h }) {|pairs|
+      result << pairs
+    }
+    assert_equal([%w[a b c], {"b" => 3, "c" => 4}, {"a" => 1, "b" => 2}], result)
+  end
+
 end

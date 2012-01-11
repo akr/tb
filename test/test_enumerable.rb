@@ -149,13 +149,16 @@ class TestTbEnumerable < Test::Unit::TestCase
   end
 
   def test_extsort_by_random
-    10.times {|i|
-      len = rand(100)
-      ary = []
-      len.times { ary << rand(1000) }
-      ary1 = ary.sort
-      ary2 = ary.extsort_by {|x| x }.to_a
-      assert_equal(ary1, ary2)
+    midsize = Marshal.dump([0,0]).size + 1
+    [0, midsize, nil].each {|memsize|
+      10.times {|i|
+        len = rand(100)
+        ary = []
+        len.times { ary << rand(1000) }
+        ary1 = ary.sort
+        ary2 = ary.extsort_by(:memsize => memsize) {|x| x }.to_a
+        assert_equal(ary1, ary2)
+      }
     }
   end
 
