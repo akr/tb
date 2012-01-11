@@ -343,6 +343,7 @@ module Enumerable
     buf_mode = true
     self.each_with_index {|obj, i|
       obj_cv = cmpvalue_from.call(obj)
+      #p [obj, obj_cv]
       #p [prevobj_cv, buf_mode, obj, obj_cv]
       if buf_mode
         dumped = Marshal.dump([obj_cv, obj])

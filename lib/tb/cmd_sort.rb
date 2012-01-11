@@ -49,15 +49,20 @@ def (Tb::Cmd).main_sort(argv)
     fs = nil
   end
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
-  tbl = creader.to_tb
+  header = []
   if fs
-    blk = lambda {|rec| fs.map {|f| smart_cmp_value(rec[f]) } }
+    blk = lambda {|pairs| fs.map {|f| smart_cmp_value(pairs[f]) } }
   else
-    blk = lambda {|rec| rec.map {|k, v| smart_cmp_value(v) } }
+    blk = lambda {|pairs| header.map {|f| smart_cmp_value(pairs[f]) } }
   end
-  tbl2 = tbl.reorder_records_by(&blk)
+  er = Tb::Enumerator.new {|y|
+    creader.header_and_each(lambda {|h| y.set_header(header = h) if h }) {|pairs|
+      header |= pairs.keys
+      y.yield pairs
+    }
+  }.extsort_by(&blk)
   with_output {|out|
-    tbl2.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
+    er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end
 
