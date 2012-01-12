@@ -173,4 +173,32 @@ class TestTbEnumerable < Test::Unit::TestCase
     }
   end
 
+  def test_each_group_element
+    result = []
+    (0..9).to_a.each_group_element(
+      lambda {|a, b| a / 3 != b / 3 },
+      lambda {|v| result << [:before, v] },
+      lambda {|v| result << [:body, v] },
+      lambda {|v| result << [:after, v] })
+    assert_equal(
+      [[:before, 0],
+       [:body, 0],
+       [:body, 1],
+       [:body, 2],
+       [:after, 2],
+       [:before, 3],
+       [:body, 3],
+       [:body, 4],
+       [:body, 5],
+       [:after, 5],
+       [:before, 6],
+       [:body, 6],
+       [:body, 7],
+       [:body, 8],
+       [:after, 8],
+       [:before, 9],
+       [:body, 9],
+       [:after, 9]],
+      result)
+  end
 end

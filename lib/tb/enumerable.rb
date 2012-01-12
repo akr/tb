@@ -434,4 +434,28 @@ module Enumerable
     builder.new
   end
   private :extsort_by_strip_cv
+
+  def each_group_element(boundary_p, before_group, body, after_group)
+    prev = nil
+    first = true
+    self.each {|curr|
+      if first
+        before_group.call(curr)
+        body.call(curr)
+        prev = curr
+        first = false
+      elsif boundary_p.call(prev, curr)
+        after_group.call(prev)
+        before_group.call(curr)
+        body.call(curr)
+        prev = curr
+      else
+        body.call(curr)
+        prev = curr
+      end
+    }
+    if !first
+      after_group.call(prev)
+    end
+  end
 end
