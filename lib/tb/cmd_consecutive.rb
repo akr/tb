@@ -62,13 +62,12 @@ def (Tb::Cmd).main_consecutive(argv)
     buf = []
     empty = true
     header = []
-    header_proc = lambda {|header0|
+    creader.with_header {|header0|
       if header0
         header = header0.dup
         y.set_header header0.map {|f| (1..Tb::Cmd.opt_consecutive_n).map {|i| "#{f}_#{i}" } }.flatten(1)
       end
-    }
-    creader.header_and_each(header_proc) {|pairs|
+    }.each {|pairs|
       header |= pairs.keys
       buf << pairs
       if buf.length == Tb::Cmd.opt_consecutive_n

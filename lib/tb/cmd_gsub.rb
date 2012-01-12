@@ -56,13 +56,12 @@ def (Tb::Cmd).main_gsub(argv)
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   er = Tb::Enumerator.new {|y|
     header = nil
-    header_proc = lambda {|header0|
+    creader.with_header {|header0|
       if header0
         header = header0
         y.set_header header
       end
-    }
-    creader.header_and_each(header_proc) {|pairs|
+    }.each {|pairs|
       header |= pairs.keys
       fs = header.dup
       fs.pop while !fs.empty? && !pairs.has_key?(fs.last)

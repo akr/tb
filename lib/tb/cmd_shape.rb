@@ -47,10 +47,9 @@ def (Tb::Cmd).main_shape(argv)
       max_num_fields = nil
       num_records = 0
       num_header_fields = nil
-      header_proc = lambda {|header|
+      tblreader.with_header {|header|
         num_header_fields = header.length
-      }
-      tblreader.header_and_each(header_proc) {|pairs|
+      }.each {|pairs|
         ary = pairs.values
         num_records += 1
         n = ary.length

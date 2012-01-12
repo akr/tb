@@ -65,11 +65,10 @@ def (Tb::Cmd).main_grep(argv)
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   er = Tb::Enumerator.new {|y|
     header = nil
-    header_proc = lambda {|header0|
+    creader.with_header {|header0|
       header = header0
       y.set_header header
-    }
-    creader.header_and_each(header_proc) {|pairs|
+    }.each {|pairs|
       h = {}
       pairs.each {|f, v|
         h[f] = v

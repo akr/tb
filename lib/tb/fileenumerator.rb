@@ -125,12 +125,11 @@ module Tb::Enum
   #
   def to_fileenumerator
     hbuilder = Tb::FileHeaderEnumerator.builder
-    header_proc = lambda {|header|
+    self.with_header {|header|
       if header
         hbuilder.header.concat(header - hbuilder.header)
       end
-    }
-    self.header_and_each(header_proc) {|pairs|
+    }.each {|pairs|
       hbuilder.gen(pairs)
     }
     hbuilder.new

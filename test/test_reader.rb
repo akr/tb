@@ -85,28 +85,28 @@ class TestTbReader < Test::Unit::TestCase
       Tb.open_reader("csv:#{ic}") {|r|
         header = nil
         all = []
-        r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
+        r.with_header {|h| header = h}.each {|pairs| all << pairs.map {|f, v| v } }
         assert_equal(%w[a b], header)
         assert_equal([%w[1 3]], all)
       }
       Tb.open_reader("tsv:#{it}") {|r|
         header = nil
         all = []
-        r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
+        r.with_header {|h| header = h}.each {|pairs| all << pairs.map {|f, v| v } }
         assert_equal(%w[a b], header)
         assert_equal([%w[1 3]], all)
       }
       Tb.open_reader("json:#{ij}") {|r|
         header = nil
         all = []
-        r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
+        r.with_header {|h| header = h}.each {|pairs| all << pairs.map {|f, v| v } }
         assert_equal(nil, header)
         assert_equal([[1, 3]], all)
       }
       Tb.open_reader(ic) {|r|
         header = nil
         all = []
-        r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
+        r.with_header {|h| header = h}.each {|pairs| all << pairs.map {|f, v| v } }
         assert_equal(%w[a b], header)
         assert_equal([%w[1 3]], all)
       }
@@ -123,7 +123,7 @@ class TestTbReader < Test::Unit::TestCase
       Tb.open_reader(i) {|r|
         header = nil
         all = []
-        r.header_and_each(lambda {|h| header = h}) {|pairs| all << pairs.map {|f, v| v } }
+        r.with_header {|h| header = h}.each {|pairs| all << pairs.map {|f, v| v } }
         assert_equal(%w[a b], header)
         assert_equal([%w[1 3]], all)
         assert_equal("a", r.field_from_index(0))

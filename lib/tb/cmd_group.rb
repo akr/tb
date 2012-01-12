@@ -64,10 +64,9 @@ def (Tb::Cmd).main_group(argv)
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     result_fields = kfs + opt_group_fields.map {|nf, maker| nf }
     header = nil
-    header_proc = lambda {|header0|
+    tblreader.with_header {|header0|
       header = header0
-    }
-    tblreader.header_and_each(header_proc) {|pairs|
+    }.each {|pairs|
       kvs = kfs.map {|kf| pairs[kf] }
       ary = header.map {|f| pairs[f] }
       if !h.has_key?(kvs)

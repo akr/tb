@@ -384,10 +384,14 @@ class TestTbBasic < Test::Unit::TestCase
     assert_equal([['banana', 'yellow'], ['orange', 'orange']], rs)
   end
 
-  def test_header_and_each
+  def test_with_header
     t = Tb.new %w[a b], [1, 2], [3, 4]
     result = []
-    t.header_and_each(lambda {|x| result << x }) {|x| result << x }
+    t.with_header {|x|
+      result << x
+    }.each {|x|
+      result << x
+    }
     assert_equal(3, result.length)
     assert_equal(%w[a b], result[0])
     assert_kind_of(Tb::Record, result[1])

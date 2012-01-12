@@ -164,7 +164,7 @@ r = Tb::CatReader.open(argv)
 
 checkers = {}
 uniq_fields = nil
-header_proc = lambda {|header0|
+r.with_header {|header0|
   header = header0.dup
   [$x_field, $y_field, $shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field].each {|f|
     if f && !header.include?(f)
@@ -185,9 +185,7 @@ header_proc = lambda {|header0|
     $y_field = header.shift
   end
   uniq_fields = [$x_field, $y_field, $shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field].compact.uniq
-}
-
-r.header_and_each(header_proc) {|pairs|
+}.each {|pairs|
   ary = pairs.values
   next if uniq_fields.any? {|f| pairs[f].nil? }
   vs = {}

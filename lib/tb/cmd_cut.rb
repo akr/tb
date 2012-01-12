@@ -48,12 +48,11 @@ def (Tb::Cmd).main_cut(argv)
   Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
     if Tb::Cmd.opt_cut_v
       er = Tb::Enumerator.new {|y|
-        header_proc = lambda {|header0|
+        tblreader.with_header {|header0|
           if header0
             y.set_header header0 - fs
           end
-        }
-        tblreader.header_and_each(header_proc) {|pairs|
+        }.each {|pairs|
           y.yield pairs.reject {|k, v| fs.include? k }
         }
       }
@@ -62,7 +61,7 @@ def (Tb::Cmd).main_cut(argv)
       }
     else
       er = Tb::Enumerator.new {|y|
-        header_proc = lambda {|header0|
+        tblreader.with_header {|header0|
           if header0
             fieldset = Tb::FieldSet.new(*header0)
             fs.each {|f|
@@ -70,8 +69,7 @@ def (Tb::Cmd).main_cut(argv)
             }
           end
           y.set_header fs
-        }
-        tblreader.header_and_each(header_proc) {|pairs|
+        }.each {|pairs|
           y.yield pairs.reject {|k, v| !fs.include?(k) }
         }
       }

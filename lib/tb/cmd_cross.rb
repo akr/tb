@@ -66,12 +66,11 @@ def (Tb::Cmd).main_cross(argv)
     hset = {}
     set = {}
     header = nil
-    header_proc = lambda {|header0|
+    tblreader.with_header {|header0|
       header = header0
       vkis = vkfs.map {|f| header.index(f) }
       hkis = hkfs.map {|f| header.index(f) }
-    }
-    tblreader.header_and_each(header_proc) {|pairs|
+    }.each {|pairs|
       ary = header.map {|f| pairs[f] }
       vkvs = ary.values_at(*vkis)
       hkvs = ary.values_at(*hkis)

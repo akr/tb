@@ -15,8 +15,9 @@ class TestTbCatReader < Test::Unit::TestCase
       End
       Tb::CatReader.open([i1, i2]) {|r|
         result = []
-        header_proc = lambda {|header| result << header }
-        r.header_and_each(header_proc) {|pairs|
+        r.with_header {|header|
+          result << header
+        }.each {|pairs|
           result << pairs.to_a
         }
         assert_equal([%w[a b], [['a','1'], ['b','2']], [['b','3'],['a','4']]], result)

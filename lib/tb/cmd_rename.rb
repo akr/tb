@@ -47,7 +47,7 @@ def (Tb::Cmd).main_rename(argv)
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   er = Tb::Enumerator.new {|y|
     header = nil
-    header_proc = lambda {|header0|
+    creader.with_header {|header0|
       header = header0
       h.each {|sf, df|
         unless header.include? sf
@@ -55,8 +55,7 @@ def (Tb::Cmd).main_rename(argv)
         end
       }
       y.set_header header.map {|f| h.fetch(f, f) }
-    }
-    creader.header_and_each(header_proc) {|pairs|
+    }.each {|pairs|
       y.yield Tb::Pairs.new(pairs.map {|f, v| [h.fetch(f, f), v] })
     }
   }

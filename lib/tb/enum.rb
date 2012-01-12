@@ -77,6 +77,14 @@ class Tb::Enumerator
 end
 
 module Tb::Enum
+  def with_header(&header_proc)
+    Enumerator.new {|y|
+      header_and_each(header_proc) {|pairs|
+        y.yield pairs
+      }
+    }
+  end
+
   def header_and_each(header_proc, &block)
     header_proc.call(nil) if header_proc
     self.each(&block)
@@ -103,15 +111,14 @@ module Tb::Enum
         end
       else
         last_e = ers.pop
-        header_proc = lambda {|last_e_header|
+        last_e.with_header {|last_e_header|
           if last_e_header && header
             header = last_e_header | header
           else
             header = nil
           end
           rec.call(y, header)
-        }
-        last_e.header_and_each(header_proc) {|v|
+        }.each {|v|
           y.yield v
         }
       end
@@ -136,12 +143,11 @@ module Tb::Enum
   #
   def newfield(field)
     Tb::Enumerator.new {|y|
-      header_proc = lambda {|header|
+      self.with_header {|header|
         if header
           y.set_header(Tb::FieldSet.normalize([field, *header]))
         end
-      }
-      self.header_and_each(header_proc) {|row|
+      }.each {|row|
         keys = row.keys
         keys = Tb::FieldSet.normalize([field, *keys])
         vals = row.values
@@ -168,7 +174,7 @@ module Tb::Enum
     stream = nil
     header = []
     fgen = fnew = nil
-    header_proc = lambda {|header0|
+    self.with_header {|header0|
       if !with_header
         stream = true
       elsif header0
@@ -179,8 +185,7 @@ module Tb::Enum
         stream = false
         fgen, fnew = Tb::FileEnumerator.gen_new
       end
-    }
-    self.header_and_each(header_proc) {|pairs|
+    }.each {|pairs|
       pairs = Tb::Pairs.new(pairs) unless pairs.respond_to? :has_key?
       header |= pairs.keys
       if stream
@@ -213,7 +218,9 @@ module Tb::Enum
     header = []
     builder = Tb::FileHeaderEnumerator.builder
     er = Enumerator.new {|y|
-      self.header_and_each(lambda {|h| header |= h if h }) {|pairs|
+      self.with_header {|h|
+        header |= h if h
+      }.each {|pairs|
         header |= pairs.keys
         y.yield pairs
       }

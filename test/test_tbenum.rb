@@ -8,10 +8,9 @@ class TestTbEnum < Test::Unit::TestCase
     t2 = Tb.new(%w[c d], [5, 6], [7, 8])
     e = t1.cat(t2)
     result = []
-    header_proc = lambda {|header|
+    e.with_header {|header|
       result << [:header, header]
-    }
-    e.header_and_each(header_proc) {|x|
+    }.each {|x|
       assert_kind_of(Tb::Record, x)
       result << [x.to_a]
     }
@@ -106,7 +105,9 @@ class TestTbEnum < Test::Unit::TestCase
     }
     er2 = er.extsort_by {|pairs| -pairs["b"] }
     result = []
-    er2.header_and_each(lambda {|h| result << h }) {|pairs|
+    er2.with_header {|h|
+      result << h
+    }.each {|pairs|
       result << pairs
     }
     assert_equal([%w[a b c], {"b" => 3, "c" => 4}, {"a" => 1, "b" => 2}], result)
