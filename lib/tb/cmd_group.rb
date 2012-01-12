@@ -61,30 +61,47 @@ def (Tb::Cmd).main_group(argv)
   }
   argv = ['-'] if argv.empty?
   h = {}
-  Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
-    result_fields = kfs + opt_group_fields.map {|nf, maker| nf }
+  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
+  result = Tb::Enumerator.new {|y|
+    er = creader.extsort_by {|pairs|
+      kfs.map {|f| smart_cmp_value(pairs[f]) }
+    }
     header = nil
-    tblreader.with_header {|header0|
+    row = nil
+    agg = nil
+    er2 = er.with_header {|header0|
       header = header0
-    }.each {|pairs|
-      kvs = kfs.map {|kf| pairs[kf] }
+      y.set_header(kfs + opt_group_fields.map {|f, maker| f })
+    }
+    boudary_p = lambda {|pairs1, pairs2|
+      kfs.any? {|f| pairs1[f] != pairs2[f] }
+    }
+    before = lambda {|first_pairs|
+      row = {}
+      kfs.each {|f|
+        row[f] = first_pairs[f]
+      }
+      agg = {}
+      opt_group_fields.each {|f, maker|
+        agg[f] = maker.call(header)
+      }
+    }
+    body = lambda {|pairs|
       ary = header.map {|f| pairs[f] }
-      if !h.has_key?(kvs)
-        h[kvs] = opt_group_fields.map {|nf, maker| ag = maker.call(header); ag.update(ary); ag }
-      else
-        h[kvs].each {|ag|
-          ag.update(ary)
-        }
-      end
+      opt_group_fields.each {|f, maker|
+        agg[f].update(ary)
+      }
     }
-    result = Tb.new(result_fields)
-    h.keys.sort_by {|k| k.map {|v| smart_cmp_value(v) } }.each {|k|
-      a = h[k]
-      result.insert_values result_fields, k + a.map {|ag| ag.finish }
+    after = lambda {|last_pairs|
+      opt_group_fields.each {|f, maker|
+        row[f] = agg[f].finish
+      }
+      y.yield row
     }
-    with_output {|out|
-      result.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
-    }
+    er2.each_group_element(boudary_p, before, body, after)
+  }
+  with_output {|out|
+    result.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
   }
 end
 
