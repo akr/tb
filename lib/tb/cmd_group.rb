@@ -60,7 +60,6 @@ def (Tb::Cmd).main_group(argv)
     ]
   }
   argv = ['-'] if argv.empty?
-  h = {}
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   result = Tb::Enumerator.new {|y|
     er = creader.extsort_by {|pairs|
