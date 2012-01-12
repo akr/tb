@@ -297,16 +297,17 @@ module Enumerable
 
   def extsort_by(opts={}, &cmpvalue_from)
     memsize = opts[:memsize] || 1000000
-    builder = opts[:builder] || Tb::FileEnumerator.builder
-    extsort_by_internal(memsize, builder, &cmpvalue_from)
+    Enumerator.new {|y|
+      extsort_by_internal(memsize, cmpvalue_from, y)
+    }
   end
 
-  def extsort_by_internal(memsize, builder, &cmpvalue_from)
+  def extsort_by_internal(memsize, cmpvalue_from, y)
     tmp1 = Tempfile.new("tbsortA")
     tmp2 = Tempfile.new("tbsortB")
     extsort_by_first_split(tmp1, tmp2, cmpvalue_from, memsize)
     if tmp1.size == 0 && tmp2.size == 0
-      return Enumerator.new {|y| }
+      return Enumerator.new {|_| }
     end
     tmp3 = Tempfile.new("tbsortC")
     tmp4 = Tempfile.new("tbsortD")
@@ -326,7 +327,7 @@ module Enumerable
       #dump_objsfile(:tmp2, tmp2)
       #dump_objsfile(:tmp3, tmp3)
       #dump_objsfile(:tmp4, tmp4)
-    extsort_by_strip_cv(builder, tmp1)
+    extsort_by_strip_cv(tmp1, y)
   ensure
     tmp1.close(true) if tmp1
     tmp2.close(true) if tmp2
@@ -423,15 +424,14 @@ module Enumerable
   end
   private :extsort_by_merge
 
-  def extsort_by_strip_cv(builder, tmp1)
+  def extsort_by_strip_cv(tmp1, y)
     tmp1.rewind
     while true
       pair = Marshal.load(tmp1)
       break if !pair
       _, obj = pair
-      builder.gen obj
+      y.yield obj
     end
-    builder.new
   end
   private :extsort_by_strip_cv
 

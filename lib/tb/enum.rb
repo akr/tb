@@ -215,20 +215,20 @@ module Tb::Enum
   end
 
   def extsort_by(opts={}, &cmpvalue_from)
-    header = []
-    builder = Tb::FileHeaderEnumerator.builder
-    er = Enumerator.new {|y|
-      self.with_header {|h|
-        header |= h if h
-      }.each {|pairs|
-        header |= pairs.keys
-        y.yield pairs
+    Tb::Enumerator.new {|ty|
+      header = []
+      er = Enumerator.new {|y|
+        self.with_header {|h|
+          header |= h if h
+        }.each {|pairs|
+          header |= pairs.keys
+          y.yield pairs
+        }
+        ty.set_header header
       }
-      builder.header.replace header
+      er.extsort_by(opts, &cmpvalue_from).each {|pairs|
+        ty.yield pairs
+      }
     }
-    opts = opts.dup
-    opts[:builder] = builder
-    er2 = er.extsort_by(opts, &cmpvalue_from)
-    er2
   end
 end
