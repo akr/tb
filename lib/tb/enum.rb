@@ -37,6 +37,28 @@ module Tb::Enum
     }
   end
 
+  def with_cumulative_header(&header_proc)
+    Enumerator.new {|y|
+      hset = {}
+      internal_header_proc = lambda {|header0|
+        if header0
+          header0.each {|f|
+            hset[f] = true
+          }
+        end
+        header_proc.call(header0)
+      }
+      header_and_each(internal_header_proc) {|pairs|
+        pairs.each {|f, v|
+          if !hset[f]
+            hset[f] = true
+          end
+        }
+        y.yield [pairs, hset.keys.freeze]
+      }
+    }
+  end
+
   def cat(*ers, &b)
     ers = [self, *ers]
     rec = lambda {|y, header|

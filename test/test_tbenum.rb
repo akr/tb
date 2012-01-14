@@ -125,4 +125,29 @@ class TestTbEnum < Test::Unit::TestCase
     assert_equal([%w[a b c], {"b" => 3, "c" => 4}, {"a" => 1, "b" => 2}], result)
   end
 
+  def test_with_cumulative_header
+    er = Tb::Enumerator.new {|y|
+      y.set_header %w[a c]
+      y.yield("c" => 1, "d" => 2)
+      y.yield("b" => 1, "c" => 2)
+      y.yield("a" => 3, "b" => 4)
+    }
+    result = []
+    er.with_cumulative_header {|header|
+      result << header
+    }.each {|pairs, cheader|
+      result << pairs << cheader
+    }
+    assert_equal(
+      [%w[a c],
+       { "c" => 1, "d" => 2 },
+       %w[a c d],
+       { "b" => 1, "c" => 2 },
+       %w[a c d b],
+       { "a" => 3, "b" => 4 },
+       %w[a c d b]],
+      result)
+
+  end
+
 end
