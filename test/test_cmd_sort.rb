@@ -102,4 +102,19 @@ class TestTbCmdSort < Test::Unit::TestCase
     End
   end
 
+  def test_reverse
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      1,4
+      0,3
+      3,2
+    End
+    Tb::Cmd.main_sort(['-o', o="o.csv", '-r', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,b
+      3,2
+      1,4
+      0,3
+    End
+  end
 end
