@@ -55,14 +55,11 @@ def (Tb::Cmd).main_gsub(argv)
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   er = Tb::Enumerator.new {|y|
-    header = nil
-    creader.with_header {|header0|
+    creader.with_cumulative_header {|header0|
       if header0
-        header = header0
-        y.set_header header
+        y.set_header header0
       end
-    }.each {|pairs|
-      header |= pairs.keys
+    }.each {|pairs, header|
       fs = header.dup
       fs.pop while !fs.empty? && !pairs.has_key?(fs.last)
       if Tb::Cmd.opt_gsub_f

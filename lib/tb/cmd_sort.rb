@@ -56,10 +56,12 @@ def (Tb::Cmd).main_sort(argv)
     blk = lambda {|pairs| header.map {|f| smart_cmp_value(pairs[f]) } }
   end
   er = Tb::Enumerator.new {|y|
-    creader.with_header {|h|
-      y.set_header(header = h) if h
-    }.each {|pairs|
-      header |= pairs.keys
+    creader.with_cumulative_header {|header0|
+      if header0
+        y.set_header(header0)
+      end
+    }.each {|pairs, header1|
+      header = header1
       y.yield pairs
     }
   }.extsort_by(&blk)
