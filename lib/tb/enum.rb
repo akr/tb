@@ -90,18 +90,6 @@ module Tb::Enum
     self.each(&block)
   end
 
-  def each_arypair
-    self.each {|pairs|
-      ks = []
-      vs = []
-      pairs.each {|k, v|
-        ks << k
-        vs << v
-      }
-      yield [ks, vs]
-    }
-  end
-
   def cat(*ers, &b)
     ers = [self, *ers]
     rec = lambda {|y, header|
