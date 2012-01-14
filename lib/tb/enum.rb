@@ -46,7 +46,7 @@ module Tb::Enum
             hset[f] = true
           }
         end
-        header_proc.call(header0)
+        header_proc.call(header0) if header_proc
       }
       header_and_each(internal_header_proc) {|pairs|
         pairs.each {|f, v|
