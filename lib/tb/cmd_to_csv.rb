@@ -43,8 +43,8 @@ def (Tb::Cmd).main_to_csv(argv)
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   header = []
   ter = Tb::Enumerator.new {|y|
-    creader.each {|pairs|
-      header |= pairs.keys
+    creader.with_cumulative_header.each {|pairs, header1|
+      header = header1
       y.yield pairs
     }
   }.to_fileenumerator

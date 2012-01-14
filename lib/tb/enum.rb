@@ -131,20 +131,19 @@ module Tb::Enum
     stream = nil
     header = []
     fgen = fnew = nil
-    self.with_header {|header0|
+    self.with_cumulative_header {|header0|
       if !with_header
         stream = true
       elsif header0
         stream = true
         io.puts Tb.csv_encode_row(header0)
-        header = header0.dup
       else
         stream = false
         fgen, fnew = Tb::FileEnumerator.gen_new
       end
-    }.each {|pairs|
+    }.each {|pairs, header1|
       pairs = Tb::Pairs.new(pairs) unless pairs.respond_to? :has_key?
-      header |= pairs.keys
+      header = header1
       if stream
         fs = header.dup
         while !fs.empty? && !pairs.has_key?(fs.last)
@@ -175,10 +174,10 @@ module Tb::Enum
     Tb::Enumerator.new {|ty|
       header = []
       er = Enumerator.new {|y|
-        self.with_header {|h|
-          header |= h if h
-        }.each {|pairs|
-          header |= pairs.keys
+        self.with_cumulative_header {|header0|
+          header = header0 if header0
+        }.each {|pairs, header1|
+          header = header1
           y.yield pairs
         }
         ty.set_header header
