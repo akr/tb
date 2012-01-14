@@ -1,6 +1,4 @@
-# lib/tb.rb - entry file for table library
-#
-# Copyright (C) 2010-2012 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2012 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,25 +26,48 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'tempfile'
+class Tb::Yielder
+  def initialize(header_proc, each_proc)
+    @header_proc_called = false
+    @header_proc = header_proc
+    @each_proc = each_proc
+  end
+  attr_reader :header_proc_called
 
-class Tb
+  def set_header(header)
+    raise ArgumentError, "set_header called twice" if @header_proc_called
+    @header_proc_called = true
+    @header_proc.call(header) if @header_proc
+  end
+
+  def yield(*args)
+    if !@header_proc_called
+      set_header(nil)
+    end
+    @each_proc.call(*args)
+  end
+  alias << yield
 end
 
-require 'pp'
-require 'tb/enum'
-require 'tb/enumerator'
-require 'tb/pairs'
-require 'tb/basic'
-require 'tb/record'
-require 'tb/csv'
-require 'tb/tsv'
-require 'tb/pnm'
-require 'tb/json'
-require 'tb/reader'
-require 'tb/ropen'
-require 'tb/catreader'
-require 'tb/fieldset'
-require 'tb/search'
-require 'tb/enumerable'
-require 'tb/fileenumerator'
+class Tb::Enumerator
+  include Tb::Enum
+
+  def initialize(&enumerator_proc)
+    @enumerator_proc = enumerator_proc
+  end
+
+  def each(&each_proc)
+    yielder = Tb::Yielder.new(nil, each_proc)
+    @enumerator_proc.call(yielder)
+    nil
+  end
+
+  def header_and_each(header_proc, &each_proc)
+    yielder = Tb::Yielder.new(header_proc, each_proc)
+    @enumerator_proc.call(yielder)
+    if !yielder.header_proc_called
+      header_proc.call(nil)
+    end
+    nil
+  end
+end

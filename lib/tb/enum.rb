@@ -28,55 +28,7 @@
 
 module Tb::Enum
   include Enumerable
-end
 
-class Tb::Yielder
-  def initialize(header_proc, each_proc)
-    @header_proc_called = false
-    @header_proc = header_proc
-    @each_proc = each_proc
-  end
-  attr_reader :header_proc_called
-
-  def set_header(header)
-    raise ArgumentError, "set_header called twice" if @header_proc_called
-    @header_proc_called = true
-    @header_proc.call(header) if @header_proc
-  end
-
-  def yield(*args)
-    if !@header_proc_called
-      set_header(nil)
-    end
-    @each_proc.call(*args)
-  end
-  alias << yield
-end
-
-class Tb::Enumerator
-  include Tb::Enum
-
-  def initialize(&enumerator_proc)
-    @enumerator_proc = enumerator_proc
-  end
-
-  def each(&each_proc)
-    yielder = Tb::Yielder.new(nil, each_proc)
-    @enumerator_proc.call(yielder)
-    nil
-  end
-
-  def header_and_each(header_proc, &each_proc)
-    yielder = Tb::Yielder.new(header_proc, each_proc)
-    @enumerator_proc.call(yielder)
-    if !yielder.header_proc_called
-      header_proc.call(nil)
-    end
-    nil
-  end
-end
-
-module Tb::Enum
   def with_header(&header_proc)
     Enumerator.new {|y|
       header_and_each(header_proc) {|pairs|
