@@ -45,6 +45,10 @@ class TestTbEnum < Test::Unit::TestCase
       [['a', 3], ['b', 4], ['c', 5]],
       [['a', 6], ['b', 7], ['c', 8]],
     ]
+    def obj.header_and_each(header_proc, &block)
+      header_proc.call(nil) if header_proc
+      self.each(&block)
+    end
     obj.extend Tb::Enum
     Dir.mktmpdir {|d|
       open("#{d}/foo.csv", 'w') {|f|
@@ -65,6 +69,10 @@ class TestTbEnum < Test::Unit::TestCase
       [['b', 1]],
       [['c', 2]],
     ]
+    def obj.header_and_each(header_proc, &block)
+      header_proc.call(nil) if header_proc
+      self.each(&block)
+    end
     obj.extend Tb::Enum
     Dir.mktmpdir {|d|
       open("#{d}/foo.csv", 'w') {|f|
@@ -85,6 +93,10 @@ class TestTbEnum < Test::Unit::TestCase
       [['b', 1]],
       [['c', 2]],
     ]
+    def obj.header_and_each(header_proc, &block)
+      header_proc.call(nil) if header_proc
+      self.each(&block)
+    end
     obj.extend Tb::Enum
     Dir.mktmpdir {|d|
       open("#{d}/foo.csv", 'w') {|f|

@@ -37,11 +37,6 @@ module Tb::Enum
     }
   end
 
-  def header_and_each(header_proc, &block)
-    header_proc.call(nil) if header_proc
-    self.each(&block)
-  end
-
   def cat(*ers, &b)
     ers = [self, *ers]
     rec = lambda {|y, header|
