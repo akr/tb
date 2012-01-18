@@ -152,8 +152,8 @@ $facet_y_field = nil
 $max_size = nil
 
 op = OptionParser.new
-op.def_option('-x FIELD,...', 'x-fields') {|f| $x_field = split_field_list_argument(f).map {|f| AxisScale.new(f) } }
-op.def_option('-y FIELD,...', 'y-fields') {|f| $y_field = split_field_list_argument(f).map {|f| AxisScale.new(f) } }
+op.def_option('-x FIELD,...', 'x-fields') {|f| $x_field = split_field_list_argument(f).map {|ff| AxisScale.new(ff) } }
+op.def_option('-y FIELD,...', 'y-fields') {|f| $y_field = split_field_list_argument(f).map {|ff| AxisScale.new(ff) } }
 op.def_option('--shape=FIELD', 'shape-field') {|f| $shape_field = f }
 op.def_option('--color=FIELD', 'color-field') {|f| $color_field = f }
 op.def_option('--size=FIELD', 'size-field') {|f| $size_field = f }
@@ -208,7 +208,6 @@ r.with_header {|header0|
     x_field = x_scale.field
     $y_field.each {|y_scale|
       y_field = y_scale.field
-      ary = pairs.values
       next if uniq_fields.any? {|f| pairs[f].nil? }
       next if pairs[x_field].nil?
       vs = {}
@@ -223,9 +222,7 @@ r.with_header {|header0|
       x = vs[x_field]
       y = vs[y_field]
 
-      shape_value = color_value = nil
       size = 1
-      facet_x_field = facet_y_field = nil
       if $shape_field
         shape = vs[$shape_field]
       end
