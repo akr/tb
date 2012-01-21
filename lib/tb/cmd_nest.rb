@@ -47,49 +47,45 @@ def (Tb::Cmd).main_nest(argv)
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   er = Tb::Enumerator.new {|y|
-    tbl = creader.to_tb
-    oldfields.each {|f|
-      if !tbl.list_fields.include?(f)
-        err("field not found: #{f.inspect}")
-      end
-    }
-    result_fields = []
-    tbl.list_fields.each {|f|
-      if !oldfields_hash.has_key?(f)
-        result_fields << f
-      end
-    }
-    result_fields << newfield
-    h = {}
-    tbl.each {|rec|
-      k = []
-      v = []
-      tbl.list_fields.each {|f|
-        if oldfields_hash.has_key? f
-          v << rec[f]
-        else
-          k << rec[f]
+    sorted = creader.with_header {|header0|
+      oldfields.each {|f|
+        if !header0.include?(f)
+          err("field not found: #{f.inspect}")
         end
       }
-      if !h[k]
-        h[k] = [h.size, []]
-      end
-      h[k][1] << v
+      y.set_header(header0.reject {|f| oldfields_hash[f] } + [newfield])
+    }.map {|pairs|
+      cv = pairs.reject {|f, v|
+        oldfields_hash[f]
+      }.map {|f, v|
+        [smart_cmp_value(f), smart_cmp_value(v)]
+      }.sort
+      [cv, pairs]
     }
-    y.set_header result_fields
-    h.keys.sort_by {|k| h[k][0] }.each {|k|
-      vs = h[k][1]
+
+    nested = nil
+    boundary_p = lambda {|(cv1, _), (cv2, _)|
+      cv1 != cv2
+    }
+    before_group = lambda {|(_, _)|
+      nested = []
+    }
+    body = lambda {|(_, pairs)|
+      nested << pairs.reject {|f, v| !oldfields_hash[f] }
+    }
+    after_group = lambda {|(_, last_pairs)|
       Tb.csv_stream_output(nested_csv="") {|ngen|
         ngen << oldfields
-        vs.each {|v|
-          ngen << v
+        nested.each {|npairs|
+          ngen << oldfields.map {|of| npairs[of] }
         }
       }
-      ary = []
-      ary.concat k
-      ary << nested_csv
-      y.yield Tb::Pairs.new(result_fields.zip(ary))
+      assoc = last_pairs.reject {|f, v| oldfields_hash[f] }.to_a
+      assoc << [newfield, nested_csv]
+      pairs = Tb::Pairs.new(assoc)
+      y.yield pairs
     }
+    sorted.each_group_element(boundary_p, before_group, body, after_group)
   }
   with_output {|out|
     er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
