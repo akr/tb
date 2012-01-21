@@ -435,6 +435,12 @@ module Enumerable
   end
   private :extsort_by_strip_cv
 
+  # splits self by _boundary_p_ which is called with adjacent two elements.
+  #
+  # _before_group_ is called before each group with the first element.
+  # _after_group_ is called after each group with the last element.
+  # _body_ is called for each element.
+  #
   def each_group_element(boundary_p, before_group, body, after_group)
     prev = nil
     first = true
