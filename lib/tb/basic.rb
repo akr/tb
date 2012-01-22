@@ -350,6 +350,32 @@ class Tb
   end
 
   # :call-seq:
+  #   table.empty?
+  #
+  # returns true if there is no record.
+  #
+  #   t0 = Tb.new %w[fruit]
+  #   pp t0
+  #   #=> #<Tb>
+  #   p t0.empty?
+  #   #=> true
+  #
+  #   t3 = Tb.new %w[fruit],      
+  #               %w[apple],    
+  #               %w[banana],       
+  #               %w[orange]       
+  #   pp t3
+  #   #=> #<Tb
+  #   #    {"_recordid"=>0, "fruit"=>"apple"}
+  #   #    {"_recordid"=>1, "fruit"=>"banana"}
+  #   #    {"_recordid"=>2, "fruit"=>"orange"}>
+  #   p t3.empty?
+  #   #=> false
+  def empty?
+    self.size == 0
+  end
+
+  # :call-seq:
   #   table.allocate_recordid -> fresh_recordid
   #   table.allocate_recordid(recordid) -> recordid
   #
