@@ -59,72 +59,103 @@ def (Tb::Cmd).main_cross(argv)
     }
   end
   argv = ['-'] if argv.empty?
-  Tb::CatReader.open(argv, Tb::Cmd.opt_N) {|tblreader|
-    vkis = nil
-    hkis = nil
-    vset = {}
-    hset = {}
-    set = {}
+  creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
+  er = Tb::Enumerator.new {|y|
     header = nil
-    tblreader.with_header {|header0|
+    hvs_hash = {}
+    hvs_list = nil
+    sorted = creader.extsort_by {|pairs|
+      hvs = hkfs.map {|f| pairs[f] }
+      hvs_hash[hvs] = true
+      vcv = vkfs.map {|f| smart_cmp_value(pairs[f]) }
+      vcv
+    }
+    sorted2 = sorted.with_header {|header0|
       header = header0
-      vkis = vkfs.map {|f| header.index(f) }
-      hkis = hkfs.map {|f| header.index(f) }
-    }.each {|pairs|
-      ary = header.map {|f| pairs[f] }
-      vkvs = ary.values_at(*vkis)
-      hkvs = ary.values_at(*hkis)
-      vset[vkvs] = true if !vset.has_key?(vkvs)
-      hset[hkvs] = true if !hset.has_key?(hkvs)
-      if !set.has_key?([vkvs, hkvs])
-        set[[vkvs, hkvs]] = opt_cross_fields.map {|agg_spec, nf|
+      (vkfs + hkfs).each {|f|
+        if !header0.include?(f)
+          err("field not found: #{f}")
+        end
+      }
+      hvs_list = hvs_hash.keys.sort_by {|hvs| hvs.map {|hv| smart_cmp_value(hv) } }
+      n = vkfs.length + hvs_list.length * opt_cross_fields.length
+      header1 = (1..n).map {|i| i.to_s }
+      y.set_header header1
+      hkfs.each_with_index {|hkf, i|
+        next if Tb::Cmd.opt_cross_compact && i == hkfs.length - 1
+        h1 = {}
+        j = vkfs.length
+        h1[j.to_s] = hkf
+        hvs_list.each {|hkvs|
+          opt_cross_fields.length.times {
+            j += 1
+            h1[j.to_s] = hkvs[i]
+          }
+        }
+        y.yield h1
+      }
+      h2 = {}
+      j = 0
+      vkfs.each {|vkf|
+        j += 1
+        h2[j.to_s] = vkf
+      }
+      hvs_list.each {|hkvs|
+        opt_cross_fields.each {|agg_spec, new_field|
+          j += 1
+          if Tb::Cmd.opt_cross_compact
+            h2[j.to_s] = hkvs[-1]
+          else
+            h2[j.to_s] = new_field
+          end
+        }
+      }
+      y.yield h2
+    }
+    boudary_p = lambda {|pairs1, pairs2|
+      vcv1 = vkfs.map {|f| smart_cmp_value(pairs1[f]) }
+      vcv2 = vkfs.map {|f| smart_cmp_value(pairs2[f]) }
+      vcv1 != vcv2
+    }
+    aggs = nil
+    before = lambda {|_|
+      aggs = {}
+    }
+    body = lambda {|pairs|
+      hvs = hkfs.map {|f| pairs[f] }
+      if !aggs.has_key?(hvs)
+        aggs[hvs] = opt_cross_fields.map {|agg_spec, nf|
           begin
-            ag = make_aggregator(agg_spec, header)
+            make_aggregator(agg_spec, header)
           rescue ArgumentError
             err($!.message)
           end
-          ag.update(ary)
-          ag
-        }
-      else
-        set[[vkvs, hkvs]].each {|ag|
-          ag.update(ary)
         }
       end
-    }
-    vary = vset.keys.sort_by {|a| a.map {|v| smart_cmp_value(v) } }
-    hary = hset.keys.sort_by {|a| a.map {|v| smart_cmp_value(v) } }
-    with_output {|out|
-      Tb.csv_stream_output(out) {|gen|
-        hkfs.each_with_index {|hkf, i|
-          next if Tb::Cmd.opt_cross_compact && i == hkfs.length - 1
-          row = [nil] * (vkfs.length - 1) + [hkf]
-          hary.each {|hkvs| opt_cross_fields.length.times { row << hkvs[i] } }
-          gen << row
-        }
-        if Tb::Cmd.opt_cross_compact
-          r = vkfs.dup
-          hary.each {|hkvs| r.concat([hkvs[-1]] * opt_cross_fields.length) }
-          gen << r
-        else
-          r = vkfs.dup
-          hary.each {|hkvs| r.concat opt_cross_fields.map {|agg_spec, new_field| new_field } }
-          gen << r
-        end
-        vary.each {|vkvs|
-          row = vkvs.dup
-          hary.each {|hkvs|
-            ags = set[[vkvs, hkvs]]
-            if !ags
-              opt_cross_fields.length.times { row << nil }
-            else
-              ags.each {|ag| row << ag.finish }
-            end
-          }
-          gen << row
-        }
+      ary = header.map {|f| pairs[f] }
+      aggs[hvs].each {|agg|
+        agg.update(ary)
       }
     }
+    after = lambda {|last_pairs|
+      ary = vkfs.map {|f| last_pairs[f] }
+      hvs_list.each {|hvs|
+        if aggs.has_key? hvs
+          ary.concat(aggs[hvs].map {|agg| agg.finish })
+        else
+          ary.concat([nil] * opt_cross_fields.length)
+        end
+      }
+      pairs = {}
+      ary.each_with_index {|v, i|
+        pairs[(i+1).to_s] = v
+      }
+      y.yield pairs
+    }
+    sorted2.each_group_element(boudary_p, before, body, after)
+  }
+  with_output {|out|
+    er.write_to_csv_to_io(out, false)
   }
 end
 

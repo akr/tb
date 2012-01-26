@@ -43,6 +43,18 @@ class TestTbCmdCross < Test::Unit::TestCase
     assert(!exc.success?)
   end
 
+  def test_field_not_found
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      name,year,observ
+      aaaa,2000,1
+      bbbb,2001,3
+    End
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_cross(['-o', "o.csv", 'foo', 'year', i]) }
+    assert(!exc.success?)
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_cross(['-o', "o.csv", 'name', 'bar', i]) }
+    assert(!exc.success?)
+  end
+
   def test_compact
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       name,year,observ
