@@ -23,7 +23,7 @@ class TestTbCmdCross < Test::Unit::TestCase
       bbbb,2000,4
       cccc,2002,5
     End
-    Tb::Cmd.main_cross(['-o', o="o.csv", 'name', 'year', i])
+    Tb::Cmd.main_cross(['-o', o="o.csv", 'year', 'name', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       name,aaaa,bbbb,cccc
       year,count,count,count
@@ -63,7 +63,7 @@ class TestTbCmdCross < Test::Unit::TestCase
       bbbb,2000,4
       cccc,2002,5
     End
-    Tb::Cmd.main_cross(['-o', o="o.csv", 'name', 'year', '-c', i])
+    Tb::Cmd.main_cross(['-o', o="o.csv", 'year', 'name', '-c', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       year,aaaa,bbbb,cccc
       2000,1,1,
@@ -81,7 +81,7 @@ class TestTbCmdCross < Test::Unit::TestCase
       cccc,2002,5
       aaaa,2000,2
     End
-    Tb::Cmd.main_cross(['-o', o="o.csv", 'name', 'year', '-a', 'sum(observ)', i])
+    Tb::Cmd.main_cross(['-o', o="o.csv", 'year', 'name', '-a', 'sum(observ)', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       name,aaaa,bbbb,cccc
       year,sum(observ),sum(observ),sum(observ)
@@ -102,7 +102,7 @@ class TestTbCmdCross < Test::Unit::TestCase
       5,6
       7,8
     End
-    Tb::Cmd.main_cross(['-o', o="o.csv", 'a', 'b', i1, i2])
+    Tb::Cmd.main_cross(['-o', o="o.csv", 'b', 'a', i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,1,3,6,8
       b,count,count,count,count

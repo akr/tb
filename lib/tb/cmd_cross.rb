@@ -33,7 +33,7 @@ Tb::Cmd.default_option[:opt_cross_compact] = false
 
 def (Tb::Cmd).op_cross
   op = OptionParser.new
-  op.banner = "Usage: tb cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE ...]\n" +
+  op.banner = "Usage: tb cross [OPTS] VKEY-FIELD1,... HKEY-FIELD1,... [TABLE ...]\n" +
     "Create a contingency table."
   define_common_option(op, "ho", "--no-pager")
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
@@ -45,10 +45,10 @@ end
 def (Tb::Cmd).main_cross(argv)
   op_cross.parse!(argv)
   exit_if_help('cross')
-  err('no hkey-fields given.') if argv.empty?
-  hkfs = split_field_list_argument(argv.shift)
   err('no vkey-fields given.') if argv.empty?
   vkfs = split_field_list_argument(argv.shift)
+  err('no hkey-fields given.') if argv.empty?
+  hkfs = split_field_list_argument(argv.shift)
   if Tb::Cmd.opt_cross_fields.empty?
     opt_cross_fields = [['count', 'count']]
   else
