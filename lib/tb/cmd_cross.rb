@@ -34,7 +34,7 @@ Tb::Cmd.default_option[:opt_cross_compact] = false
 def (Tb::Cmd).op_cross
   op = OptionParser.new
   op.banner = "Usage: tb cross [OPTS] VKEY-FIELD1,... HKEY-FIELD1,... [TABLE ...]\n" +
-    "Create a contingency table."
+    "Create a cross table. (a.k.a contingency table, pivot table)"
   define_common_option(op, "ho", "--no-pager")
   op.def_option('-a AGGREGATION-SPEC[,NEW-FIELD]',
                 '--aggregate AGGREGATION-SPEC[,NEW-FIELD]') {|arg| Tb::Cmd.opt_cross_fields << arg }
