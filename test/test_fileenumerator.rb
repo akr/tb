@@ -72,8 +72,11 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert_equal(2, iter.peek)
     assert_equal(2, iter.next)
     assert_equal(3, iter.next)
+    assert(!iter.closed?)
     assert_raise(StopIteration) { iter.peek }
+    assert(iter.closed?)
     assert_raise(StopIteration) { iter.next }
+    assert(iter.closed?)
   end
 
   def test_reader_values
@@ -94,8 +97,11 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert_equal([1], iter.peek_values)
     assert_equal([1], iter.next_values)
     assert_equal([1,2], iter.next_values)
+    assert(!iter.closed?)
     assert_raise(StopIteration) { iter.peek_values }
+    assert(iter.closed?)
     assert_raise(StopIteration) { iter.next_values }
+    assert(iter.closed?)
   end
 
   def test_reader_rewind
@@ -108,8 +114,11 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert_equal(1, iter.next)
     assert_equal(2, iter.next)
     assert_equal(3, iter.next)
+    assert(!iter.closed?)
     assert_raise(StopIteration) { iter.next }
+    assert(iter.closed?)
     assert_raise(ArgumentError) { iter.rewind }
+    assert(iter.closed?)
   end
 
   def test_reader_pos
@@ -131,10 +140,32 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert_equal(2, iter.next)
     pos3 = iter.pos
     assert_equal(3, iter.next)
+    posEnd = iter.pos
     iter.pos = pos2
     assert_equal(2, iter.next)
     iter.pos = pos1
     assert_equal(1, iter.next)
+    iter.pos = posEnd
+    assert(!iter.closed?)
+    assert_raise(StopIteration) { iter.next }
+    assert(iter.closed?)
+  end
+
+  def test_reader_use
+    ary = [1,2]
+    fe = ary.to_fileenumerator
+    iter = fe.each
+    iter.use {
+      assert_equal(1, iter.next)
+      pos2 = iter.pos
+      assert_equal(2, iter.next)
+      assert_raise(StopIteration) { iter.next }
+      iter.pos = pos2
+      assert_equal(2, iter.next)
+      assert_raise(StopIteration) { iter.next }
+      assert(!iter.closed?)
+    }
+    assert(iter.closed?)
   end
 
   def test_to_fileheaderenumerator_reader
@@ -148,8 +179,11 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert_equal([["a", 1], ["b", 2]], iter.next.to_a)
     assert_equal([["a", 3], ["b", 4]], iter.peek.to_a)
     assert_equal([["a", 3], ["b", 4]], iter.next.to_a)
+    assert(!iter.closed?)
     assert_raise(StopIteration) { iter.peek }
+    assert(iter.closed?)
     assert_raise(StopIteration) { iter.next }
+    assert(iter.closed?)
   end
 
   def test_to_fileheaderenumerator_with_header_reader
@@ -167,8 +201,11 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert_equal([["a", 1], ["b", 2]], iter.next.to_a)
     assert_equal([["a", 3], ["b", 4]], iter.peek.to_a)
     assert_equal([["a", 3], ["b", 4]], iter.next.to_a)
+    assert(!iter.closed?)
     assert_raise(StopIteration) { iter.peek }
+    assert(iter.closed?)
     assert_raise(StopIteration) { iter.next }
+    assert(iter.closed?)
   end
 
 end

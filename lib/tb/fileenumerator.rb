@@ -138,10 +138,43 @@ class Tb::FileEnumerator
 
   class Reader
     def initialize(fileenumerator)
+      @use_count = 0
       @fileenumerator = fileenumerator
       @fileenumerator.send(:use_count_up)
       @io = @fileenumerator.instance_eval { @open_func.call }
       peek_reset
+    end
+
+    def closed?
+      @io.nil?
+    end
+    
+    def finalize
+      @io.close
+      @io = nil
+      @fileenumerator.send(:use_count_down)
+      peek_reset
+    end
+    private :finalize
+
+    def use_begin
+      @use_count += 1
+    end
+
+    def use_end
+      @use_count -= 1
+      if @use_count == 0
+        finalize
+      end
+    end
+
+    def use
+      use_begin
+      begin
+        yield
+      ensure
+        use_end
+      end
     end
 
     def peek_reset
@@ -173,10 +206,9 @@ class Tb::FileEnumerator
         begin
           objs = Marshal.load(@io)
         rescue EOFError
-          @io.close
-          @io = nil
-          @fileenumerator.send(:use_count_down)
-          peek_reset
+          if @use_count == 0
+            finalize
+          end
           raise StopIteration
         end
         @peeked = true
