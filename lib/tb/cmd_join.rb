@@ -59,6 +59,10 @@ def (Tb::Cmd).op_join
   op
 end
 
+def (Tb::Cmd).natjoin2_outer(tbl1, tbl2, missing, retain_left, retain_right)
+  tbl1.natjoin2_outer(tbl2, missing, retain_left, retain_right)
+end
+
 def (Tb::Cmd).main_join(argv)
   op_join.parse!(argv)
   exit_if_help('join')
@@ -69,7 +73,7 @@ def (Tb::Cmd).main_join(argv)
   argv.each {|filename|
     tbl = load_table(filename)
     $stderr.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= Tb::Cmd.opt_debug
-    result = result.natjoin2_outer(tbl, Tb::Cmd.opt_join_outer_missing, retain_left, retain_right)
+    result = natjoin2_outer(result, tbl, Tb::Cmd.opt_join_outer_missing, retain_left, retain_right)
   }
   with_output {|out|
     result.write_to_csv(out, !Tb::Cmd.opt_N)
