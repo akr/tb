@@ -147,8 +147,23 @@ class Tb::FileEnumerator
     def peek_reset
       @peeked = false
       @peeked_objs = nil
+      if @io
+        @pos = @io.pos
+      else
+        @pos = nil
+      end
     end
     private :peek_reset
+
+    def pos
+      @pos
+    end
+
+    def pos=(val)
+      @io.seek(val)
+      peek_reset
+      nil
+    end
 
     def peek_values
       if !@io

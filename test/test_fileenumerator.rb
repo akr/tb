@@ -112,6 +112,31 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert_raise(ArgumentError) { iter.rewind }
   end
 
+  def test_reader_pos
+    ary = [1,2,3]
+    fe = ary.to_fileenumerator
+    iter = fe.each
+    assert_respond_to(iter, :next)
+    assert_respond_to(iter, :peek)
+    pos1 = iter.pos
+    assert_equal(1, iter.peek)
+    assert_equal(pos1, iter.pos)
+    assert_equal(1, iter.peek)
+    assert_equal(pos1, iter.pos)
+    assert_equal(1, iter.next)
+    pos2 = iter.pos
+    assert_not_equal(pos1, pos2)
+    assert_equal(2, iter.peek)
+    assert_equal(pos2, iter.pos)
+    assert_equal(2, iter.next)
+    pos3 = iter.pos
+    assert_equal(3, iter.next)
+    iter.pos = pos2
+    assert_equal(2, iter.next)
+    iter.pos = pos1
+    assert_equal(1, iter.next)
+  end
+
   def test_to_fileheaderenumerator_reader
     tb = Tb.new %w[a b], [1, 2], [3, 4]
     fe = tb.to_fileenumerator
