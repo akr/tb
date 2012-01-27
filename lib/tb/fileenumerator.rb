@@ -274,6 +274,11 @@ class Tb::FileHeaderEnumerator < Tb::FileEnumerator
   end
 
   def each(&block)
-    header_and_each(nil, &block)
+    if block_given?
+      header_and_each(nil, &block)
+    else
+      Tb::FileEnumerator::Reader.new(self)
+    end
   end
+
 end

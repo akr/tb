@@ -112,4 +112,38 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert_raise(ArgumentError) { iter.rewind }
   end
 
+  def test_to_fileheaderenumerator_reader
+    tb = Tb.new %w[a b], [1, 2], [3, 4]
+    fe = tb.to_fileenumerator
+    iter = fe.each
+    assert_respond_to(iter, :next)
+    assert_respond_to(iter, :peek)
+    assert_equal([["a", 1], ["b", 2]], iter.peek.to_a)
+    assert_equal([["a", 1], ["b", 2]], iter.peek.to_a)
+    assert_equal([["a", 1], ["b", 2]], iter.next.to_a)
+    assert_equal([["a", 3], ["b", 4]], iter.peek.to_a)
+    assert_equal([["a", 3], ["b", 4]], iter.next.to_a)
+    assert_raise(StopIteration) { iter.peek }
+    assert_raise(StopIteration) { iter.next }
+  end
+
+  def test_to_fileheaderenumerator_with_header_reader
+    tb = Tb.new %w[a b], [1, 2], [3, 4]
+    header = nil
+    fe = tb.with_header {|h0|
+      header = h0
+    }.to_fileenumerator
+    assert_equal(%w[a b], header)
+    iter = fe.each
+    assert_respond_to(iter, :next)
+    assert_respond_to(iter, :peek)
+    assert_equal([["a", 1], ["b", 2]], iter.peek.to_a)
+    assert_equal([["a", 1], ["b", 2]], iter.peek.to_a)
+    assert_equal([["a", 1], ["b", 2]], iter.next.to_a)
+    assert_equal([["a", 3], ["b", 4]], iter.peek.to_a)
+    assert_equal([["a", 3], ["b", 4]], iter.next.to_a)
+    assert_raise(StopIteration) { iter.peek }
+    assert_raise(StopIteration) { iter.next }
+  end
+
 end
