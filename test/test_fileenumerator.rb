@@ -138,7 +138,6 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert_equal(2, iter.peek)
     assert_equal(pos2, iter.pos)
     assert_equal(2, iter.next)
-    pos3 = iter.pos
     assert_equal(3, iter.next)
     posEnd = iter.pos
     iter.pos = pos2
