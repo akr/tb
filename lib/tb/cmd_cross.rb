@@ -155,7 +155,7 @@ def (Tb::Cmd).main_cross(argv)
     sorted2.each_group_element(boudary_p, before, body, after)
   }
   with_output {|out|
-    er.write_to_csv_to_io(out, false)
+    er.write_to_csv(out, false)
   }
 end
 

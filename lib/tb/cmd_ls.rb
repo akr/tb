@@ -64,7 +64,7 @@ def (Tb::Cmd).main_ls(argv)
     }
   }
   with_output {|out|
-    er.write_to_csv_to_io(out, !Tb::Cmd.opt_N)
+    er.write_to_csv(out, !Tb::Cmd.opt_N)
   }
   if ls.fail
     exit false

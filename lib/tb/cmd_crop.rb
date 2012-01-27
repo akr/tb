@@ -85,7 +85,7 @@ def (Tb::Cmd).main_crop(argv)
       }
     }
     with_output {|out|
-      er.write_to_csv_to_io(out, false)
+      er.write_to_csv(out, false)
     }
   else
     creader = Tb::CatReader.open(argv, true)
@@ -132,7 +132,7 @@ def (Tb::Cmd).main_crop(argv)
       }
     }
     with_output {|out|
-      er.write_to_csv_to_io(out, false)
+      er.write_to_csv(out, false)
     }
   end
 end

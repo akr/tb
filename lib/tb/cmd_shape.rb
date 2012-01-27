@@ -68,7 +68,7 @@ def (Tb::Cmd).main_shape(argv)
     }
   }
   with_output {|out|
-    result.write_to_csv_to_io(out, true)
+    result.write_to_csv(out, true)
   }
 end
 

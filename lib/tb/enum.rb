@@ -127,7 +127,7 @@ module Tb::Enum
     tb
   end
 
-  def write_to_csv_to_io(io, with_header=true)
+  def write_to_csv(io, with_header=true)
     stream = nil
     header = []
     fgen = fnew = nil
