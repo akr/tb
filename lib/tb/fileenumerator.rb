@@ -84,39 +84,120 @@ class Tb::FileEnumerator
     return builder.method(:gen), builder.method(:new)
   end
 
-  def initialize(open_func, close_func)
+  def initialize(open_func, remove_func)
     @use_count = 0
     @open_func = open_func
-    @close_func = close_func
+    @remove_func = remove_func
   end
+
+  def use_count_up
+    @use_count += 1
+  end
+  private :use_count_up
+
+  def use_count_down
+    @use_count -= 1
+    if @use_count == 0
+      @remove_func.call
+      @open_func = @remove_func = nil
+    end
+  end
+  private :use_count_down
 
   # delay removing the tempfile until the given block is finished.
   def use
     if !@open_func
       raise ArgumentError, "FileEnumerator reused."
     end
-    @use_count += 1
-    yield
-    @use_count -= 1
-    if @use_count == 0
-      @close_func.call
-      @open_func = @close_func = nil
+    use_count_up
+    begin
+      yield
+    ensure
+      use_count_down
     end
   end
 
   def each
-    self.use {
-      begin
-        io = @open_func.call
-        while true
-          objs = Marshal.load(io)
-          yield(*objs)
+    if block_given?
+      self.use {
+        begin
+          io = @open_func.call
+          while true
+            objs = Marshal.load(io)
+            yield(*objs)
+          end
+        rescue EOFError
+        ensure
+          io.close 
         end
-      rescue EOFError
-      ensure
-        io.close 
+      }
+    else
+      Reader.new(self)
+    end
+  end
+
+  class Reader
+    def initialize(fileenumerator)
+      @fileenumerator = fileenumerator
+      @fileenumerator.send(:use_count_up)
+      @io = @fileenumerator.instance_eval { @open_func.call }
+      peek_reset
+    end
+
+    def peek_reset
+      @peeked = false
+      @peeked_objs = nil
+    end
+    private :peek_reset
+
+    def peek_values
+      if !@io
+        raise StopIteration
       end
-    }
+      if !@peeked
+        begin
+          objs = Marshal.load(@io)
+        rescue EOFError
+          @io.close
+          @io = nil
+          @fileenumerator.send(:use_count_down)
+          peek_reset
+          raise StopIteration
+        end
+        @peeked = true
+        @peeked_objs = objs
+      end
+      @peeked_objs
+    end
+
+    def peek
+      result = self.peek_values
+      if result.kind_of?(Array) && result.length == 1
+        result = result[0]
+      end
+      result
+    end
+
+    def next_values
+      result = self.peek_values
+      peek_reset
+      result
+    end
+
+    def next
+      result = self.peek
+      peek_reset
+      result
+    end
+
+    def rewind
+      if !@io
+        raise ArgumentError, "already closed."
+      end
+      @io.rewind
+      peek_reset
+      nil
+    end
   end
 end
 
@@ -171,8 +252,8 @@ class Tb::FileHeaderEnumerator < Tb::FileEnumerator
     return hgen.method(:gen), hgen.method(:new)
   end
 
-  def initialize(header, open_func, close_func)
-    super open_func, close_func
+  def initialize(header, open_func, remove_func)
+    super open_func, remove_func
     @header = header
   end
 

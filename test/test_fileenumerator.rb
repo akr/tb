@@ -60,4 +60,56 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert_equal([{"a"=>1, "b"=>2}, {"a"=>3}], ary)
   end
 
+  def test_reader_basic
+    ary = [1,2,3]
+    fe = ary.to_fileenumerator
+    iter = fe.each
+    assert_respond_to(iter, :next)
+    assert_respond_to(iter, :peek)
+    assert_equal(1, iter.peek)
+    assert_equal(1, iter.peek)
+    assert_equal(1, iter.next)
+    assert_equal(2, iter.peek)
+    assert_equal(2, iter.next)
+    assert_equal(3, iter.next)
+    assert_raise(StopIteration) { iter.peek }
+    assert_raise(StopIteration) { iter.next }
+  end
+
+  def test_reader_values
+    o = Object.new
+    def o.each
+      yield
+      yield 1
+      yield 1, 2
+    end
+    o.extend Enumerable
+    fe = o.to_fileenumerator
+    iter = fe.each
+    assert_respond_to(iter, :next_values)
+    assert_respond_to(iter, :peek_values)
+    assert_equal([], iter.peek_values)
+    assert_equal([], iter.peek_values)
+    assert_equal([], iter.next_values)
+    assert_equal([1], iter.peek_values)
+    assert_equal([1], iter.next_values)
+    assert_equal([1,2], iter.next_values)
+    assert_raise(StopIteration) { iter.peek_values }
+    assert_raise(StopIteration) { iter.next_values }
+  end
+
+  def test_reader_rewind
+    ary = [1,2,3]
+    fe = ary.to_fileenumerator
+    iter = fe.each
+    assert_equal(1, iter.next)
+    assert_equal(2, iter.next)
+    iter.rewind
+    assert_equal(1, iter.next)
+    assert_equal(2, iter.next)
+    assert_equal(3, iter.next)
+    assert_raise(StopIteration) { iter.next }
+    assert_raise(ArgumentError) { iter.rewind }
+  end
+
 end
