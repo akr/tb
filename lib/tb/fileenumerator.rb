@@ -136,6 +136,13 @@ class Tb::FileEnumerator
     end
   end
 
+  def open_reader
+    reader = Reader.new(self)
+    reader.use {
+      yield reader
+    }
+  end
+
   class Reader
     def initialize(fileenumerator)
       @use_count = 0

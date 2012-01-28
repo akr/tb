@@ -167,6 +167,42 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert(iter.closed?)
   end
 
+  def test_open_reader
+    ary = [1,2]
+    fe = ary.to_fileenumerator
+    iter0 = nil
+    fe.open_reader {|iter|
+      iter0 = iter
+      assert_equal(1, iter.next)
+      pos2 = iter.pos
+      assert_equal(2, iter.next)
+      assert_raise(StopIteration) { iter.next }
+      iter.pos = pos2
+      assert_equal(2, iter.next)
+      assert_raise(StopIteration) { iter.next }
+      assert(!iter.closed?)
+    }
+    assert(iter0.closed?)
+  end
+
+  def test_open_reader
+    ary = [1,2]
+    fe = ary.to_fileenumerator
+    iter0 = nil
+    fe.open_reader {|iter|
+      iter0 = iter
+      assert_equal(1, iter.next)
+      pos2 = iter.pos
+      assert_equal(2, iter.next)
+      assert_raise(StopIteration) { iter.next }
+      iter.pos = pos2
+      assert_equal(2, iter.next)
+      assert_raise(StopIteration) { iter.next }
+      assert(!iter.closed?)
+    }
+    assert(iter0.closed?)
+  end
+
   def test_to_fileheaderenumerator_reader
     tb = Tb.new %w[a b], [1, 2], [3, 4]
     fe = tb.to_fileenumerator
@@ -207,4 +243,23 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert(iter.closed?)
   end
 
+  def test_fileheaderenumerator_open_reader
+    tb = Tb.new %w[a b], [1, 2], [3, 4]
+    fe = tb.to_fileenumerator
+    iter0 = nil
+    fe.open_reader {|iter|
+      iter0 = iter
+      assert_respond_to(iter, :next)
+      assert_respond_to(iter, :peek)
+      assert_equal([["a", 1], ["b", 2]], iter.peek.to_a)
+      assert_equal([["a", 1], ["b", 2]], iter.peek.to_a)
+      assert_equal([["a", 1], ["b", 2]], iter.next.to_a)
+      assert_equal([["a", 3], ["b", 4]], iter.peek.to_a)
+      assert_equal([["a", 3], ["b", 4]], iter.next.to_a)
+      assert_raise(StopIteration) { iter.peek }
+      assert_raise(StopIteration) { iter.next }
+      assert(!iter.closed?)
+    }
+    assert(iter0.closed?)
+  end
 end
