@@ -296,7 +296,7 @@ module Enumerable
   private :dump_objsfile
 
   def extsort_by(opts={}, &cmpvalue_from)
-    memsize = opts[:memsize] || 1000000
+    memsize = opts[:memsize] || 10000000
     Enumerator.new {|y|
       extsort_by_internal(memsize, cmpvalue_from, y)
     }
