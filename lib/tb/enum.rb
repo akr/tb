@@ -114,6 +114,102 @@ module Tb::Enum
     }
   end
 
+  # :call-seq:
+  #   table1.natjoin2(table2, missing_value=nil, retain_left=false, retain_right=false)
+  def natjoin2(tbl2, missing_value=nil, retain_left=false, retain_right=false)
+    Tb::Enumerator.new {|y|
+      tbl1 = self
+      header1 = header2 = nil
+      sorted_tbl2 = nil
+      common_header = nil
+      total_header = nil
+      sorted_tbl1 = tbl1.with_header {|h1|
+        header1 = h1
+        sorted_tbl2 = tbl2.with_header {|h2|
+          header2 = h2
+          common_header = header1 & header2
+          total_header = header1 | header2
+          y.set_header total_header
+        }.lazy_map {|pairs|
+          [common_header.map {|f| pairs[f] }, pairs]
+        }.extsort_by {|cv, pairs| cv }.to_fileenumerator
+      }.lazy_map {|pairs|
+        [common_header.map {|f| pairs[f] }, pairs]
+      }.extsort_by {|cv, pairs| cv }.to_fileenumerator
+      sorted_tbl1.open_reader {|t1|
+        sorted_tbl2.open_reader {|t2|
+          t1_eof = t2_eof = false
+          while true
+            begin
+              cv1, pairs1 = t1.peek
+            rescue StopIteration
+              t1_eof = true
+            end
+            begin
+              cv2, pairs2 = t2.peek
+            rescue StopIteration
+              t2_eof = true
+            end
+            break if t1_eof || t2_eof
+            cmp = cv1 <=> cv2
+            if cmp < 0
+              t1.subeach_by {|_cv1, _| _cv1 }.each {|_, _pairs1|
+                if retain_left
+                  h = _pairs1.dup
+                  total_header.each {|f| h[f] = missing_value if !h.has_key?(f) }
+                  y.yield h
+                end
+              }
+            elsif 0 < cmp
+              t2.subeach_by {|_cv2, _| _cv2 }.each {|_, _pairs2|
+                if retain_right
+                  h = _pairs2.dup
+                  total_header.each {|f| h[f] = missing_value if !h.has_key?(f) }
+                  y.yield h
+                end
+              }
+            else
+              t2_pos = t2.pos
+              t1.subeach_by {|_cv1, _| _cv1 }.each {|_, _pairs1|
+                t2.pos = t2_pos
+                t2.subeach_by {|_cv2, _| _cv2 }.each {|_, _pairs2|
+                  pairs = {}
+                  _pairs1.each {|f, v| pairs[f] = v }
+                  _pairs2.each {|f, v| pairs[f] = v if !pairs.has_key?(f) }
+                  y.yield(pairs)
+                }
+              }
+            end
+          end
+          begin
+            cv1, pairs1 = t1.next
+            if retain_left
+              h = pairs1.dup
+              total_header.each {|f| h[f] = missing_value if !h.has_key?(f) }
+              y.yield h
+            end
+          rescue StopIteration
+          end
+          begin
+            cv2, pairs2 = t2.next
+            if retain_right
+              h = pairs2.dup
+              total_header.each {|f| h[f] = missing_value if !h.has_key?(f) }
+              y.yield h
+            end
+          rescue StopIteration
+          end
+        }
+      }
+    }
+  end
+
+  # :call-seq:
+  #   table1.natjoin2_outer(table2, missing=nil, retain_left=true, retain_right=true)
+  def natjoin2_outer(tbl2, missing_value=nil, retain_left=true, retain_right=true)
+    natjoin2(tbl2, missing_value, retain_left, retain_right)
+  end
+
   def to_tb
     tb = Tb.new
     self.each {|pairs|

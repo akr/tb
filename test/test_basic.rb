@@ -208,10 +208,10 @@ class TestTbBasic < Test::Unit::TestCase
     t1 = Tb.new %w[a b], %w[1 2], %w[3 4], %w[0 4]
     t2 = Tb.new %w[b c], %w[2 3], %w[4 5], %w[5 8]
     t3 = t1.natjoin2(t2)
-    assert_equal([{"_recordid"=>0, "a"=>"1", "b"=>"2", "c"=>"3"},
-                  {"_recordid"=>1, "a"=>"3", "b"=>"4", "c"=>"5"},
-                  {"_recordid"=>2, "a"=>"0", "b"=>"4", "c"=>"5"}],
-                 t3.to_a.map {|r| r.to_h_with_reserved })
+    assert_equal([{"a"=>"1", "b"=>"2", "c"=>"3"},
+                  {"a"=>"3", "b"=>"4", "c"=>"5"},
+                  {"a"=>"0", "b"=>"4", "c"=>"5"}],
+                 t3.to_a.map {|r| r.to_h })
   end
 
   def test_natjoin2_nocommon
@@ -229,12 +229,12 @@ class TestTbBasic < Test::Unit::TestCase
     t1 = Tb.new %w[a b], %w[1 2], %w[3 4], %w[0 4], %w[0 1]
     t2 = Tb.new %w[b c], %w[2 3], %w[4 5], %w[5 8]
     t3 = t1.natjoin2_outer(t2)
-    assert_equal([{"_recordid"=>0, "a"=>"1", "b"=>"2", "c"=>"3"},
-                  {"_recordid"=>1, "a"=>"3", "b"=>"4", "c"=>"5"},
-                  {"_recordid"=>2, "a"=>"0", "b"=>"4", "c"=>"5"},
-                  {"_recordid"=>3, "a"=>"0", "b"=>"1"},
-                  {"_recordid"=>4, "b"=>"5", "c"=>"8"}],
-                 t3.to_a.map {|r| r.to_h_with_reserved })
+    assert_equal([{"a"=>"0", "b"=>"1"},
+                  {"a"=>"1", "b"=>"2", "c"=>"3"},
+                  {"a"=>"3", "b"=>"4", "c"=>"5"},
+                  {"a"=>"0", "b"=>"4", "c"=>"5"},
+                  {"b"=>"5", "c"=>"8"}],
+                 t3.to_a.map {|r| r.to_h })
   end
 
   def test_fmap!

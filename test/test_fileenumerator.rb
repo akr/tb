@@ -185,7 +185,7 @@ class TestTbFileEnumerator < Test::Unit::TestCase
     assert(iter0.closed?)
   end
 
-  def test_open_reader
+  def test_open_reader2
     ary = [1,2]
     fe = ary.to_fileenumerator
     iter0 = nil

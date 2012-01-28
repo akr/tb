@@ -189,8 +189,8 @@ class TestTbCmdJoin < Test::Unit::TestCase
     Tb::Cmd.main_join(['-o', o="o.csv", '--right', i1, i2, i3])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b,c,d
-      3,,D,F
       2,,,E
+      3,,D,F
     End
   end
 

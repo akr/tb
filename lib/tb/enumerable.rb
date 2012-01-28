@@ -464,4 +464,12 @@ module Enumerable
       after_group.call(prev)
     end
   end
+
+  def lazy_map
+    Enumerator.new {|y|
+      self.each {|*vs|
+        y.yield(yield(*vs))
+      }
+    }
+  end
 end

@@ -252,6 +252,33 @@ class Tb::FileEnumerator
       peek_reset
       nil
     end
+
+    def subeach_by(&distinguish_value)
+      Enumerator.new {|y|
+        begin
+          vs = self.peek_values
+        rescue StopIteration
+          next
+        end
+        dv = distinguish_value.call(*vs)
+        while true
+          y.yield(*vs)
+          self.next_values
+          begin
+            next_vs = self.peek_values
+          rescue StopIteration
+            break
+          end
+          next_dv = distinguish_value.call(*next_vs)
+          if dv != next_dv
+            break
+          end
+          vs = next_vs
+          dv = next_dv
+        end
+        nil
+      }
+    end
   end
 end
 

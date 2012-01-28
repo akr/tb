@@ -937,50 +937,31 @@ class Tb
     t
   end
 
-  # :call-seq:
-  #   table1.natjoin2(table2, missing=nil, retain_left=false, retain_right=false)
   def natjoin2(table2, missing=nil, retain_left=false, retain_right=false)
-    table1 = self
-    fields1 = table1.list_fields
-    fields2 = table2.list_fields
-    common_fields = fields1 & fields2
-    total_fields = fields1 | fields2
-    unique_fields2 = fields2 - common_fields
-    fields2_extended = total_fields.map {|f| fields2.include?(f) ? f : nil }
-    h = {}
-    table2.each {|rec2|
-      k = rec2.values_at(*common_fields)
-      (h[k] ||= []) << rec2
-    }
-    result = Tb.new(total_fields)
-    ids2 = {}
-    table1.each {|rec1|
-      k = rec1.values_at(*common_fields)
-      rec2_list = h[k]
-      values = rec1.values_at(*fields1)
-      if !rec2_list || rec2_list.empty? 
-        if retain_left
-	  result.insert_values total_fields, values + unique_fields2.map { missing }
-	end
-      else
-        rec2_list.each {|rec2|
-          ids2[rec2['_recordid']] = true
-          result.insert_values total_fields, values + rec2.values_at(*unique_fields2)
-        }
-      end
-    }
-    if retain_right
-      table2.each {|rec2|
-	if !ids2[rec2['_recordid']]
-	  result.insert_values total_fields, fields2_extended.map {|f| f ? rec2[f] : missing }
-	end
+    t1 = Tb::Enumerator.new {|y|
+      self.with_header {|h0|
+        y.set_header h0
+      }.each {|record|
+        y.yield record.to_h
       }
-    end
+    }
+    t2 = Tb::Enumerator.new {|y|
+      table2.with_header {|h0|
+        y.set_header h0
+      }.each {|record|
+        y.yield record.to_h
+      }
+    }
+    er = t1.natjoin2(t2, missing, retain_left, retain_right) 
+    result = nil
+    er.with_header {|header|
+      result = Tb.new header
+    }.each {|pairs|
+      result.insert pairs
+    }
     result
   end
 
-  # :call-seq:
-  #   table1.natjoin2_outer(table2, missing=nil, retain_left=true, retain_right=true)
   def natjoin2_outer(table2, missing=nil, retain_left=true, retain_right=true)
     natjoin2(table2, missing, retain_left, retain_right)
   end
