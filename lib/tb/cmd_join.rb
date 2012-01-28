@@ -59,21 +59,17 @@ def (Tb::Cmd).op_join
   op
 end
 
-def (Tb::Cmd).natjoin2_outer(tbl1, tbl2, missing, retain_left, retain_right)
-  tbl1.natjoin2_outer(tbl2, missing, retain_left, retain_right)
-end
-
 def (Tb::Cmd).main_join(argv)
   op_join.parse!(argv)
   exit_if_help('join')
   retain_left = Tb::Cmd.opt_join_retain_left
   retain_right = Tb::Cmd.opt_join_retain_right
   err('two tables required at least.') if argv.length < 2
-  result = load_table(argv.shift)
+  result = tablereader_open(argv.shift)
   argv.each {|filename|
-    tbl = load_table(filename)
+    tbl = tablereader_open(filename)
     $stderr.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= Tb::Cmd.opt_debug
-    result = natjoin2_outer(result, tbl, Tb::Cmd.opt_join_outer_missing, retain_left, retain_right)
+    result = result.natjoin2_outer(tbl, Tb::Cmd.opt_join_outer_missing, retain_left, retain_right)
   }
   with_output {|out|
     result.write_to_csv(out, !Tb::Cmd.opt_N)

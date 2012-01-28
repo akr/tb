@@ -249,10 +249,6 @@ def split_csv_argument(arg)
   return []
 end
 
-def load_table(filename)
-  tablereader_open(filename).to_tb
-end
-
 def tablereader_open(filename, &b)
   Tb.open_reader(filename, {:numeric=>Tb::Cmd.opt_N}, &b)
 end

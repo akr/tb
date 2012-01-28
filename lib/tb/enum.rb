@@ -155,17 +155,21 @@ module Tb::Enum
             if cmp < 0
               t1.subeach_by {|_cv1, _| _cv1 }.each {|_, _pairs1|
                 if retain_left
-                  h = _pairs1.dup
-                  total_header.each {|f| h[f] = missing_value if !h.has_key?(f) }
-                  y.yield h
+                  h = {}
+                  total_header.each {|f|
+                    h[f] = missing_value if !_pairs1.has_key?(f)
+                  }
+                  y.yield _pairs1.merge(h)
                 end
               }
             elsif 0 < cmp
               t2.subeach_by {|_cv2, _| _cv2 }.each {|_, _pairs2|
                 if retain_right
-                  h = _pairs2.dup
-                  total_header.each {|f| h[f] = missing_value if !h.has_key?(f) }
-                  y.yield h
+                  h = {}
+                  total_header.each {|f|
+                    h[f] = missing_value if !_pairs2.has_key?(f)
+                  }
+                  y.yield _pairs2.merge(h)
                 end
               }
             else
@@ -184,18 +188,22 @@ module Tb::Enum
           begin
             cv1, pairs1 = t1.next
             if retain_left
-              h = pairs1.dup
-              total_header.each {|f| h[f] = missing_value if !h.has_key?(f) }
-              y.yield h
+              h = {}
+              total_header.each {|f|
+                h[f] = missing_value if !pairs1.has_key?(f)
+              }
+              y.yield pairs1.merge(h)
             end
           rescue StopIteration
           end
           begin
             cv2, pairs2 = t2.next
             if retain_right
-              h = pairs2.dup
-              total_header.each {|f| h[f] = missing_value if !h.has_key?(f) }
-              y.yield h
+              h = {}
+              total_header.each {|f|
+                h[f] = missing_value if !pairs2.has_key?(f)
+              }
+              y.yield pairs2.merge(h)
             end
           rescue StopIteration
           end
