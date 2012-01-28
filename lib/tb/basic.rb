@@ -938,14 +938,8 @@ class Tb
   end
 
   # :call-seq:
-  #   table1.natjoin2(table2)
-  def natjoin2(table2)
-    natjoin2_outer(table2, nil, false, false)
-  end
-
-  # :call-seq:
-  #   table1.natjoin2_outer(table2, missing=nil, retain_left=true, retain_right=true)
-  def natjoin2_outer(table2, missing=nil, retain_left=true, retain_right=true)
+  #   table1.natjoin2(table2, missing=nil, retain_left=false, retain_right=false)
+  def natjoin2(table2, missing=nil, retain_left=false, retain_right=false)
     table1 = self
     fields1 = table1.list_fields
     fields2 = table2.list_fields
@@ -983,6 +977,12 @@ class Tb
       }
     end
     result
+  end
+
+  # :call-seq:
+  #   table1.natjoin2_outer(table2, missing=nil, retain_left=true, retain_right=true)
+  def natjoin2_outer(table2, missing=nil, retain_left=true, retain_right=true)
+    natjoin2(table2, missing, retain_left, retain_right)
   end
 
   # :call-seq:
