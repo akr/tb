@@ -940,28 +940,7 @@ class Tb
   # :call-seq:
   #   table1.natjoin2(table2)
   def natjoin2(table2)
-    table1 = self
-    fields1 = table1.list_fields
-    fields2 = table2.list_fields
-    common_fields = fields1 & fields2
-    total_fields = fields1 | fields2
-    unique_fields2 = fields2 - common_fields
-    h = {}
-    table2.each {|rec2|
-      k = rec2.values_at(*common_fields)
-      (h[k] ||= []) << rec2
-    }
-    result = Tb.new(fields1 | fields2)
-    table1.each {|rec1|
-      k = rec1.values_at(*common_fields)
-      rec2_list = h[k]
-      next if !rec2_list
-      values = rec1.values_at(*fields1)
-      rec2_list.each {|rec2|
-        result.insert_values total_fields, values + rec2.values_at(*unique_fields2)
-      }
-    }
-    result
+    natjoin2_outer(table2, nil, false, false)
   end
 
   # :call-seq:
