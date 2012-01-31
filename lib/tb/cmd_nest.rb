@@ -64,8 +64,8 @@ def (Tb::Cmd).main_nest(argv)
     }
 
     nested = nil
-    boundary_p = lambda {|(cv1, _), (cv2, _)|
-      cv1 != cv2
+    representative = lambda {|(cv, _)|
+      cv
     }
     before_group = lambda {|(_, _)|
       nested = []
@@ -85,7 +85,7 @@ def (Tb::Cmd).main_nest(argv)
       pairs = Tb::Pairs.new(assoc)
       y.yield pairs
     }
-    sorted.each_group_element(boundary_p, before_group, body, after_group)
+    sorted.each_group_element_by(representative, before_group, body, after_group)
   }
   with_output {|out|
     er.write_to_csv(out, !Tb::Cmd.opt_N)

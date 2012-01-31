@@ -72,8 +72,8 @@ def (Tb::Cmd).main_group(argv)
       header = header0
       y.set_header(kfs + opt_group_fields.map {|f, maker| f })
     }
-    boudary_p = lambda {|pairs1, pairs2|
-      kfs.any? {|f| pairs1[f] != pairs2[f] }
+    representative = lambda {|pairs|
+      kfs.map {|f| pairs[f] }
     }
     before = lambda {|first_pairs|
       row = {}
@@ -97,7 +97,7 @@ def (Tb::Cmd).main_group(argv)
       }
       y.yield row
     }
-    er2.each_group_element(boudary_p, before, body, after)
+    er2.each_group_element_by(representative, before, body, after)
   }
   with_output {|out|
     result.write_to_csv(out, !Tb::Cmd.opt_N)

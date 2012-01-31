@@ -465,6 +465,39 @@ module Enumerable
     end
   end
 
+  # splits self by _representative_ which is called with a element.
+  #
+  # _before_group_ is called before each group with the first element.
+  # _after_group_ is called after each group with the last element.
+  # _body_ is called for each element.
+  #
+  def each_group_element_by(representative, before_group, body, after_group)
+    prev_rep = nil
+    prev = nil
+    first = true
+    self.each {|curr|
+      if first
+        prev_rep = representative.call(curr)
+        before_group.call(curr)
+        body.call(curr)
+        prev = curr
+        first = false
+      elsif (curr_rep = representative.call(curr)) != prev_rep
+        after_group.call(prev)
+        before_group.call(curr)
+        body.call(curr)
+        prev = curr
+        prev_rep = curr_rep
+      else
+        body.call(curr)
+        prev = curr
+      end
+    }
+    if !first
+      after_group.call(prev)
+    end
+  end
+
   def lazy_map
     Enumerator.new {|y|
       self.each {|*vs|

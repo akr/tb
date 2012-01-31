@@ -112,10 +112,8 @@ def (Tb::Cmd).main_cross(argv)
       }
       y.yield h2
     }
-    boudary_p = lambda {|pairs1, pairs2|
-      vcv1 = vkfs.map {|f| smart_cmp_value(pairs1[f]) }
-      vcv2 = vkfs.map {|f| smart_cmp_value(pairs2[f]) }
-      vcv1 != vcv2
+    representative = lambda {|pairs|
+      vkfs.map {|f| smart_cmp_value(pairs[f]) }
     }
     aggs = nil
     before = lambda {|_|
@@ -152,7 +150,7 @@ def (Tb::Cmd).main_cross(argv)
       }
       y.yield pairs
     }
-    sorted2.each_group_element(boudary_p, before, body, after)
+    sorted2.each_group_element_by(representative, before, body, after)
   }
   with_output {|out|
     er.write_to_csv(out, false)
