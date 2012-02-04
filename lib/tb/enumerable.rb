@@ -473,30 +473,48 @@ module Enumerable
   # _body_ is called for each element.
   #
   def each_group_element_by(representative, before_group, body, after_group)
-    prev_rep = nil
-    prev = nil
-    first = true
-    self.each {|curr|
-      if first
-        prev_rep = representative.call(curr)
-        before_group.call(curr)
-        body.call(curr)
-        prev = curr
-        first = false
-      elsif (curr_rep = representative.call(curr)) != prev_rep
-        after_group.call(prev)
-        before_group.call(curr)
-        body.call(curr)
-        prev = curr
-        prev_rep = curr_rep
-      else
-        body.call(curr)
-        prev = curr
+    detect_group_by(before_group, after_group, &representative).each(&body)
+  end
+
+  # creates an enumerator which yields same as self but
+  # given block and procedures are called between each element for grouping.
+  #
+  # The block is called for each element to define groups.
+  # A group is conecutive elements which the block returns same value.
+  #
+  # _before_group_ is called before each group with the first element.
+  #
+  # _after_group_ is called after each group with the last element.
+  #
+  # _before_group_ and _after_group_ are optional.
+  #
+  def detect_group_by(before_group=nil, after_group=nil)
+    Enumerator.new {|y|
+      prev_rep = nil
+      prev = nil
+      first = true
+      self.each {|curr|
+        if first
+          prev_rep = yield(curr)
+          before_group.call(curr) if before_group
+          y.yield curr
+          prev = curr
+          first = false
+        elsif (curr_rep = yield(curr)) != prev_rep
+          after_group.call(prev) if after_group
+          before_group.call(curr) if before_group
+          y.yield curr
+          prev = curr
+          prev_rep = curr_rep
+        else
+          y.yield curr
+          prev = curr
+        end
+      }
+      if !first
+        after_group.call(prev) if after_group
       end
     }
-    if !first
-      after_group.call(prev)
-    end
   end
 
   def lazy_map
