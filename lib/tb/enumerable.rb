@@ -488,6 +488,37 @@ module Enumerable
   #
   # _before_group_ and _after_group_ are optional.
   #
+  # Consecutive even numbers and odd numbers can be grouped as follows.
+  #
+  #   [1,3,5,4,8].detect_group_by(
+  #     lambda {|v| puts "start" },
+  #     lambda {|v| puts "end" }) {|v| v.even? }.each {|x| p x }
+  #   #=> start
+  #   #   1
+  #   #   3
+  #   #   5
+  #   #   end
+  #   #   start
+  #   #   4
+  #   #   8
+  #   #   end
+  #
+  # Note that +detect_group_by+ can be cascaeded but
+  # It doesn't work as nested manner.
+  #
+  #   (0..9).detect_group_by( 
+  #     lambda {|v| print "[" },
+  #     lambda {|v| print "]" }) {|v|
+  #     v.even?
+  #   }.detect_group_by(
+  #     lambda {|v| print "(" },
+  #     lambda {|v| print ")" }) {|v|
+  #     (v/2).even?
+  #   }.each {|x| print x }
+  #   #=> [(0][1][)(2][3][)(4][5][)(6][7][)(8][9])
+  #
+  # Consider +detect_nested_group_by+ for nested groups.
+  #
   def detect_group_by(before_group=nil, after_group=nil, &representative_proc)
     detect_nested_group_by([[representative_proc, before_group, after_group]])
   end
@@ -508,6 +539,15 @@ module Enumerable
   #
   # Subsequent procedures, _representative_proc2_, _before_proc2_, _after_proc2_, ..., are
   # used to split elements in the above groups.
+  #
+  #   (0..9).detect_nested_group_by(
+  #     [[lambda {|v| (v/2).even? },
+  #       lambda {|v| print "(" },
+  #       lambda {|v| print ")" }],
+  #      [lambda {|v| v.even? },
+  #       lambda {|v| print "[" },
+  #       lambda {|v| print "]" }]]).each {|x| print x }
+  #   #=> ([0][1])([2][3])([4][5])([6][7])([8][9])
   #
   def detect_nested_group_by(group_specs)
     Enumerator.new {|y|
