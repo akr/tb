@@ -1,6 +1,4 @@
-# lib/tb.rb - entry file for table library
-#
-# Copyright (C) 2010-2012 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2012 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,28 +26,16 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'tempfile'
+class Tb::CustomEq
+  include Comparable
 
-class Tb
+  def initialize(customeq_object, &eq)
+    @customeq_object = customeq_object
+    @eq = eq
+  end
+  attr_reader :customeq_object, :eq
+
+  def ==(other)
+    @eq.call(@customeq_object, other.customeq_object)
+  end
 end
-
-require 'pp'
-require 'tb/enum'
-require 'tb/enumerator'
-require 'tb/pairs'
-require 'tb/basic'
-require 'tb/record'
-require 'tb/csv'
-require 'tb/tsv'
-require 'tb/pnm'
-require 'tb/json'
-require 'tb/reader'
-require 'tb/ropen'
-require 'tb/catreader'
-require 'tb/fieldset'
-require 'tb/search'
-require 'tb/enumerable'
-require 'tb/fileenumerator'
-require 'tb/revcmp'
-require 'tb/customcmp'
-require 'tb/customeq'
