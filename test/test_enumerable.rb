@@ -233,7 +233,6 @@ class TestTbEnumerable < Test::Unit::TestCase
 
   def test_detect_group_by
     enum = (0..9).to_a
-
     result = []
     e3 = enum.detect_group_by(
       lambda {|elt| result << [:before, 3, elt] },
@@ -273,6 +272,53 @@ class TestTbEnumerable < Test::Unit::TestCase
        [:body, 9],
        [:after, 3, 9],
        [:after, 4, 9]],
+      result)
+  end
+
+  def test_detect_nested_group_by
+    enum = (0..9).to_a
+    result = []
+    e = enum.detect_nested_group_by(
+     [[lambda {|elt| elt / 3 },
+       lambda {|elt| result << [:before, 3, elt] },
+       lambda {|elt| result << [:after, 3, elt] }],
+      [lambda {|elt| elt / 4 },
+       lambda {|elt| result << [:before, 4, elt] },
+       lambda {|elt| result << [:after, 4, elt] }]])
+    e.each {|elt|
+      result << [:body, elt]
+    }
+    assert_equal(
+      [[:before, 3, 0],
+       [:before, 4, 0],
+       [:body, 0],
+       [:body, 1],
+       [:body, 2],
+       [:after, 4, 2],
+       [:after, 3, 2],
+       [:before, 3, 3],
+       [:before, 4, 3],
+       [:body, 3],
+       [:after, 4, 3],
+       [:before, 4, 4],
+       [:body, 4],
+       [:body, 5],
+       [:after, 4, 5],
+       [:after, 3, 5],
+       [:before, 3, 6],
+       [:before, 4, 6],
+       [:body, 6],
+       [:body, 7],
+       [:after, 4, 7],
+       [:before, 4, 8],
+       [:body, 8],
+       [:after, 4, 8],
+       [:after, 3, 8],
+       [:before, 3, 9],
+       [:before, 4, 9],
+       [:body, 9],
+       [:after, 4, 9],
+       [:after, 3, 9]],
       result)
   end
 

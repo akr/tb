@@ -488,31 +488,63 @@ module Enumerable
   #
   # _before_group_ and _after_group_ are optional.
   #
-  def detect_group_by(before_group=nil, after_group=nil)
+  def detect_group_by(before_group=nil, after_group=nil, &representative_proc)
+    detect_nested_group_by([[representative_proc, before_group, after_group]])
+  end
+
+  # creates an enumerator which yields same as self but
+  # nested groups detected by _group_specs_
+  #
+  # _group_specs_ is an array of three procedures arrays as:
+  #
+  #   [[representative_proc1, before_proc1, after_proc1],
+  #    [representative_proc2, before_proc2, after_proc2],
+  #    ...]
+  #
+  # _representative_proc1_ splits elements as groups.
+  # The group is defined as consecutive elements which _representative_proc1_ returns same value.
+  # _before_proc1_ is called before the each groups.
+  # _after_proc1_ is called after the each groups.
+  #
+  # Subsequent procedures, _representative_proc2_, _before_proc2_, _after_proc2_, ..., are
+  # used to split elements in the above groups.
+  #
+  def detect_nested_group_by(group_specs)
     Enumerator.new {|y|
-      prev_rep = nil
-      prev = nil
       first = true
-      self.each {|curr|
+      prev_reps = nil
+      prev = nil
+      self.each {|*curr|
+        reps = group_specs.map {|representative_proc, _, _|
+          representative_proc.call(*curr)
+        }
         if first
-          prev_rep = yield(curr)
-          before_group.call(curr) if before_group
-          y.yield curr
-          prev = curr
           first = false
-        elsif (curr_rep = yield(curr)) != prev_rep
-          after_group.call(prev) if after_group
-          before_group.call(curr) if before_group
-          y.yield curr
-          prev = curr
-          prev_rep = curr_rep
+          group_specs.each {|_, before_proc, _|
+            before_proc.call(*curr) if before_proc
+          }
         else
-          y.yield curr
-          prev = curr
+          different_index = (0...group_specs.length).find {|i| prev_reps[i] != reps[i] }
+          if different_index
+            (group_specs.length-1).downto(different_index) {|i|
+              _, _, after_proc = group_specs[i]
+              after_proc.call(*prev) if after_proc
+            }
+            different_index.upto(group_specs.length-1) {|i|
+              _, before_proc, _ = group_specs[i]
+              before_proc.call(*curr) if before_proc
+            }
+          end
         end
+        y.yield(*curr)
+        prev_reps = reps
+        prev = curr
       }
       if !first
-        after_group.call(prev) if after_group
+        (group_specs.length-1).downto(0) {|i|
+          _, _, after_proc = group_specs[i]
+          after_proc.call(*prev) if after_proc
+        }
       end
     }
   end
