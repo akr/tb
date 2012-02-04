@@ -275,6 +275,18 @@ class TestTbEnumerable < Test::Unit::TestCase
       result)
   end
 
+  def test_detect_nested_group_by_simple
+    assert_equal([], [].detect_nested_group_by([]).to_a)
+    assert_equal([1], [1].detect_nested_group_by([]).to_a)
+
+    result = []
+    [].detect_nested_group_by(
+      [[lambda {|v| v.even? },
+        lambda {|v| result << [:s, v] },
+        lambda {|v| result << [:e, v] }]]).each {|v| result << v } 
+    assert_equal([], result)
+  end
+
   def test_detect_nested_group_by
     enum = (0..9).to_a
     result = []
