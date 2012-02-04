@@ -488,6 +488,8 @@ module Enumerable
   #
   # _before_group_ and _after_group_ are optional.
   #
+  # The grouping mechanism is called as "control break" in some cluture such as COBOL.
+  #
   # Consecutive even numbers and odd numbers can be grouped as follows.
   #
   #   [1,3,5,4,8].detect_group_by(
