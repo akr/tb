@@ -73,10 +73,10 @@ class TestTbPairs < Test::Unit::TestCase
     assert_equal(false, tp.has_value?(100))
   end
 
-  def test_index
+  def test_key
     tp = Tb::Pairs[[["a", 1], ["b", 2]]]
-    assert_equal("b", tp.index(2))
-    assert_equal(nil, tp.index(200))
+    assert_equal("b", tp.key(2))
+    assert_equal(nil, tp.key(200))
   end
 
   def test_invert
