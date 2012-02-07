@@ -95,8 +95,8 @@ module Tb::Enum
   #
   #   t1 = Tb.new %w[a b], [1, 2], [3, 4]
   #   p t1.newfield("x") {|row| row["a"] + row["b"] + 100 }.to_a
-  #   #=> [#<Tb::Pairs: "x"=>103, "a"=>1, "b"=>2>,
-  #   #    #<Tb::Pairs: "x"=>107, "a"=>3, "b"=>4>]
+  #   #=> [{"x"=>103, "a"=>1, "b"=>2},
+  #   #    {"x"=>107, "a"=>3, "b"=>4}]
   #
   def newfield(field)
     Tb::Enumerator.new {|y|
