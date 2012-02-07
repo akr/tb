@@ -3,19 +3,19 @@ require 'test/unit'
 
 class TestTbPairs < Test::Unit::TestCase
   def test_initialize
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_kind_of(Tb::Pairs, tp)
   end
 
   def test_ref
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_equal(1, tp["a"])
     assert_equal(2, tp["b"])
     assert_equal(nil, tp["z"])
   end
 
   def test_each
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     result = []
     tp.each {|k, v|
       result << [k, v]
@@ -24,7 +24,7 @@ class TestTbPairs < Test::Unit::TestCase
   end
 
   def test_each_key
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     result = []
     tp.each_key {|k|
       result << k
@@ -33,7 +33,7 @@ class TestTbPairs < Test::Unit::TestCase
   end
 
   def test_each_value
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     result = []
     tp.each_value {|v|
       result << v
@@ -42,14 +42,14 @@ class TestTbPairs < Test::Unit::TestCase
   end
 
   def test_empty?
-    tp = Tb::Pairs.new([])
+    tp = Tb::Pairs[[]]
     assert_equal(true, tp.empty?)
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_equal(false, tp.empty?)
   end
 
   def test_fetch
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_equal(false, tp.empty?)
     assert_equal(1, tp.fetch("a"))
     assert_raise(Tb::Pairs::KeyError) { tp.fetch("z") }
@@ -62,60 +62,60 @@ class TestTbPairs < Test::Unit::TestCase
   end
 
   def test_has_key?
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_equal(true, tp.has_key?("a"))
     assert_equal(false, tp.has_key?("z"))
   end
 
   def test_has_value?
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_equal(true, tp.has_value?(1))
     assert_equal(false, tp.has_value?(100))
   end
 
   def test_index
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_equal("b", tp.index(2))
     assert_equal(nil, tp.index(200))
   end
 
   def test_invert
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     tp2 = tp.invert
     assert_kind_of(Tb::Pairs, tp2)
     assert_equal([[1, "a"], [2, "b"]], tp2.to_a)
   end
 
   def test_keys
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_equal(["a", "b"], tp.keys)
   end
 
   def test_length
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_equal(2, tp.length)
   end
 
   def test_merge
-    tp1 = Tb::Pairs.new([["a", 1], ["b", 2]])
-    tp2 = Tb::Pairs.new([["b", 3], ["c", 4]])
+    tp1 = Tb::Pairs[[["a", 1], ["b", 2]]]
+    tp2 = Tb::Pairs[[["b", 3], ["c", 4]]]
     assert_equal([["a", 1], ["b", 3], ["c", 4]], tp1.merge(tp2).to_a)
     assert_equal([["a", 1], ["b", ["b", 2, 3]], ["c", 4]], tp1.merge(tp2) {|k, v1, v2| [k, v1, v2] }.to_a)
   end
 
   def test_reject
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_equal([["a", 1]], tp.reject {|k, v| k == "b" }.to_a)
     assert_equal([["b", 2]], tp.reject {|k, v| v == 1 }.to_a)
   end
 
   def test_values
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_equal([1, 2], tp.values)
   end
 
   def test_values_at
-    tp = Tb::Pairs.new([["a", 1], ["b", 2]])
+    tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_equal([1, 2], tp.values_at("a", "b"))
   end
 

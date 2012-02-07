@@ -155,7 +155,7 @@ class Tb::Cmd::Ls
       end
       @y.yield ls_long_info(path, st)
     else
-      @y.yield Tb::Pairs.new([['filename', path.to_s]])
+      @y.yield Tb::Pairs[[['filename', path.to_s]]]
     end
   end
 
@@ -179,9 +179,9 @@ class Tb::Cmd::Ls
   end
 
   def ls_long_info(path, st)
-    Tb::Pairs.new(ls_long_header.map {|info_type|
+    Tb::Pairs[ls_long_header.map {|info_type|
       [info_type, self.send("ls_info_#{info_type}", path, st)]
-    })
+    }]
   end
 
   def ls_info_dev(path, st) sprintf("0x%x", st.dev) end

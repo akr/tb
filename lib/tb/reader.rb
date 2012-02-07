@@ -94,7 +94,7 @@ class Tb::Reader
           f = field_from_index_ex(i)
           pairs << [f, v]
         }
-        yield Tb::Pairs.new(pairs)
+        yield Tb::Pairs[pairs]
       end
     }
     @reader_open.call(body)

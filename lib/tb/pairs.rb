@@ -29,6 +29,10 @@
 require 'weakref'
 
 class Tb::Pairs
+  def self.[](pairs)
+    self.new(pairs)
+  end
+
   def self.get_key2index(keys)
     wm = (Thread.current[:tb_pairs_frozen_info] ||= {})
     w = wm[keys]

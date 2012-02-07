@@ -127,7 +127,7 @@ def (Tb::Cmd).main_crop(argv)
           break
         end
         ary.slice!(0, lmargin_min)
-        pairs = Tb::Pairs.new(ary.map.with_index {|v, i| ["#{i+1}", v]})
+        pairs = Tb::Pairs[ary.map.with_index {|v, i| ["#{i+1}", v]}]
         y.yield pairs
       }
     }

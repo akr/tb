@@ -77,7 +77,7 @@ def (Tb::Cmd).main_gsub(argv)
           [f, v.gsub(re, repl)]
         }
       end
-      y.yield Tb::Pairs.new(pairs2)
+      y.yield Tb::Pairs[pairs2]
     }
   }
   with_output {|out|

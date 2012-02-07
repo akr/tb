@@ -109,7 +109,7 @@ module Tb::Enum
         keys = Tb::FieldSet.normalize([field, *keys])
         vals = row.values
         vals = [yield(row), *vals]
-        y << Tb::Pairs.new(keys.zip(vals))
+        y << Tb::Pairs[keys.zip(vals)]
       }
     }
   end
@@ -204,7 +204,7 @@ module Tb::Enum
         fgen, fnew = Tb::FileEnumerator.gen_new
       end
     }.each {|pairs, header1|
-      pairs = Tb::Pairs.new(pairs) unless pairs.respond_to? :has_key?
+      pairs = Tb::Pairs[pairs] unless pairs.respond_to? :has_key?
       header = header1
       if stream
         fs = header.dup
@@ -214,7 +214,7 @@ module Tb::Enum
         ary = fs.map {|f| pairs[f] }
         io.puts Tb.csv_encode_row(ary)
       else
-        fgen.call Tb::Pairs.new(pairs)
+        fgen.call Tb::Pairs[pairs]
       end
     }
     if !stream

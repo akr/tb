@@ -51,7 +51,7 @@ def (Tb::Cmd).main_to_csv(argv)
   er = Tb::Enumerator.new {|y|
     y.set_header header
     ter.each {|pairs|
-      y.yield Tb::Pairs.new(header.map {|f| [f, pairs[f]] })
+      y.yield Tb::Pairs[header.map {|f| [f, pairs[f]] }]
     }
   }
   with_output {|out|

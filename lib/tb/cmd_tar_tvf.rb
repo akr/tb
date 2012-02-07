@@ -436,7 +436,7 @@ def (Tb::Cmd).main_tar_tvf(argv)
           formatted["tar_typeflag"] = h[:typeflag]
           formatted["tar_magic"] = h[:magic]
           formatted["tar_version"] = h[:version]
-          y.yield Tb::Pairs.new(header.map {|f2| [f2, formatted[f2]] })
+          y.yield Tb::Pairs[header.map {|f2| [f2, formatted[f2]] }]
         }
       }
     }
