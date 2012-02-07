@@ -68,17 +68,17 @@ def (Tb::Cmd).main_consecutive(argv)
     }.each {|pairs, header|
       buf << pairs
       if buf.length == Tb::Cmd.opt_consecutive_n
-        pairs2 = []
+        pairs2 = {}
         header.each {|f|
           Tb::Cmd.opt_consecutive_n.times {|i|
             ps = buf[i]
             next if !ps.has_key?(f)
             v = ps[f]
-            pairs2 << ["#{f}_#{i+1}", v]
+            pairs2["#{f}_#{i+1}"] = v
           }
         }
         empty = false
-        y.yield Hash[pairs2]
+        y.yield pairs2
         buf.shift
       end
     }

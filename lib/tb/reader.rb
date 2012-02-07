@@ -89,12 +89,12 @@ class Tb::Reader
       h = self.internal_header(rawreader)
       header_proc.call(h) if header_proc
       while ary = self.internal_shift(rawreader)
-        pairs = []
+        pairs = {}
         ary.each_with_index {|v, i|
           f = field_from_index_ex(i)
-          pairs << [f, v]
+          pairs[f] = v
         }
-        yield Hash[pairs]
+        yield pairs
       end
     }
     @reader_open.call(body)

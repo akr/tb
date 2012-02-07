@@ -155,7 +155,7 @@ class Tb::Cmd::Ls
       end
       @y.yield ls_long_info(path, st)
     else
-      @y.yield Hash[[['filename', path.to_s]]]
+      @y.yield({'filename' => path.to_s})
     end
   end
 
