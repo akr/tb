@@ -138,25 +138,21 @@ module Tb::Enum
       }.extsort_by {|cv, pairs| cv }.to_fileenumerator
       sorted_tbl1.open_reader {|t1|
         sorted_tbl2.open_reader {|t2|
+          missing_hash = {}
+          total_header.each {|f|
+            missing_hash[f] = missing_value
+          }
           Tb::Enumerator.merge_sorted(t1, t2) {|cv, t1_or_nil, t2_or_nil|
             if !t2_or_nil
               t1.subeach_by {|_cv1, _| _cv1 }.each {|_, _pairs1|
                 if retain_left
-                  h = {}
-                  total_header.each {|f|
-                    h[f] = missing_value if !_pairs1.has_key?(f)
-                  }
-                  y.yield _pairs1.merge(h)
+                  y.yield missing_hash.merge(_pairs1.to_hash)
                 end
               }
             elsif !t1_or_nil
               t2.subeach_by {|_cv2, _| _cv2 }.each {|_, _pairs2|
                 if retain_right
-                  h = {}
-                  total_header.each {|f|
-                    h[f] = missing_value if !_pairs2.has_key?(f)
-                  }
-                  y.yield _pairs2.merge(h)
+                  y.yield missing_hash.merge(_pairs2.to_hash)
                 end
               }
             else # t1_or_nil && t1_or_nil
@@ -164,10 +160,7 @@ module Tb::Enum
               t1.subeach_by {|_cv1, _| _cv1 }.each {|_, _pairs1|
                 t2.pos = t2_pos
                 t2.subeach_by {|_cv2, _| _cv2 }.each {|_, _pairs2|
-                  pairs = {}
-                  _pairs1.each {|f, v| pairs[f] = v }
-                  _pairs2.each {|f, v| pairs[f] = v if !pairs.has_key?(f) }
-                  y.yield(pairs)
+                  y.yield(_pairs2.to_hash.merge(_pairs1.to_hash))
                 }
               }
             end
