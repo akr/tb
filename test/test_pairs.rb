@@ -52,7 +52,7 @@ class TestTbPairs < Test::Unit::TestCase
     tp = Tb::Pairs[[["a", 1], ["b", 2]]]
     assert_equal(false, tp.empty?)
     assert_equal(1, tp.fetch("a"))
-    assert_raise(Tb::Pairs::KeyError) { tp.fetch("z") }
+    assert_raise(KeyError) { tp.fetch("z") }
     assert_equal(2, tp.fetch("b", 100))
     assert_equal(2, tp.fetch("b") { 200 })
     assert_equal(100, tp.fetch("z", 100))
