@@ -49,7 +49,6 @@ Gem::Specification.new do |s|
     lib/tb/fileenumerator.rb
     lib/tb/json.rb
     lib/tb/pager.rb
-    lib/tb/pairs.rb
     lib/tb/pnm.rb
     lib/tb/reader.rb
     lib/tb/record.rb
@@ -104,7 +103,6 @@ Gem::Specification.new do |s|
     test/test_fileenumerator.rb
     test/test_json.rb
     test/test_pager.rb
-    test/test_pairs.rb
     test/test_pnm.rb
     test/test_reader.rb
     test/test_record.rb
