@@ -63,37 +63,12 @@ class Tb
   end
 
   class CSVReader
-    if defined? CSV::Reader
-      # Ruby 1.8
-      def initialize(input)
-        if input.respond_to? :to_str
-          @csv = CSV::StringReader.new(input)
-        else
-          @csv = CSV::IOReader.new(input)
-        end
-        @eof = false
-      end
+    def initialize(input)
+      @csv = CSV.new(input)
+    end
 
-      def shift
-        return nil if @eof
-        ary = @csv.shift
-        if ary.empty?
-          ary = nil
-          @eof = true
-        elsif ary == [nil]
-          ary = []
-        end
-        ary
-      end
-    else
-      # Ruby 1.9
-      def initialize(input)
-        @csv = CSV.new(input)
-      end
-
-      def shift
-        @csv.shift
-      end
+    def shift
+      @csv.shift
     end
 
     def each
@@ -106,35 +81,17 @@ class Tb
 
   def Tb.csv_stream_output(out)
     require 'csv'
-    if defined? CSV::Writer
-      # Ruby 1.8
-      CSV::Writer.generate(out) {|csvgen|
-        yield csvgen
-      }
-    else
-      # Ruby 1.9
-      gen = Object.new
-      gen.instance_variable_set(:@out, out)
-      def gen.<<(ary)
-        @out << ary.to_csv
-      end
-      yield gen
+    gen = Object.new
+    gen.instance_variable_set(:@out, out)
+    def gen.<<(ary)
+      @out << ary.to_csv
     end
+    yield gen
   end
 
   def Tb.csv_encode_row(ary)
     require 'csv'
-    if defined? CSV::Writer
-      # Ruby 1.8
-      out = ''
-      CSV::Writer.generate(out) {|csvgen|
-        csvgen << ary
-      }
-      out
-    else
-      # Ruby 1.9
-      ary.to_csv
-    end
+    ary.to_csv
   end
 
   # :call-seq:
