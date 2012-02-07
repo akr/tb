@@ -138,21 +138,8 @@ module Tb::Enum
       }.extsort_by {|cv, pairs| cv }.to_fileenumerator
       sorted_tbl1.open_reader {|t1|
         sorted_tbl2.open_reader {|t2|
-          t1_eof = t2_eof = false
-          while true
-            begin
-              cv1, pairs1 = t1.peek
-            rescue StopIteration
-              t1_eof = true
-            end
-            begin
-              cv2, pairs2 = t2.peek
-            rescue StopIteration
-              t2_eof = true
-            end
-            break if t1_eof || t2_eof
-            cmp = cv1 <=> cv2
-            if cmp < 0
+          Tb::Enumerator.merge_sorted(t1, t2) {|cv, t1_or_nil, t2_or_nil|
+            if !t2_or_nil
               t1.subeach_by {|_cv1, _| _cv1 }.each {|_, _pairs1|
                 if retain_left
                   h = {}
@@ -162,7 +149,7 @@ module Tb::Enum
                   y.yield _pairs1.merge(h)
                 end
               }
-            elsif 0 < cmp
+            elsif !t1_or_nil
               t2.subeach_by {|_cv2, _| _cv2 }.each {|_, _pairs2|
                 if retain_right
                   h = {}
@@ -172,7 +159,7 @@ module Tb::Enum
                   y.yield _pairs2.merge(h)
                 end
               }
-            else
+            else # t1_or_nil && t1_or_nil
               t2_pos = t2.pos
               t1.subeach_by {|_cv1, _| _cv1 }.each {|_, _pairs1|
                 t2.pos = t2_pos
@@ -184,29 +171,7 @@ module Tb::Enum
                 }
               }
             end
-          end
-          begin
-            cv1, pairs1 = t1.next
-            if retain_left
-              h = {}
-              total_header.each {|f|
-                h[f] = missing_value if !pairs1.has_key?(f)
-              }
-              y.yield pairs1.merge(h)
-            end
-          rescue StopIteration
-          end
-          begin
-            cv2, pairs2 = t2.next
-            if retain_right
-              h = {}
-              total_header.each {|f|
-                h[f] = missing_value if !pairs2.has_key?(f)
-              }
-              y.yield pairs2.merge(h)
-            end
-          rescue StopIteration
-          end
+          }
         }
       }
     }
