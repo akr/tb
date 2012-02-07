@@ -82,7 +82,7 @@ def (Tb::Cmd).main_nest(argv)
       }
       assoc = last_pairs.reject {|f, v| oldfields_hash[f] }.to_a
       assoc << [newfield, nested_csv]
-      pairs = Tb::Pairs[assoc]
+      pairs = Hash[assoc]
       y.yield pairs
     }
     sorted.each_group_element_by(representative, before_group, body, after_group)

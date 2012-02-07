@@ -101,11 +101,11 @@ class Tb::Cmd::SVNLOGListener
         @log['paths'].each {|h|
           assoc = @log.to_a.reject {|f, v| !%w[rev author date msg].include?(f) }
           assoc += h.to_a.reject {|f, v| !%w[kind action path].include?(f) }
-          @y.yield Tb::Pairs[assoc]
+          @y.yield Hash[assoc]
         }
       else
         assoc = @log.to_a.reject {|f, v| !%w[rev author date msg].include?(f) }
-        @y.yield Tb::Pairs[assoc]
+        @y.yield Hash[assoc]
       end
       @log = nil
     end

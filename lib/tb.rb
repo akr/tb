@@ -36,7 +36,6 @@ end
 require 'pp'
 require 'tb/enum'
 require 'tb/enumerator'
-require 'tb/pairs'
 require 'tb/basic'
 require 'tb/record'
 require 'tb/csv'

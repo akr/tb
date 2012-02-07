@@ -56,7 +56,7 @@ def (Tb::Cmd).main_rename(argv)
       }
       y.set_header header.map {|f| h.fetch(f, f) }
     }.each {|pairs|
-      y.yield Tb::Pairs[pairs.map {|f, v| [h.fetch(f, f), v] }]
+      y.yield Hash[pairs.map {|f, v| [h.fetch(f, f), v] }]
     }
   }
   with_output {|out|

@@ -68,7 +68,7 @@ def (Tb::Cmd).main_mheader(argv)
         }
         h2 = header_end_p.call
         if h2
-          pairs2 = Tb::Pairs[h2.map.with_index {|v, i| ["#{i+1}", v] }]
+          pairs2 = Hash[h2.map.with_index {|v, i| ["#{i+1}", v] }]
           y.yield pairs2
           header = nil
         end

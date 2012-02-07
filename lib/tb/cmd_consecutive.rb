@@ -78,7 +78,7 @@ def (Tb::Cmd).main_consecutive(argv)
           }
         }
         empty = false
-        y.yield Tb::Pairs[pairs2]
+        y.yield Hash[pairs2]
         buf.shift
       end
     }
