@@ -116,6 +116,7 @@ class Tb::Pairs
     }
     h
   end
+  alias to_hash to_h
 
   def empty?
     @keys.empty?
