@@ -523,11 +523,7 @@ class TestTbPathFinder < Test::Unit::TestCase
     s = Tb::Search::EmptyState
     assert_equal("foo", s.fetch(:k) {|k| assert_equal(:k, k); "foo" })
     assert_equal("bar", s.fetch(:k, "bar"))
-    if defined? KeyError
-      assert_raise(KeyError) { s.fetch(:k) } # Ruby 1.9
-    else
-      assert_raise(IndexError) { s.fetch(:k) } # Ruby 1.8
-    end
+    assert_raise(KeyError) { s.fetch(:k) }
   end
 
   def test_emptystate_values_at
@@ -555,11 +551,7 @@ class TestTbPathFinder < Test::Unit::TestCase
     s = Tb::Search::State.make(:k => 1)
     assert_equal(1, s.fetch(:k))
     assert_equal(:foo, s.fetch(:x) {|k| assert_equal(:x, k); :foo })
-    if defined? KeyError
-      assert_raise(KeyError) { s.fetch(:x) } # Ruby 1.9
-    else
-      assert_raise(IndexError) { s.fetch(:x) } # Ruby 1.8
-    end
+    assert_raise(KeyError) { s.fetch(:x) }
   end
 
   def test_state_keys

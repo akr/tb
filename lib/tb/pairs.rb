@@ -126,12 +126,6 @@ class Tb::Pairs
     @keys.empty?
   end
 
-  if defined?(::KeyError)
-    KeyError = ::KeyError
-  else
-    KeyError = IndexError
-  end
-
   def fetch(key, *rest)
     if 1 < rest.length
       raise ArgumentError, "wrong number of arguments (#{1+rest.length} for 1..2)"
@@ -230,3 +224,5 @@ class Tb::Pairs
     }
   end
 end
+
+#Tb::Pairs = Hash

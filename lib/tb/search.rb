@@ -441,8 +441,7 @@ module Tb::Search::EmptyState
     elsif !rest.empty?
       return rest[0]
     else
-      exc = defined?(KeyError) ? KeyError : IndexError # 1.9 v.s. 1.8
-      raise exc, "key not found: #{k}"
+      raise KeyError, "key not found: #{k}"
     end
   end
 
@@ -526,8 +525,7 @@ class Tb::Search::State
     elsif !rest.empty?
       return rest[0]
     else
-      exc = defined?(KeyError) ? KeyError : IndexError # 1.9 v.s. 1.8
-      raise exc, "key not found: #{k}"
+      raise KeyError, "key not found: #{k}"
     end
   end
 
