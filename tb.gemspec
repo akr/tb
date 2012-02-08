@@ -43,8 +43,8 @@ Gem::Specification.new do |s|
     lib/tb/cmdutil.rb
     lib/tb/csv.rb
     lib/tb/enum.rb
-    lib/tb/enumerable.rb
     lib/tb/enumerator.rb
+    lib/tb/ex_enumerable.rb
     lib/tb/fieldset.rb
     lib/tb/fileenumerator.rb
     lib/tb/json.rb
