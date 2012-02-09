@@ -30,7 +30,7 @@ require 'json'
 
 class Tb
   class JSONReader
-    include Tb::Enum
+    include Tb::Enumerable
 
     def initialize(string)
       @ary = JSON.parse(string)

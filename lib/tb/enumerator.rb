@@ -50,7 +50,7 @@ class Tb::Yielder
 end
 
 class Tb::Enumerator < Enumerator
-  include Tb::Enum
+  include Tb::Enumerable
 
   def self.new(&enumerator_proc)
     super() {|y|

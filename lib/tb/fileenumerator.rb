@@ -282,7 +282,7 @@ class Tb::FileEnumerator
   end
 end
 
-module Tb::Enum
+module Tb::Enumerable
   # creates a Tb::FileHeaderEnumerator object.
   #
   def to_fileenumerator
@@ -299,7 +299,7 @@ module Tb::Enum
 end
 
 class Tb::FileHeaderEnumerator < Tb::FileEnumerator
-  include Tb::Enum
+  include Tb::Enumerable
 
   class HBuilder
     def initialize(klass)

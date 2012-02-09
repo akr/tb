@@ -29,7 +29,7 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class Tb::Reader
-  include Tb::Enum
+  include Tb::Enumerable
 
   def initialize(opts={}, &rawreader_open)
     @opt_n = opts[:numeric]

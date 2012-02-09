@@ -34,7 +34,7 @@ class Tb
 end
 
 require 'pp'
-require 'tb/enum'
+require 'tb/enumerable'
 require 'tb/enumerator'
 require 'tb/basic'
 require 'tb/record'

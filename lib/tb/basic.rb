@@ -55,7 +55,7 @@
 # It is an error to access a record by recordid which is not allocated.
 #
 class Tb
-  include Tb::Enum
+  include Tb::Enumerable
 
   # :call-seq:
   #   Tb.new

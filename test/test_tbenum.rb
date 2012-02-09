@@ -49,7 +49,7 @@ class TestTbEnum < Test::Unit::TestCase
       header_proc.call(nil) if header_proc
       self.each(&block)
     end
-    obj.extend Tb::Enum
+    obj.extend Tb::Enumerable
     Dir.mktmpdir {|d|
       open("#{d}/foo.csv", 'w') {|f|
         obj.write_to_csv(f)
@@ -73,7 +73,7 @@ class TestTbEnum < Test::Unit::TestCase
       header_proc.call(nil) if header_proc
       self.each(&block)
     end
-    obj.extend Tb::Enum
+    obj.extend Tb::Enumerable
     Dir.mktmpdir {|d|
       open("#{d}/foo.csv", 'w') {|f|
         obj.write_to_csv(f)
@@ -97,7 +97,7 @@ class TestTbEnum < Test::Unit::TestCase
       header_proc.call(nil) if header_proc
       self.each(&block)
     end
-    obj.extend Tb::Enum
+    obj.extend Tb::Enumerable
     Dir.mktmpdir {|d|
       open("#{d}/foo.csv", 'w') {|f|
         obj.write_to_csv(f, false)
