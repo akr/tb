@@ -27,10 +27,10 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class Tb::Yielder
-  def initialize(header_proc, each_proc)
+  def initialize(header_proc, base_yielder)
     @header_proc_called = false
     @header_proc = header_proc
-    @each_proc = each_proc
+    @base_yielder = base_yielder
   end
   attr_reader :header_proc_called
 
@@ -44,29 +44,36 @@ class Tb::Yielder
     if !@header_proc_called
       set_header(nil)
     end
-    @each_proc.call(*args)
+    @base_yielder.yield(*args)
   end
   alias << yield
 end
 
-class Tb::Enumerator
+class Tb::Enumerator < Enumerator
   include Tb::Enum
 
-  def initialize(&enumerator_proc)
-    @enumerator_proc = enumerator_proc
+  def self.new(&enumerator_proc)
+    super() {|y|
+      header_proc = Thread.current[:tb_enumerator_header_proc]
+      ty = Tb::Yielder.new(header_proc, y)
+      enumerator_proc.call(ty)
+      if !ty.header_proc_called
+        header_proc.call(nil)
+      end
+    }
   end
 
   def each(&each_proc)
-    yielder = Tb::Yielder.new(nil, each_proc)
-    @enumerator_proc.call(yielder)
-    nil
+    header_and_each(nil, &each_proc)
   end
 
   def header_and_each(header_proc, &each_proc)
-    yielder = Tb::Yielder.new(header_proc, each_proc)
-    @enumerator_proc.call(yielder)
-    if !yielder.header_proc_called
-      header_proc.call(nil)
+    old = Thread.current[:tb_enumerator_header_proc]
+    begin
+      Thread.current[:tb_enumerator_header_proc] = header_proc
+      Enumerator.instance_method(:each).bind(self).call(&each_proc)
+    ensure
+      Thread.current[:tb_enumerator_header_proc] = old
     end
     nil
   end
