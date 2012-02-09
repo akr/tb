@@ -42,7 +42,7 @@ Gem::Specification.new do |s|
     lib/tb/cmdtop.rb
     lib/tb/cmdutil.rb
     lib/tb/csv.rb
-    lib/tb/enum.rb
+    lib/tb/enumerable.rb
     lib/tb/enumerator.rb
     lib/tb/ex_enumerable.rb
     lib/tb/ex_enumerator.rb
