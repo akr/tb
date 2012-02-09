@@ -142,7 +142,7 @@ module Tb::Enum
           total_header.each {|f|
             missing_hash[f] = missing_value
           }
-          Tb::Enumerator.merge_sorted(t1, t2) {|cv, t1_or_nil, t2_or_nil|
+          Tb::ExEnumerator.merge_sorted(t1, t2) {|cv, t1_or_nil, t2_or_nil|
             if !t2_or_nil
               t1.subeach_by {|_cv1, _| _cv1 }.each {|_, _pairs1|
                 if retain_left
