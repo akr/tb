@@ -64,15 +64,15 @@ def (Tb::Cmd).main_cross(argv)
     header = nil
     hvs_hash = {}
     hvs_list = nil
+    vhkfs = vkfs + hkfs
     sorted = creader.extsort_by {|pairs|
       hvs = hkfs.map {|f| pairs[f] }
       hvs_hash[hvs] = true
-      vcv = vkfs.map {|f| smart_cmp_value(pairs[f]) }
-      vcv
+      vhkfs.map {|f| smart_cmp_value(pairs[f]) }
     }
     sorted2 = sorted.with_header {|header0|
       header = header0
-      (vkfs + hkfs).each {|f|
+      vhkfs.each {|f|
         if !header0.include?(f)
           err("field not found: #{f}")
         end
@@ -112,34 +112,42 @@ def (Tb::Cmd).main_cross(argv)
       }
       y.yield h2
     }
-    representative = lambda {|pairs|
+    v_representative = lambda {|pairs|
       vkfs.map {|f| smart_cmp_value(pairs[f]) }
     }
+    h_representative = lambda {|pairs|
+      hkfs.map {|f| smart_cmp_value(pairs[f]) }
+    }
     aggs = nil
-    before = lambda {|_|
+    v_before = lambda {|_|
       aggs = {}
+    }
+    h_before = lambda {|first_pairs|
+      hvs = hkfs.map {|f| first_pairs[f] }
+      aggs[hvs] = opt_cross_fields.map {|agg_spec, nf|
+        begin
+          make_aggregator(agg_spec, header)
+        rescue ArgumentError
+          err($!.message)
+        end
+      }
     }
     body = lambda {|pairs|
       hvs = hkfs.map {|f| pairs[f] }
-      if !aggs.has_key?(hvs)
-        aggs[hvs] = opt_cross_fields.map {|agg_spec, nf|
-          begin
-            make_aggregator(agg_spec, header)
-          rescue ArgumentError
-            err($!.message)
-          end
-        }
-      end
       ary = header.map {|f| pairs[f] }
       aggs[hvs].each {|agg|
         agg.update(ary)
       }
     }
-    after = lambda {|last_pairs|
+    h_after = lambda {|last_pairs|
+      hvs = hkfs.map {|f| last_pairs[f] }
+      aggs[hvs].map! {|agg| agg.finish }
+    }
+    v_after = lambda {|last_pairs|
       ary = vkfs.map {|f| last_pairs[f] }
       hvs_list.each {|hvs|
         if aggs.has_key? hvs
-          ary.concat(aggs[hvs].map {|agg| agg.finish })
+          ary.concat(aggs[hvs])
         else
           ary.concat([nil] * opt_cross_fields.length)
         end
@@ -150,7 +158,9 @@ def (Tb::Cmd).main_cross(argv)
       }
       y.yield pairs
     }
-    sorted2.each_group_element_by(representative, before, body, after)
+    sorted2.detect_nested_group_by(
+      [[v_representative, v_before, v_after],
+       [h_representative, h_before, h_after]]).each(&body)
   }
   Tb::Cmd.opt_N = true
   output_tbenum(er)
