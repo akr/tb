@@ -77,9 +77,8 @@ def (Tb::Cmd).main_mheader(argv)
       end
     }
   }
-  with_output {|out|
-    er.write_to_csv(out, false)
-  }
+  Tb::Cmd.opt_N = true
+  output_tbenum(er)
   if header
     warn "unique header fields not recognized."
   end

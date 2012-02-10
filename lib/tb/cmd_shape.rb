@@ -67,8 +67,7 @@ def (Tb::Cmd).main_shape(argv)
                      'filename'=>filename})
     }
   }
-  with_output {|out|
-    result.write_to_csv(out, true)
-  }
+  Tb::Cmd.opt_N = false
+  output_tbenum(result)
 end
 

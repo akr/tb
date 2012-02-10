@@ -170,8 +170,6 @@ def (Tb::Cmd).main_svn_log(argv)
       REXML::Parsers::StreamParser.new(f, listener).parse
     }
   }
-  with_output {|out|
-    er.write_to_csv(out, !Tb::Cmd.opt_N)
-  }
+  output_tbenum(er)
 end
 

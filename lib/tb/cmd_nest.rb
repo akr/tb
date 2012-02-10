@@ -87,8 +87,6 @@ def (Tb::Cmd).main_nest(argv)
     }
     sorted.each_group_element_by(representative, before_group, body, after_group)
   }
-  with_output {|out|
-    er.write_to_csv(out, !Tb::Cmd.opt_N)
-  }
+  output_tbenum(er)
 end
 

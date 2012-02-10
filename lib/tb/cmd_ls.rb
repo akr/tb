@@ -63,9 +63,7 @@ def (Tb::Cmd).main_ls(argv)
       ls.ls_run(Pathname(ls.real_pathname_string(arg)))
     }
   }
-  with_output {|out|
-    er.write_to_csv(out, !Tb::Cmd.opt_N)
-  }
+  output_tbenum(er)
   if ls.fail
     exit false
   end

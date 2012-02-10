@@ -47,9 +47,7 @@ def (Tb::Cmd).main_newfield(argv)
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   er = creader.newfield(field) {|pairs| pr.call(pairs) }
-  with_output {|out|
-    er.write_to_csv(out, !Tb::Cmd.opt_N)
-  }
+  output_tbenum(er)
 end
 
 

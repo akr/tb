@@ -71,9 +71,7 @@ def (Tb::Cmd).main_sort(argv)
       y.yield pairs
     }
   }.extsort_by(&blk)
-  with_output {|out|
-    er.write_to_csv(out, !Tb::Cmd.opt_N)
-  }
+  output_tbenum(er)
 end
 
 

@@ -63,7 +63,5 @@ def (Tb::Cmd).main_cat(argv)
   exit_if_help('cat')
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N, Tb::Cmd.opt_cat_with_filename)
-  with_output {|out|
-    creader.write_to_csv(out, !Tb::Cmd.opt_N)
-  }
+  output_tbenum(creader)
 end

@@ -285,3 +285,9 @@ def with_output
     yield $stdout
   end
 end
+
+def output_tbenum(te)
+  with_output {|out|
+    te.write_to_csv(out, !Tb::Cmd.opt_N)
+  }
+end

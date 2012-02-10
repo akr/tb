@@ -59,8 +59,6 @@ def (Tb::Cmd).main_rename(argv)
       y.yield Hash[pairs.map {|f, v| [h.fetch(f, f), v] }]
     }
   }
-  with_output {|out|
-    er.write_to_csv(out, !Tb::Cmd.opt_N)
-  }
+  output_tbenum(er)
 end
 

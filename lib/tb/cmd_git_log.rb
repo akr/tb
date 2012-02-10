@@ -186,8 +186,6 @@ def (Tb::Cmd).main_git_log(argv)
       }
     }
   }
-  with_output {|out|
-    er.write_to_csv(out, !Tb::Cmd.opt_N)
-  }
+  output_tbenum(er)
 end
 

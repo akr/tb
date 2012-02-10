@@ -80,8 +80,6 @@ def (Tb::Cmd).main_gsub(argv)
       y.yield Hash[pairs2]
     }
   }
-  with_output {|out|
-    er.write_to_csv(out, !Tb::Cmd.opt_N)
-  }
+  output_tbenum(er)
 end
 

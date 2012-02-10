@@ -152,8 +152,7 @@ def (Tb::Cmd).main_cross(argv)
     }
     sorted2.each_group_element_by(representative, before, body, after)
   }
-  with_output {|out|
-    er.write_to_csv(out, false)
-  }
+  Tb::Cmd.opt_N = true
+  output_tbenum(er)
 end
 

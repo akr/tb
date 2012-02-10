@@ -84,9 +84,8 @@ def (Tb::Cmd).main_crop(argv)
         rownum += 1
       }
     }
-    with_output {|out|
-      er.write_to_csv(out, false)
-    }
+    Tb::Cmd.opt_N = true
+    output_tbenum(er)
   else
     creader = Tb::CatReader.open(argv, true)
     last_nonempty_row = nil
@@ -131,9 +130,8 @@ def (Tb::Cmd).main_crop(argv)
         y.yield pairs
       }
     }
-    with_output {|out|
-      er.write_to_csv(out, false)
-    }
+    Tb::Cmd.opt_N = true
+    output_tbenum(er)
   end
 end
 

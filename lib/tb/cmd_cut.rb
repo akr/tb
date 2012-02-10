@@ -56,9 +56,7 @@ def (Tb::Cmd).main_cut(argv)
           y.yield pairs.reject {|k, v| fs.include? k }
         }
       }
-      with_output {|out|
-        er.write_to_csv(out, !Tb::Cmd.opt_N)
-      }
+      output_tbenum(er)
     else
       er = Tb::Enumerator.new {|y|
         tblreader.with_header {|header0|
@@ -73,9 +71,7 @@ def (Tb::Cmd).main_cut(argv)
           y.yield pairs.reject {|k, v| !fs.include?(k) }
         }
       }
-      with_output {|out|
-        er.write_to_csv(out, !Tb::Cmd.opt_N)
-      }
+      output_tbenum(er)
     end
   }
 end

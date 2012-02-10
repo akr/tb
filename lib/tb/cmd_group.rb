@@ -99,8 +99,6 @@ def (Tb::Cmd).main_group(argv)
     }
     er2.each_group_element_by(representative, before, body, after)
   }
-  with_output {|out|
-    result.write_to_csv(out, !Tb::Cmd.opt_N)
-  }
+  output_tbenum(result)
 end
 

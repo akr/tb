@@ -71,8 +71,6 @@ def (Tb::Cmd).main_join(argv)
     $stderr.puts "shared keys: #{(result.list_fields & tbl.list_fields).inspect}" if 1 <= Tb::Cmd.opt_debug
     result = result.natjoin2_outer(tbl, Tb::Cmd.opt_join_outer_missing, retain_left, retain_right)
   }
-  with_output {|out|
-    result.write_to_csv(out, !Tb::Cmd.opt_N)
-  }
+  output_tbenum(result)
 end
 
