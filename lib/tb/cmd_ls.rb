@@ -289,11 +289,6 @@ class Tb::Cmd::Ls
   end
 
   def real_pathname_string(str)
-    if str.respond_to? :force_encoding
-      # pathname is a sequence of bytes on Unix.
-      str.dup.force_encoding("ASCII-8BIT")
-    else
-      str
-    end
+    str.dup.force_encoding("ASCII-8BIT")
   end
 end
