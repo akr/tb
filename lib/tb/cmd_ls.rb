@@ -232,7 +232,7 @@ class Tb::Cmd::Ls
     if pw
       pw.name
     else
-      uid
+      uid.to_s
     end
   end
 
@@ -245,7 +245,7 @@ class Tb::Cmd::Ls
     if gr
       gr.name
     else
-      gid
+      gid.to_s
     end
   end
 
