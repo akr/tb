@@ -29,15 +29,17 @@
 Tb::Cmd.subcommands << 'git-log'
 
 Tb::Cmd.default_option[:opt_git_log_git_command] = nil
-Tb::Cmd.default_option[:opt_git_log_debug_git_log_file] = nil
+Tb::Cmd.default_option[:opt_git_log_debug_input] = nil
+Tb::Cmd.default_option[:opt_git_log_debug_output] = nil
 
 def (Tb::Cmd).op_git_log
   op = OptionParser.new
   op.banner = "Usage: tb git-log [OPTS] [GIT-DIR ...]\n" +
     "Show the GIT log as a table."
-  define_common_option(op, "hNo", "--no-pager")
+  define_common_option(op, "hNod", "--no-pager", '--debug')
   op.def_option('--git-command COMMAND', 'specify the git command (default: git)') {|command| Tb::Cmd.opt_git_log_git_command = command }
-  op.def_option('--debug-git-log-file FILE', 'specify the result git log (for debug)') {|filename| Tb::Cmd.opt_git_log_debug_git_log_file = filename }
+  op.def_option('--debug-git-log-output FILE', 'store the raw output of git-log (for debug)') {|filename| Tb::Cmd.opt_git_log_debug_output = filename }
+  op.def_option('--debug-git-log-input FILE', 'use the file as output of git-log (for debug)') {|filename| Tb::Cmd.opt_git_log_debug_input = filename }
   op
 end
 
@@ -68,8 +70,8 @@ Tb::Cmd::GIT_LOG_PRETTY_FORMAT = 'format:%x01commit-separator%x01%n' +
 Tb::Cmd::GIT_LOG_HEADER = Tb::Cmd::GIT_LOG_FORMAT_SPEC.map {|k, v| k } + ['files']
 
 def (Tb::Cmd).git_log_with_git_log(dir)
-  if Tb::Cmd.opt_git_log_debug_git_log_file
-    File.open(Tb::Cmd.opt_git_log_debug_git_log_file) {|f|
+  if Tb::Cmd.opt_git_log_debug_input
+    File.open(Tb::Cmd.opt_git_log_debug_input) {|f|
       yield f
     }
   else
@@ -85,9 +87,18 @@ def (Tb::Cmd).git_log_with_git_log(dir)
         '.',
         {:chdir=>dir}
     ]
-    IO.popen(command) {|f|
-      yield f
-    }
+    $stderr.puts "git command line: #{command.inspect}" if 1 <= Tb::Cmd.opt_debug
+    if Tb::Cmd.opt_git_log_debug_output
+      command.last[:out] = Tb::Cmd.opt_git_log_debug_output
+      system(*command)
+      File.open(Tb::Cmd.opt_git_log_debug_output) {|f|
+        yield f
+      }
+    else
+      IO.popen(command) {|f|
+        yield f
+      }
+    end
   end
 end
 

@@ -43,4 +43,22 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     assert_equal(filename, ftb.get_record(0)["filename"])
   end
 
+  def test_debug_git_log_output_input
+    system("git init -q")
+    File.open("foo", "w") {|f| f.puts "bar" }
+    system("git add foo")
+    system("git commit -q -m msg foo")
+    Tb::Cmd.main_git_log(['-o', o="o.csv", '--debug-git-log-output', g='gitlog'])
+    result = File.read(o)
+    tb = Tb.parse_csv(result)
+    assert_equal(1, tb.size)
+    assert_match(/,A,foo\n/, tb.get_record(0)["files"])
+    gresult = File.read(g)
+    FileUtils.rmtree('.git')
+    Tb::Cmd.main_git_log(['-o', o="o.csv", '--debug-git-log-input', g])
+    result = File.read(o)
+    tb = Tb.parse_csv(result)
+    assert_equal(1, tb.size)
+    assert_match(/,A,foo\n/, tb.get_record(0)["files"])
+  end
 end
