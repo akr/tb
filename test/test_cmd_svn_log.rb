@@ -26,6 +26,7 @@ class TestTbCmdSvnLog < Test::Unit::TestCase
   end
 
   def test_basic
+    t = Time.now
     system("svnadmin create repo")
     system("svn co -q file://#{@tmpdir}/repo .")
     File.open("foo", "w") {|f| f.puts "bar" }

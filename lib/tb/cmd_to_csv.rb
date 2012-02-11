@@ -54,5 +54,7 @@ def (Tb::Cmd).main_to_csv(argv)
       y.yield Hash[header.map {|f| [f, pairs[f]] }]
     }
   }
-  output_tbenum(er)
+  with_output {|out|
+    er.write_to_csv(out, !Tb::Cmd.opt_N)
+  }
 end
