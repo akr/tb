@@ -65,6 +65,16 @@ class TestTbCSV < Test::Unit::TestCase
     End
   end
 
+  def test_generate_without_explicit_fields
+    t = Tb.new %w[a b], [1, 2], [3, 4]
+    out = t.generate_csv('')
+    assert_equal(<<-'End'.gsub(/^\s+/, ''), out)
+    a,b
+    1,2
+    3,4
+    End
+  end
+
   def test_generate_with_block
     t = Tb.new %w[a b], [1, 2], [3, 4]
     out = t.generate_csv('', ['a', 'b']) {|recids| recids.reverse }
