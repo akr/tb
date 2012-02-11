@@ -266,14 +266,14 @@ def tbl_generate_tsv(tbl, out)
   end
 end
 
-def with_output
-  if Tb::Cmd.opt_output
-    tmp = Tb::Cmd.opt_output + ".part"
+def with_output(filename=Tb::Cmd.opt_output)
+  if filename && filename != '-'
+    tmp = filename + ".part"
     begin
       File.open(tmp, 'w') {|f|
         yield f
       }
-      File.rename tmp, Tb::Cmd.opt_output
+      File.rename tmp, filename
     ensure
       File.unlink tmp if File.exist? tmp
     end
@@ -287,7 +287,33 @@ def with_output
 end
 
 def output_tbenum(te)
-  with_output {|out|
-    te.write_to_csv(out, !Tb::Cmd.opt_N)
+  filename = Tb::Cmd.opt_output
+  if /\A([a-z0-9]{2,}):/ =~ filename
+    fmt = $1
+    filename = $'
+  else
+    fmt = nil
+  end
+  if !fmt
+    case filename
+    when /\.csv\z/
+      fmt = 'csv'
+    when /\.json\z/
+      fmt = 'json'
+    end
+  end
+  if fmt
+    case fmt
+    when 'csv'
+      write_proc = lambda {|out| te.write_to_csv(out, !Tb::Cmd.opt_N) }
+    when 'json'
+      write_proc = lambda {|out| te.write_to_json(out) }
+    else
+      err("unexpected format: #{fmt.inspect}")
+    end
+  end
+  write_proc ||= lambda {|out| te.write_to_csv(out, !Tb::Cmd.opt_N) }
+  with_output(filename) {|out|
+    write_proc.call(out)
   }
 end

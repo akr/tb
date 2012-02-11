@@ -232,6 +232,19 @@ module Tb::Enumerable
     end
   end
 
+  def write_to_json(out)
+    require 'json'
+    out.print "["
+    sep = nil
+    self.each {|pairs|
+      out.print sep if sep
+      out.print JSON.pretty_generate(Hash[pairs.to_a])
+      sep = ",\n"
+    }
+    out.puts "]"
+    nil
+  end
+
   def extsort_by(opts={}, &cmpvalue_from)
     Tb::Enumerator.new {|ty|
       header = []

@@ -147,4 +147,44 @@ class TestTbCmdCat < Test::Unit::TestCase
     End
   end
 
+  def test_json_output
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      1,2,3
+      4,5,6
+    End
+    Tb::Cmd.main_cat(['-o', o="o.json", i1])
+    assert_equal(<<-"End".gsub(/\s+/, ''), File.read(o).gsub(/\s+/, ''))
+       [
+         {"a":"1", "b":"2", "c": "3"},
+         {"a":"4", "b":"5", "c": "6"}
+       ]
+    End
+  end
+
+  def test_json_output2
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      1,2,3
+      4,5,6
+    End
+    Tb::Cmd.main_cat(['-o', "json:" + (o="o.csv"), i1])
+    assert_equal(<<-"End".gsub(/\s+/, ''), File.read(o).gsub(/\s+/, ''))
+       [
+         {"a":"1", "b":"2", "c": "3"},
+         {"a":"4", "b":"5", "c": "6"}
+       ]
+    End
+  end
+
+  def test_invalid_output_format
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      1,2,3
+      4,5,6
+    End
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_cat(['-o', "xson:" + (o="o.csv"), i1]) }
+    assert(!exc.success?)
+  end
+
 end
