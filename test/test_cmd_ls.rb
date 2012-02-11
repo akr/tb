@@ -35,6 +35,15 @@ class TestTbCmdLs < Test::Unit::TestCase
     end
   end
 
+  def with_stderr_log
+    File.open("log", "w") {|log|
+      with_stderr(log) {
+        yield
+      }
+    }
+    File.read('log')
+  end
+
   def reader_thread(io)
     Thread.new {
       r = ''
@@ -197,6 +206,87 @@ class TestTbCmdLs < Test::Unit::TestCase
     ensure
       File.chmod(0700, "d")
     end
+  end
+
+  def test_ls_info_symlink
+    lsobj = Tb::Cmd::Ls.new(nil, {})
+    st = Object.new
+    def st.symlink?() true end
+    log = with_stderr_log {
+      assert_nil(lsobj.ls_info_symlink('.', st))
+    }
+    assert(!log.empty?)
+  end
+
+end
+
+class TestTbCmdLsNoTmpDir < Test::Unit::TestCase
+  def setup
+    Tb::Cmd.reset_option
+    #@curdir = Dir.pwd
+    #@tmpdir = Dir.mktmpdir
+    #Dir.chdir @tmpdir
+  end
+  def teardown
+    Tb::Cmd.reset_option
+    #Dir.chdir @curdir
+    #FileUtils.rmtree @tmpdir
+  end
+
+  def test_ls_info_filemode
+    lsobj = Tb::Cmd::Ls.new(nil, {})
+    st = Object.new
+    def st.mode() 0 end
+    def st.ftype() @ftype end
+    def st.ftype=(arg) @ftype = arg end
+    st.ftype = 'file'
+    assert_equal("----------", lsobj.ls_info_filemode(nil, st))
+    st.ftype = 'directory'
+    assert_equal("d---------", lsobj.ls_info_filemode(nil, st))
+    st.ftype = 'characterSpecial'
+    assert_equal("c---------", lsobj.ls_info_filemode(nil, st))
+    st.ftype = 'blockSpecial'
+    assert_equal("b---------", lsobj.ls_info_filemode(nil, st))
+    st.ftype = 'fifo'
+    assert_equal("p---------", lsobj.ls_info_filemode(nil, st))
+    st.ftype = 'link'
+    assert_equal("l---------", lsobj.ls_info_filemode(nil, st))
+    st.ftype = 'socket'
+    assert_equal("s---------", lsobj.ls_info_filemode(nil, st))
+    st.ftype = 'unknown'
+    assert_equal("?---------", lsobj.ls_info_filemode(nil, st))
+    st.ftype = 'foobar'
+    assert_equal("?---------", lsobj.ls_info_filemode(nil, st))
+  end
+
+  def test_ls_info_user
+    lsobj = Tb::Cmd::Ls.new(nil, {})
+    st = Object.new
+    # assumes Etc.getpwuid(-100) causes ArgumentError.
+    def st.uid() -100 end
+    assert_equal("-100", lsobj.ls_info_user(nil, st))
+  end
+
+  def test_ls_info_group
+    lsobj = Tb::Cmd::Ls.new(nil, {})
+    st = Object.new
+    # assumes Etc.getgrgid(-200) causes ArgumentError.
+    def st.gid() -200 end
+    assert_equal("-200", lsobj.ls_info_group(nil, st))
+  end
+
+  def test_ls_info_atime
+    lsobj = Tb::Cmd::Ls.new(nil, {:l => 1})
+    st = Object.new
+    def st.atime() Time.utc(2000) end
+    assert_equal("2000-01-01T00:00:00Z", lsobj.ls_info_atime(nil, st))
+  end
+
+  def test_ls_info_ctime
+    lsobj = Tb::Cmd::Ls.new(nil, {:l => 1})
+    st = Object.new
+    def st.ctime() Time.utc(2000) end
+    assert_equal("2000-01-01T00:00:00Z", lsobj.ls_info_ctime(nil, st))
   end
 
 end
