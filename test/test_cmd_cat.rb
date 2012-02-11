@@ -183,7 +183,7 @@ class TestTbCmdCat < Test::Unit::TestCase
       1,2,3
       4,5,6
     End
-    exc = assert_raise(SystemExit) { Tb::Cmd.main_cat(['-o', "xson:" + (o="o.csv"), i1]) }
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_cat(['-o', "xson:o.csv", i1]) }
     assert(!exc.success?)
   end
 
