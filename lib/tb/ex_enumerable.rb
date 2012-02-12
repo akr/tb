@@ -359,7 +359,7 @@ module Enumerable
           buf.clear
           buf_mode = false
         end
-      elsif prevobj_cv <= obj_cv
+      elsif (prevobj_cv <=> obj_cv) <= 0
         Marshal.dump([obj_cv, Marshal.dump(obj)], tmp_current)
         prevobj_cv = obj_cv
       else
