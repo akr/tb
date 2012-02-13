@@ -302,6 +302,7 @@ module Enumerable
   # The block defines the order which cmpvalue is ascending.
   #
   # options:
+  #   :map : a procedure to convert the element.  It is applied after cmpvalue is obtained.  (default: nil)
   #   :unique : a procedure to merge two values which has same cmpvalue. (default: nil)
   #   :memsize : limit in-memory sorting size in bytes (default: 10000000)
   #
@@ -311,16 +312,29 @@ module Enumerable
   # The procedure should be associative.
   #
   def extsort_by(opts={}, &cmpvalue_from)
-    memsize = opts[:memsize] || 10000000
-    Enumerator.new {|y|
-      extsort_by_internal(memsize, cmpvalue_from, y)
+    mapfunc = opts[:map]
+    opts = opts.dup
+    opts[:map] = mapfunc ?
+      lambda {|v| Marshal.dump(mapfunc.call(v)) } : 
+      lambda {|v| Marshal.dump(v) }
+    self.extsort_by_internal0(opts, &cmpvalue_from).lazy_map {|d|
+      Marshal.load(d)
     }
   end
 
-  def extsort_by_internal(memsize, cmpvalue_from, y)
+  def extsort_by_internal0(opts={}, &cmpvalue_from)
+    opts = opts.dup
+    opts[:memsize] ||= 10000000
+    opts[:map] ||= lambda {|v| v }
+    Enumerator.new {|y|
+      extsort_by_internal(opts, cmpvalue_from, y)
+    }
+  end
+
+  def extsort_by_internal(opts, cmpvalue_from, y)
     tmp1 = Tempfile.new("tbsortA")
     tmp2 = Tempfile.new("tbsortB")
-    extsort_by_first_split(tmp1, tmp2, cmpvalue_from, memsize)
+    extsort_by_first_split(tmp1, tmp2, cmpvalue_from, opts)
     if tmp1.size == 0 && tmp2.size == 0
       return Enumerator.new {|_| }
     end
@@ -351,7 +365,7 @@ module Enumerable
   end
   private :extsort_by_internal
 
-  def extsort_by_first_split(tmp1, tmp2, cmpvalue_from, memsize)
+  def extsort_by_first_split(tmp1, tmp2, cmpvalue_from, opts)
     prevobj_cv = nil
     tmp_current, tmp_another = tmp1, tmp2
     buf = {}
@@ -359,6 +373,7 @@ module Enumerable
     buf_mode = true
     self.each_with_index {|obj, i|
       obj_cv = cmpvalue_from.call(obj)
+      obj = opts[:map].call(obj) if opts[:map]
       #p [obj, obj_cv]
       #p [prevobj_cv, buf_mode, obj, obj_cv]
       if buf_mode
@@ -366,7 +381,7 @@ module Enumerable
         ary = (buf[obj_cv] ||= [])
         ary << [obj_cv, i, dumped]
         buf_size += dumped.size
-        if memsize < buf_size
+        if opts[:memsize] < buf_size
           buf_keys = buf.keys.sort
           buf_keys.each {|cv|
             buf[cv].each {|_, _, d|
