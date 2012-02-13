@@ -309,7 +309,7 @@ module Enumerable
   # If :unique option is given, it is used to merge
   # elements which have same cmpvalue.
   # The procedure should take two elements and return one.
-  # The procedure should be associative.
+  # The procedure should be associative.  (f(x,f(y,z)) = f(f(x,y),z))
   #
   def extsort_by(opts={}, &cmpvalue_from)
     mapfunc = opts[:map]
@@ -317,7 +317,11 @@ module Enumerable
     opts[:map] = mapfunc ?
       lambda {|v| Marshal.dump(mapfunc.call(v)) } : 
       lambda {|v| Marshal.dump(v) }
-    self.extsort_by_internal0(opts, &cmpvalue_from).lazy_map {|d|
+    uniqfunc = opts[:unique]
+    if uniqfunc
+      opts[:unique] = lambda {|x, y| Marshal.dump(uniqfunc.call(Marshal.load(x), Marshal.load(y))) }
+    end
+    extsort_by_internal0(opts, &cmpvalue_from).lazy_map {|d|
       Marshal.load(d)
     }
   end
@@ -330,6 +334,7 @@ module Enumerable
       extsort_by_internal1(opts, cmpvalue_from, y)
     }
   end
+  private :extsort_by_internal0
 
   def extsort_by_internal1(opts, cmpvalue_from, y)
     tmp1 = Tempfile.new("tbsortA")
@@ -345,7 +350,7 @@ module Enumerable
       #dump_objsfile(:tmp2, tmp2)
       #dump_objsfile(:tmp3, tmp3)
       #dump_objsfile(:tmp4, tmp4)
-      extsort_by_merge(tmp1, tmp2, tmp3, tmp4)
+      extsort_by_merge(tmp1, tmp2, tmp3, tmp4, opts)
       tmp1.rewind
       tmp1.truncate(0)
       tmp2.rewind
@@ -382,14 +387,14 @@ module Enumerable
         ary = (buf[obj_cv] ||= [])
         ary << [obj_cv, i, dumped]
         buf_size += dumped.size
-#        if opts[:unique] && ary.length == 2
-#          obj1_cv, i1, dumped1 = ary[0]
-#          obj2_cv, i2, dumped2 = ary[1]
-#          _, obj1 = Marshal.load(dumped1)
-#          _, obj2 = Marshal.load(dumped2)
-#          obju = opts[:unique].call(obj1, obj2)
-#          buf[obj_cv] = [[obj_cv, i1, Marshal.dump([obj_cv, obju])]]
-#        end
+        if opts[:unique] && ary.length == 2
+          obj1_cv, i1, dumped1 = ary[0]
+          _, _, dumped2 = ary[1]
+          _, obj1 = Marshal.load(dumped1)
+          _, obj2 = Marshal.load(dumped2)
+          obju = opts[:unique].call(obj1, obj2)
+          buf[obj1_cv] = [[obj1_cv, i1, Marshal.dump([obj1_cv, obju])]]
+        end
         if opts[:memsize] < buf_size
           buf_keys = buf.keys.sort
           (0...(buf_keys.length-1)).each {|j|
@@ -407,7 +412,12 @@ module Enumerable
           buf.clear
           buf_mode = false
         end
-      elsif (prevobj_cv <=> obj_cv) <= 0
+      elsif (cmp = (prevobj_cv <=> obj_cv)) == 0 && opts[:unique]
+        _, obj1 = Marshal.load(prevobj_dumped)
+        obj2 = obj
+        obju = opts[:unique].call(obj1, obj2)
+        prevobj_dumped = Marshal.dump([prevobj_cv, obju])
+      elsif cmp <= 0
         tmp_current.write prevobj_dumped
         prevobj_dumped = Marshal.dump([obj_cv, obj])
         prevobj_cv = obj_cv
@@ -419,6 +429,8 @@ module Enumerable
         buf_size = dumped.size
         buf_mode = true
         tmp_current, tmp_another = tmp_another, tmp_current
+        prevobj_cv = nil
+        prevobj_dumped = nil
       end
     }
     if buf_mode
@@ -437,7 +449,7 @@ module Enumerable
   end
   private :extsort_by_first_split
 
-  def extsort_by_merge(src1, src2, dst1, dst2)
+  def extsort_by_merge(src1, src2, dst1, dst2, opts)
     src1.rewind
     src2.rewind
     obj1_cv, obj1 = obj1_pair = Marshal.load(src1)
@@ -446,16 +458,28 @@ module Enumerable
     while true
       cmp = obj1_cv <=> obj2_cv
       if prefer1 ? cmp > 0 : cmp >= 0
-        obj1_pair, obj1_cv, obj1, src1, obj2_pair, obj2_cv, obj2, src2 = obj2_pair, obj2_cv, obj2, src2, obj1_pair, obj1_cv, obj1, src1
+        obj1_pair, obj1_cv, obj1, src1, obj2_pair, obj2_cv, obj2, src2 =
+          obj2_pair, obj2_cv, obj2, src2, obj1_pair, obj1_cv, obj1, src1
         prefer1 = !prefer1
       end
-      Marshal.dump([obj1_cv, obj1], dst1)
-      obj1_cv, obj1 = obj1_pair = Marshal.load(src1)
+      if opts[:unique] && cmp == 0
+        Marshal.dump([obj1_cv, opts[:unique].call(obj1, obj2)], dst1)
+        obj1_cv, obj1 = obj1_pair = Marshal.load(src1)
+        obj2_cv, obj2 = obj2_pair = Marshal.load(src2)
+        if obj1_pair && !obj2_pair
+          obj1_pair, obj1_cv, obj1, src1, obj2_pair, obj2_cv, obj2, src2 =
+            obj2_pair, obj2_cv, obj2, src2, obj1_pair, obj1_cv, obj1, src1
+          prefer1 = !prefer1
+        end
+      else
+        Marshal.dump([obj1_cv, obj1], dst1)
+        obj1_cv, obj1 = obj1_pair = Marshal.load(src1)
+      end
       if !obj1_pair
-        begin
+        while obj2_pair
           Marshal.dump(obj2_pair, dst1)
           obj2_pair = Marshal.load(src2)
-        end until !obj2_pair
+        end
         Marshal.dump(nil, dst1)
         dst1, dst2 = dst2, dst1
         break if src1.eof?

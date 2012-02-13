@@ -173,6 +173,26 @@ class TestTbEnumerable < Test::Unit::TestCase
     }
   end
 
+  def test_extsort_by_map
+    assert_equal([20,12,13],
+      [10,2,3].extsort_by(:map => lambda {|v| v + 10 }) {|v| v.to_s }.to_a)
+  end
+
+  def test_extsort_by_unique
+    [
+      [[1,1], [2]],
+      [[1,2,1], [2,2]],
+      [[1,2,3,2,1], [2,4,3]],
+      [[1,1,2,2,3], [2,4,3]]
+    ].each {|ary, result|
+      [nil, 0].each {|memsize|
+        assert_equal(result,
+          ary.extsort_by(:memsize => memsize,
+                         :unique => lambda {|x,y| x + y }) {|x| x }.to_a)
+      }
+    }
+  end
+
   def test_each_group_element
     result = []
     (0..9).to_a.each_group_element(
