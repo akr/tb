@@ -367,6 +367,7 @@ module Enumerable
 
   def extsort_by_first_split(tmp1, tmp2, cmpvalue_from, opts)
     prevobj_cv = nil
+    prevobj_dumped = nil
     tmp_current, tmp_another = tmp1, tmp2
     buf = {}
     buf_size = 0
@@ -381,23 +382,39 @@ module Enumerable
         ary = (buf[obj_cv] ||= [])
         ary << [obj_cv, i, dumped]
         buf_size += dumped.size
+#        if opts[:unique] && ary.length == 2
+#          obj1_cv, i1, dumped1 = ary[0]
+#          obj2_cv, i2, dumped2 = ary[1]
+#          _, obj1 = Marshal.load(dumped1)
+#          _, obj2 = Marshal.load(dumped2)
+#          obju = opts[:unique].call(obj1, obj2)
+#          buf[obj_cv] = [[obj_cv, i1, Marshal.dump([obj_cv, obju])]]
+#        end
         if opts[:memsize] < buf_size
           buf_keys = buf.keys.sort
-          buf_keys.each {|cv|
+          (0...(buf_keys.length-1)).each {|j|
+            cv = buf_keys[j]
             buf[cv].each {|_, _, d|
               tmp_current.write d
             }
           }
-          prevobj_cv = buf_keys.last
+          ary = buf[buf_keys.last]
+          (0...(ary.length-1)).each {|j|
+            _, _, d = ary[j]
+            tmp_current.write d
+          }
+          prevobj_cv, _, prevobj_dumped = ary[-1]
           buf.clear
           buf_mode = false
         end
       elsif (prevobj_cv <=> obj_cv) <= 0
-        Marshal.dump([obj_cv, obj], tmp_current)
+        tmp_current.write prevobj_dumped
+        prevobj_dumped = Marshal.dump([obj_cv, obj])
         prevobj_cv = obj_cv
       else
-        dumped = Marshal.dump([obj_cv, obj])
+        tmp_current.write prevobj_dumped
         Marshal.dump(nil, tmp_current)
+        dumped = Marshal.dump([obj_cv, obj])
         buf = { obj_cv => [[obj_cv, i, dumped]] }
         buf_size = dumped.size
         buf_mode = true
@@ -411,6 +428,8 @@ module Enumerable
           tmp_current.write d
         }
       }
+    else
+      tmp_current.write prevobj_dumped
     end
     if !buf_mode || !buf.empty?
       Marshal.dump(nil, tmp_current)
