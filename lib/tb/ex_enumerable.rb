@@ -327,11 +327,11 @@ module Enumerable
     opts[:memsize] ||= 10000000
     opts[:map] ||= lambda {|v| v }
     Enumerator.new {|y|
-      extsort_by_internal(opts, cmpvalue_from, y)
+      extsort_by_internal1(opts, cmpvalue_from, y)
     }
   end
 
-  def extsort_by_internal(opts, cmpvalue_from, y)
+  def extsort_by_internal1(opts, cmpvalue_from, y)
     tmp1 = Tempfile.new("tbsortA")
     tmp2 = Tempfile.new("tbsortB")
     extsort_by_first_split(tmp1, tmp2, cmpvalue_from, opts)
@@ -363,7 +363,7 @@ module Enumerable
     tmp3.close(true) if tmp3
     tmp4.close(true) if tmp4
   end
-  private :extsort_by_internal
+  private :extsort_by_internal1
 
   def extsort_by_first_split(tmp1, tmp2, cmpvalue_from, opts)
     prevobj_cv = nil
