@@ -377,7 +377,7 @@ module Enumerable
       #p [obj, obj_cv]
       #p [prevobj_cv, buf_mode, obj, obj_cv]
       if buf_mode
-        dumped = Marshal.dump([obj_cv, Marshal.dump(obj)])
+        dumped = Marshal.dump([obj_cv, obj])
         ary = (buf[obj_cv] ||= [])
         ary << [obj_cv, i, dumped]
         buf_size += dumped.size
@@ -393,10 +393,10 @@ module Enumerable
           buf_mode = false
         end
       elsif (prevobj_cv <=> obj_cv) <= 0
-        Marshal.dump([obj_cv, Marshal.dump(obj)], tmp_current)
+        Marshal.dump([obj_cv, obj], tmp_current)
         prevobj_cv = obj_cv
       else
-        dumped = Marshal.dump([obj_cv, Marshal.dump(obj)])
+        dumped = Marshal.dump([obj_cv, obj])
         Marshal.dump(nil, tmp_current)
         buf = { obj_cv => [[obj_cv, i, dumped]] }
         buf_size = dumped.size
@@ -421,17 +421,17 @@ module Enumerable
   def extsort_by_merge(src1, src2, dst1, dst2)
     src1.rewind
     src2.rewind
-    obj1_cv, obj1m = obj1_pair = Marshal.load(src1)
-    obj2_cv, obj2m = obj2_pair = Marshal.load(src2)
+    obj1_cv, obj1 = obj1_pair = Marshal.load(src1)
+    obj2_cv, obj2 = obj2_pair = Marshal.load(src2)
     prefer1 = true
     while true
       cmp = obj1_cv <=> obj2_cv
       if prefer1 ? cmp > 0 : cmp >= 0
-        obj1_pair, obj1_cv, obj1m, src1, obj2_pair, obj2_cv, obj2m, src2 = obj2_pair, obj2_cv, obj2m, src2, obj1_pair, obj1_cv, obj1m, src1
+        obj1_pair, obj1_cv, obj1, src1, obj2_pair, obj2_cv, obj2, src2 = obj2_pair, obj2_cv, obj2, src2, obj1_pair, obj1_cv, obj1, src1
         prefer1 = !prefer1
       end
-      Marshal.dump([obj1_cv, obj1m], dst1)
-      obj1_cv, obj1m = obj1_pair = Marshal.load(src1)
+      Marshal.dump([obj1_cv, obj1], dst1)
+      obj1_cv, obj1 = obj1_pair = Marshal.load(src1)
       if !obj1_pair
         begin
           Marshal.dump(obj2_pair, dst1)
@@ -441,8 +441,8 @@ module Enumerable
         dst1, dst2 = dst2, dst1
         break if src1.eof?
         break if src2.eof?
-        obj1_cv, obj1m = obj1_pair = Marshal.load(src1)
-        obj2_cv, obj2m = obj2_pair = Marshal.load(src2)
+        obj1_cv, obj1 = obj1_pair = Marshal.load(src1)
+        obj2_cv, obj2 = obj2_pair = Marshal.load(src2)
       end
     end
     if !src1.eof?
@@ -464,8 +464,7 @@ module Enumerable
     while true
       pair = Marshal.load(tmp1)
       break if !pair
-      _, objm = pair
-      obj = Marshal.load(objm)
+      _, obj = pair
       y.yield obj
     end
   end
