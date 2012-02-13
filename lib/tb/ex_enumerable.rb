@@ -295,6 +295,21 @@ module Enumerable
   end
   private :dump_objsfile
 
+  # :call-seq:
+  #   enum.extsort_by(options={}) {|value| cmpvalue }
+  #
+  # +extsort_by+ returns an enumerator which yields elements in the receiver in sorted order.
+  # The block defines the order which cmpvalue is ascending.
+  #
+  # options:
+  #   :unique : a procedure to merge two values which has same cmpvalue. (default: nil)
+  #   :memsize : limit in-memory sorting size in bytes (default: 10000000)
+  #
+  # If :unique option is given, it is used to merge
+  # elements which have same cmpvalue.
+  # The procedure should take two elements and return one.
+  # The procedure should be associative.
+  #
   def extsort_by(opts={}, &cmpvalue_from)
     memsize = opts[:memsize] || 10000000
     Enumerator.new {|y|
@@ -339,7 +354,7 @@ module Enumerable
   def extsort_by_first_split(tmp1, tmp2, cmpvalue_from, memsize)
     prevobj_cv = nil
     tmp_current, tmp_another = tmp1, tmp2
-    buf = []
+    buf = {}
     buf_size = 0
     buf_mode = true
     self.each_with_index {|obj, i|
@@ -348,14 +363,17 @@ module Enumerable
       #p [prevobj_cv, buf_mode, obj, obj_cv]
       if buf_mode
         dumped = Marshal.dump([obj_cv, Marshal.dump(obj)])
-        buf << [obj_cv, i, dumped]
+        ary = (buf[obj_cv] ||= [])
+        ary << [obj_cv, i, dumped]
         buf_size += dumped.size
         if memsize < buf_size
-          buf.sort!
-          buf.each {|_, _, d|
-            tmp_current.write d
+          buf_keys = buf.keys.sort
+          buf_keys.each {|cv|
+            buf[cv].each {|_, _, d|
+              tmp_current.write d
+            }
           }
-          prevobj_cv, = buf.last
+          prevobj_cv = buf_keys.last
           buf.clear
           buf_mode = false
         end
@@ -365,16 +383,18 @@ module Enumerable
       else
         dumped = Marshal.dump([obj_cv, Marshal.dump(obj)])
         Marshal.dump(nil, tmp_current)
-        buf = [[obj_cv, i, dumped]]
+        buf = { obj_cv => [[obj_cv, i, dumped]] }
         buf_size = dumped.size
         buf_mode = true
         tmp_current, tmp_another = tmp_another, tmp_current
       end
     }
     if buf_mode
-      buf.sort!
-      buf.each {|_, _, d|
-        tmp_current.write d
+      buf_keys = buf.keys.sort
+      buf_keys.each {|cv|
+        buf[cv].each {|_, _, d|
+          tmp_current.write d
+        }
       }
     end
     if !buf_mode || !buf.empty?
