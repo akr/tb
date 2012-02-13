@@ -193,6 +193,21 @@ class TestTbEnumerable < Test::Unit::TestCase
     }
   end
 
+  def test_extsort_by_unique_random
+    [nil, 0].each {|memsize|
+      3.times {|i|
+        len = rand(100)
+        ary = []
+        len.times { ary << rand(100) }
+        h = ary.group_by {|v| v }
+        ary1 = h.keys.sort.map {|k| h[k].inject(&:+) }
+        ary2 = ary.extsort_by(:memsize => memsize,
+                              :unique => lambda {|x, y| x + y }) {|v| v }.to_a
+        assert_equal(ary1, ary2)
+      }
+    }
+  end
+
   def test_each_group_element
     result = []
     (0..9).to_a.each_group_element(
