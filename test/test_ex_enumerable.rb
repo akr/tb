@@ -208,6 +208,16 @@ class TestTbEnumerable < Test::Unit::TestCase
     }
   end
 
+  def test_extsort_reduce
+    result = [
+      [:cat, 1],
+      [:dog, 2],
+      [:cat, 3],
+      [:dog, 1],
+    ].extsort_reduce(:+.to_proc) {|pair| pair }.to_a
+    assert_equal([[:cat, 4], [:dog, 3]], result)
+  end
+
   def test_each_group_element
     result = []
     (0..9).to_a.each_group_element(

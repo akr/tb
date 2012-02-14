@@ -321,25 +321,37 @@ module Enumerable
     if uniqfunc
       opts[:unique] = lambda {|x, y| Marshal.dump(uniqfunc.call(Marshal.load(x), Marshal.load(y))) }
     end
-    extsort_by_internal0(opts, &cmpvalue_from).lazy_map {|d|
+    reducefunc = opts[:unique]
+    mapfunc2 = opts[:map] || lambda {|v| v }
+    self.lazy_map {|v|
+      [cmpvalue_from.call(v), mapfunc2.call(v)]
+    }.send(:extsort_internal0, reducefunc, opts).lazy_map {|k, d|
       Marshal.load(d)
     }
   end
 
-  def extsort_by_internal0(opts={}, &cmpvalue_from)
-    opts = opts.dup
-    opts[:memsize] ||= 10000000
-    opts[:map] ||= lambda {|v| v }
-    Enumerator.new {|y|
-      extsort_by_internal1(opts, cmpvalue_from, y)
+  def extsort_reduce(op, opts={}, &key_val_proc)
+    lazy_map(&key_val_proc).send(:extsort_internal0, op, opts).lazy_map {|k, v|
+      [k, v]
     }
   end
-  private :extsort_by_internal0
 
-  def extsort_by_internal1(opts, cmpvalue_from, y)
+  def extsort_internal0(reducefunc, opts={})
+    if reducefunc.is_a? Symbol
+      reducefunc = reducefunc.to_proc
+    end
+    opts = opts.dup
+    opts[:memsize] ||= 10000000
+    Enumerator.new {|y|
+      extsort_internal1(reducefunc, opts, y)
+    }
+  end
+  private :extsort_internal0
+
+  def extsort_internal1(reducefunc, opts, y)
     tmp1 = Tempfile.new("tbsortA")
     tmp2 = Tempfile.new("tbsortB")
-    extsort_by_first_split(tmp1, tmp2, cmpvalue_from, opts)
+    extsort_first_split(tmp1, tmp2, reducefunc, opts)
     if tmp1.size == 0 && tmp2.size == 0
       return Enumerator.new {|_| }
     end
@@ -350,7 +362,7 @@ module Enumerable
       #dump_objsfile(:tmp2, tmp2)
       #dump_objsfile(:tmp3, tmp3)
       #dump_objsfile(:tmp4, tmp4)
-      extsort_by_merge(tmp1, tmp2, tmp3, tmp4, opts)
+      extsort_merge(tmp1, tmp2, tmp3, tmp4, reducefunc, opts)
       tmp1.rewind
       tmp1.truncate(0)
       tmp2.rewind
@@ -361,25 +373,24 @@ module Enumerable
       #dump_objsfile(:tmp2, tmp2)
       #dump_objsfile(:tmp3, tmp3)
       #dump_objsfile(:tmp4, tmp4)
-    extsort_by_strip_cv(tmp1, y)
+    extsort_yield(tmp1, y)
   ensure
     tmp1.close(true) if tmp1
     tmp2.close(true) if tmp2
     tmp3.close(true) if tmp3
     tmp4.close(true) if tmp4
   end
-  private :extsort_by_internal1
+  private :extsort_internal1
 
-  def extsort_by_first_split(tmp1, tmp2, cmpvalue_from, opts)
+  def extsort_first_split(tmp1, tmp2, reducefunc, opts)
     prevobj_cv = nil
     prevobj_dumped = nil
     tmp_current, tmp_another = tmp1, tmp2
     buf = {}
     buf_size = 0
     buf_mode = true
-    self.each_with_index {|obj, i|
-      obj_cv = cmpvalue_from.call(obj)
-      obj = opts[:map].call(obj) if opts[:map]
+    self.each_with_index {|v, i|
+      obj_cv, obj = v
       #p [obj, obj_cv]
       #p [prevobj_cv, buf_mode, obj, obj_cv]
       if buf_mode
@@ -387,12 +398,12 @@ module Enumerable
         ary = (buf[obj_cv] ||= [])
         ary << [obj_cv, i, dumped]
         buf_size += dumped.size
-        if opts[:unique] && ary.length == 2
+        if reducefunc && ary.length == 2
           obj1_cv, i1, dumped1 = ary[0]
           _, _, dumped2 = ary[1]
           _, obj1 = Marshal.load(dumped1)
           _, obj2 = Marshal.load(dumped2)
-          obju = opts[:unique].call(obj1, obj2)
+          obju = reducefunc.call(obj1, obj2)
           buf[obj1_cv] = [[obj1_cv, i1, Marshal.dump([obj1_cv, obju])]]
         end
         if opts[:memsize] < buf_size
@@ -412,10 +423,10 @@ module Enumerable
           buf.clear
           buf_mode = false
         end
-      elsif (cmp = (prevobj_cv <=> obj_cv)) == 0 && opts[:unique]
+      elsif (cmp = (prevobj_cv <=> obj_cv)) == 0 && reducefunc
         _, obj1 = Marshal.load(prevobj_dumped)
         obj2 = obj
-        obju = opts[:unique].call(obj1, obj2)
+        obju = reducefunc.call(obj1, obj2)
         prevobj_dumped = Marshal.dump([prevobj_cv, obju])
       elsif cmp <= 0
         tmp_current.write prevobj_dumped
@@ -447,9 +458,9 @@ module Enumerable
       Marshal.dump(nil, tmp_current)
     end
   end
-  private :extsort_by_first_split
+  private :extsort_first_split
 
-  def extsort_by_merge(src1, src2, dst1, dst2, opts)
+  def extsort_merge(src1, src2, dst1, dst2, reducefunc, opts)
     src1.rewind
     src2.rewind
     obj1_cv, obj1 = obj1_pair = Marshal.load(src1)
@@ -462,8 +473,8 @@ module Enumerable
           obj2_pair, obj2_cv, obj2, src2, obj1_pair, obj1_cv, obj1, src1
         prefer1 = !prefer1
       end
-      if opts[:unique] && cmp == 0
-        Marshal.dump([obj1_cv, opts[:unique].call(obj1, obj2)], dst1)
+      if reducefunc && cmp == 0
+        Marshal.dump([obj1_cv, reducefunc.call(obj1, obj2)], dst1)
         obj1_cv, obj1 = obj1_pair = Marshal.load(src1)
         obj2_cv, obj2 = obj2_pair = Marshal.load(src2)
         if obj1_pair && !obj2_pair
@@ -500,18 +511,17 @@ module Enumerable
       Marshal.dump(restobj_pair, dst1)
     end
   end
-  private :extsort_by_merge
+  private :extsort_merge
 
-  def extsort_by_strip_cv(tmp1, y)
+  def extsort_yield(tmp1, y)
     tmp1.rewind
     while true
       pair = Marshal.load(tmp1)
       break if !pair
-      _, obj = pair
-      y.yield obj
+      y.yield pair
     end
   end
-  private :extsort_by_strip_cv
+  private :extsort_yield
 
   # splits self by _boundary_p_ which is called with adjacent two elements.
   #
