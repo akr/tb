@@ -49,36 +49,51 @@ def (Tb::Cmd).main_cross(argv)
   vkfs = split_field_list_argument(argv.shift)
   err('no hkey-fields given.') if argv.empty?
   hkfs = split_field_list_argument(argv.shift)
+  vhkfs = vkfs + hkfs
   if Tb::Cmd.opt_cross_fields.empty?
-    opt_cross_fields = [['count', 'count']]
+    num_aggregate_fields = 1
+    opt_cross_fields = (vkfs + hkfs).map {|f| [f, Tb::Func::First, f] } +
+      [['count', Tb::Func::Count, nil]]
   else
-    opt_cross_fields = Tb::Cmd.opt_cross_fields.map {|arg|
+    num_aggregate_fields = Tb::Cmd.opt_cross_fields.length
+    opt_cross_fields = (vkfs + hkfs).map {|f| [f, Tb::Func::First, f] } +
+      Tb::Cmd.opt_cross_fields.map {|arg|
       agg_spec, new_field = split_field_list_argument(arg)
       new_field ||= agg_spec
-      [agg_spec, new_field]
+      begin
+        func_srcf = parse_aggregator_spec2(agg_spec)
+      rescue ArgumentError
+        err($!.message)
+      end
+      [new_field, *func_srcf]
     }
   end
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   er = Tb::Enumerator.new {|y|
-    header = nil
     hvs_hash = {}
     hvs_list = nil
-    vhkfs = vkfs + hkfs
-    sorted = creader.extsort_by {|pairs|
-      hvs = hkfs.map {|f| pairs[f] }
-      hvs_hash[hvs] = true
-      vhkfs.map {|f| smart_cmp_value(pairs[f]) }
-    }
-    sorted2 = sorted.with_header {|header0|
-      header = header0
+    aggs_hash = nil
+    op = Tb::Zipper.new(opt_cross_fields.map {|dstf, func, srcf| func })
+    er = creader.with_header {|header0|
       vhkfs.each {|f|
         if !header0.include?(f)
           err("field not found: #{f}")
         end
       }
-      hvs_list = hvs_hash.keys.sort_by {|hvs| hvs.map {|hv| smart_cmp_value(hv) } }
-      n = vkfs.length + hvs_list.length * opt_cross_fields.length
+    }.extsort_reduce(op) {|pairs|
+      vvs = vkfs.map {|f| pairs[f] }
+      hvs = hkfs.map {|f| pairs[f] }
+      vvsc = vvs.map {|v| smart_cmp_value(v) }
+      hvsc = hvs.map {|v| smart_cmp_value(v) }
+      hvs_hash[hvs] = hvsc
+      aggs = opt_cross_fields.map {|dstf, func, srcf| func.start(srcf ? pairs[srcf] : true) }
+      [[vvsc, hvsc], aggs]
+    }
+    all_representative = lambda {|_| 1 }
+    all_before = lambda {|_|
+      hvs_list = hvs_hash.keys.sort_by {|hvs| hvs_hash[hvs] }
+      n = vkfs.length + hvs_list.length * num_aggregate_fields
       header1 = (1..n).map {|i| i.to_s }
       y.set_header header1
       hkfs.each_with_index {|hkf, i|
@@ -87,7 +102,7 @@ def (Tb::Cmd).main_cross(argv)
         j = vkfs.length
         h1[j.to_s] = hkf
         hvs_list.each {|hkvs|
-          opt_cross_fields.length.times {
+          num_aggregate_fields.times {
             j += 1
             h1[j.to_s] = hkvs[i]
           }
@@ -101,55 +116,35 @@ def (Tb::Cmd).main_cross(argv)
         h2[j.to_s] = vkf
       }
       hvs_list.each {|hkvs|
-        opt_cross_fields.each {|agg_spec, new_field|
+        opt_cross_fields.last(num_aggregate_fields).each {|dstf, func, srcf|
           j += 1
           if Tb::Cmd.opt_cross_compact
             h2[j.to_s] = hkvs[-1]
           else
-            h2[j.to_s] = new_field
+            h2[j.to_s] = dstf
           end
         }
       }
       y.yield h2
     }
-    v_representative = lambda {|pairs|
-      vkfs.map {|f| smart_cmp_value(pairs[f]) }
+    v_representative = lambda {|((vvsc, _), _)|
+      vvsc
     }
-    h_representative = lambda {|pairs|
-      hkfs.map {|f| smart_cmp_value(pairs[f]) }
-    }
-    aggs = nil
     v_before = lambda {|_|
-      aggs = {}
+      aggs_hash = {}
     }
-    h_before = lambda {|first_pairs|
-      hvs = hkfs.map {|f| first_pairs[f] }
-      aggs[hvs] = opt_cross_fields.map {|agg_spec, nf|
-        begin
-          make_aggregator(agg_spec, header)
-        rescue ArgumentError
-          err($!.message)
-        end
-      }
+    body = lambda {|(_, aggs)|
+      hvs = aggs[vkfs.length, hkfs.length]
+      aggs_hash[hvs] = op.aggregate(aggs)
     }
-    body = lambda {|pairs|
-      hvs = hkfs.map {|f| pairs[f] }
-      ary = header.map {|f| pairs[f] }
-      aggs[hvs].each {|agg|
-        agg.update(ary)
-      }
-    }
-    h_after = lambda {|last_pairs|
-      hvs = hkfs.map {|f| last_pairs[f] }
-      aggs[hvs].map! {|agg| agg.finish }
-    }
-    v_after = lambda {|last_pairs|
-      ary = vkfs.map {|f| last_pairs[f] }
+    v_after = lambda {|(_, aggs)|
+      vvs = aggs[0, vkfs.length]
+      ary = vvs
       hvs_list.each {|hvs|
-        if aggs.has_key? hvs
-          ary.concat(aggs[hvs])
+        if aggs_hash.has_key? hvs
+          ary.concat(aggs_hash[hvs].last(num_aggregate_fields))
         else
-          ary.concat([nil] * opt_cross_fields.length)
+          ary.concat([nil] * num_aggregate_fields)
         end
       }
       pairs = {}
@@ -158,9 +153,9 @@ def (Tb::Cmd).main_cross(argv)
       }
       y.yield pairs
     }
-    sorted2.detect_nested_group_by(
-      [[v_representative, v_before, v_after],
-       [h_representative, h_before, h_after]]).each(&body)
+    er.detect_nested_group_by(
+      [[all_representative, all_before],
+       [v_representative, v_before, v_after]]).each(&body)
   }
   Tb::Cmd.opt_N = true
   output_tbenum(er)
