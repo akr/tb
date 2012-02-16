@@ -330,10 +330,11 @@ module Enumerable
     }
   end
 
+  # :call-seq:
+  #   enum.extsort_reduce(op, [opts]) {|element| [key, val| }
+  #
   def extsort_reduce(op, opts={}, &key_val_proc)
-    lazy_map(&key_val_proc).send(:extsort_internal0, op, opts).lazy_map {|k, v|
-      [k, v]
-    }
+    lazy_map(&key_val_proc).send(:extsort_internal0, op, opts)
   end
 
   def extsort_internal0(reducefunc, opts={})

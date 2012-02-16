@@ -46,58 +46,34 @@ def (Tb::Cmd).main_group(argv)
   exit_if_help('group')
   err("no key fields given.") if argv.empty?
   kfs = split_field_list_argument(argv.shift)
-  opt_group_fields = Tb::Cmd.opt_group_fields.map {|arg|
+  opt_group_fields = kfs.map {|f| [f, Tb::Func::First, f] } +
+    Tb::Cmd.opt_group_fields.map {|arg|
     aggregation_spec, new_field = split_field_list_argument(arg)
     new_field ||= aggregation_spec
     [new_field,
-      lambda {|fields|
-        begin
-          make_aggregator(aggregation_spec, fields)
-        rescue ArgumentError
-          err($!.message)
-        end
-      }
+      *begin
+        parse_aggregator_spec2(aggregation_spec)
+      rescue ArgumentError
+        err($!.message)
+      end
     ]
   }
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   result = Tb::Enumerator.new {|y|
-    er = creader.extsort_by {|pairs|
-      kfs.map {|f| smart_cmp_value(pairs[f]) }
+    op = Tb::Zipper.new(opt_group_fields.map {|dstf, func, srcf| func })
+    er = creader.extsort_reduce(op) {|pairs|
+      [kfs.map {|f| smart_cmp_value(pairs[f]) },
+       opt_group_fields.map {|dstf, func, srcf| func.start(srcf ? pairs[srcf] : true) } ]
     }
-    header = nil
-    row = nil
-    agg = nil
-    er2 = er.with_header {|header0|
-      header = header0
-      y.set_header(kfs + opt_group_fields.map {|f, maker| f })
-    }
-    representative = lambda {|pairs|
-      kfs.map {|f| pairs[f] }
-    }
-    before = lambda {|first_pairs|
-      row = {}
-      kfs.each {|f|
-        row[f] = first_pairs[f]
+    fields = opt_group_fields.map {|dstf, func, srcf| dstf }
+    y.set_header(fields)
+    er.each {|_, vals|
+      pairs = opt_group_fields.zip(vals).map {|(dstf, func, _), val|
+        [dstf, func.aggregate(val)]
       }
-      agg = {}
-      opt_group_fields.each {|f, maker|
-        agg[f] = maker.call(header)
-      }
+      y.yield Hash[pairs]
     }
-    body = lambda {|pairs|
-      ary = header.map {|f| pairs[f] }
-      opt_group_fields.each {|f, maker|
-        agg[f].update(ary)
-      }
-    }
-    after = lambda {|last_pairs|
-      opt_group_fields.each {|f, maker|
-        row[f] = agg[f].finish
-      }
-      y.yield row
-    }
-    er2.each_group_element_by(representative, before, body, after)
   }
   output_tbenum(result)
 end

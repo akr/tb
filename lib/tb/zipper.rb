@@ -1,6 +1,4 @@
-# lib/tb.rb - entry file for table library
-#
-# Copyright (C) 2010-2012 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2012 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,30 +26,35 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'tempfile'
+class Tb::Zipper
+  def initialize(ops)
+    @ops = ops
+  end
 
-class Tb
+  def start(ary)
+    if ary.length != @ops.length
+      raise ArgumentError, "expect an array which lengths are #{@ops.length}"
+    end
+    @ops.map.with_index {|op, i|
+      op.start(ary[i])
+    }
+  end
+
+  def call(ary1, ary2)
+    if ary1.length != @ops.length || ary2.length != @ops.length
+      raise ArgumentError, "expect an array of arrays which lengths are #{@ops.length}"
+    end
+    @ops.zip(ary1, ary2).map {|op, v1, v2|
+      op.call(v1, v2)
+    }
+  end
+
+  def aggregate(ary)
+    if ary.length != @ops.length
+      raise ArgumentError, "expect an array which lengths are #{@ops.length}"
+    end
+    @ops.map.with_index {|op, i|
+      op.aggregate(ary[i])
+    }
+  end
 end
-
-require 'pp'
-require 'tb/enumerable'
-require 'tb/enumerator'
-require 'tb/func'
-require 'tb/zipper'
-require 'tb/basic'
-require 'tb/record'
-require 'tb/csv'
-require 'tb/tsv'
-require 'tb/pnm'
-require 'tb/json'
-require 'tb/reader'
-require 'tb/ropen'
-require 'tb/catreader'
-require 'tb/fieldset'
-require 'tb/search'
-require 'tb/ex_enumerable'
-require 'tb/ex_enumerator'
-require 'tb/fileenumerator'
-require 'tb/revcmp'
-require 'tb/customcmp'
-require 'tb/customeq'

@@ -202,42 +202,67 @@ class Selector
 end
 
 def make_aggregator(spec, fs)
-  case spec
+  func, field = parse_aggregator_spec(spec)
+  case func
   when 'count'
     CountAggregator.new
-  when /\Asum\((.*)\)\z/
-    field = $1
+  when 'sum'
     i = fs.index(field)
     raise ArgumentError, "field not found: #{field.inspect}" if !i
     Selector.new(i, SumAggregator.new)
-  when /\Aavg\((.*)\)\z/
-    field = $1
+  when 'avg'
     i = fs.index(field)
     raise ArgumentError, "field not found: #{field.inspect}" if !i
     Selector.new(i, AvgAggregator.new)
-  when /\Amax\((.*)\)\z/
-    field = $1
+  when 'max'
     i = fs.index(field)
     raise ArgumentError, "field not found: #{field.inspect}" if !i
     Selector.new(i, MaxAggregator.new)
-  when /\Amin\((.*)\)\z/
-    field = $1
+  when 'min'
     i = fs.index(field)
     raise ArgumentError, "field not found: #{field.inspect}" if !i
     Selector.new(i, MinAggregator.new)
-  when /\Avalues\((.*)\)\z/
-    field = $1
+  when 'values'
     i = fs.index(field)
     raise ArgumentError, "field not found: #{field.inspect}" if !i
     Selector.new(i, ValuesAggregator.new)
-  when /\Auniquevalues\((.*)\)\z/
-    field = $1
+  when 'uniquevalues'
     i = fs.index(field)
     raise ArgumentError, "field not found: #{field.inspect}" if !i
     Selector.new(i, UniqueValuesAggregator.new)
   else
     raise ArgumentError, "unexpected aggregation spec: #{spec.inspect}"
   end
+end
+
+def parse_aggregator_spec(spec)
+  case spec
+  when 'count'
+    ['count', nil]
+  when /\Asum\((.*)\)\z/
+    ['sum', $1]
+  when /\Aavg\((.*)\)\z/
+    ['avg', $1]
+  when /\Amax\((.*)\)\z/
+    ['max', $1]
+  when /\Amin\((.*)\)\z/
+    ['min', $1]
+  when /\Avalues\((.*)\)\z/
+    ['values', $1]
+  when /\Auniquevalues\((.*)\)\z/
+    ['uniquevalues', $1]
+  else
+    raise ArgumentError, "unexpected aggregation spec: #{spec.inspect}"
+  end
+end
+
+def parse_aggregator_spec2(spec)
+  name, field = parse_aggregator_spec(spec)
+  func = Tb::Func::AggregationFunctions[name]
+  if !func
+    raise ArgumentError, "unexpected aggregation spec: #{spec.inspect}"
+  end
+  [func, field]
 end
 
 def split_field_list_argument(arg)
