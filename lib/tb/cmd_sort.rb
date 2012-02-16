@@ -53,9 +53,9 @@ def (Tb::Cmd).main_sort(argv)
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   header = []
   if fs
-    blk = lambda {|pairs| fs.map {|f| smart_cmp_value(pairs[f]) } }
+    blk = lambda {|pairs| fs.map {|f| Tb::Func.smart_cmp_value(pairs[f]) } }
   else
-    blk = lambda {|pairs| header.map {|f| smart_cmp_value(pairs[f]) } }
+    blk = lambda {|pairs| header.map {|f| Tb::Func.smart_cmp_value(pairs[f]) } }
   end
   if Tb::Cmd.opt_sort_r
     blk1 = blk

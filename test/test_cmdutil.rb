@@ -26,14 +26,14 @@ class TestTbCmdUtil < Test::Unit::TestCase
   end
 
   def test_smart_cmp_value
-    assert_equal(0, smart_cmp_value(0) <=> smart_cmp_value(0))
-    assert_equal(1, smart_cmp_value(10) <=> smart_cmp_value(0))
-    assert_equal(-1, smart_cmp_value(-10) <=> smart_cmp_value(0))
-    assert_equal(0, smart_cmp_value("a") <=> smart_cmp_value("a"))
-    assert_equal(1, smart_cmp_value("z") <=> smart_cmp_value("a"))
-    assert_equal(-1, smart_cmp_value("a") <=> smart_cmp_value("b"))
-    assert_equal(1, smart_cmp_value("08") <=> smart_cmp_value("7"))
-    assert_raise(ArgumentError) { smart_cmp_value(Object.new) }
+    assert_equal(0, Tb::Func.smart_cmp_value(0) <=> Tb::Func.smart_cmp_value(0))
+    assert_equal(1, Tb::Func.smart_cmp_value(10) <=> Tb::Func.smart_cmp_value(0))
+    assert_equal(-1, Tb::Func.smart_cmp_value(-10) <=> Tb::Func.smart_cmp_value(0))
+    assert_equal(0, Tb::Func.smart_cmp_value("a") <=> Tb::Func.smart_cmp_value("a"))
+    assert_equal(1, Tb::Func.smart_cmp_value("z") <=> Tb::Func.smart_cmp_value("a"))
+    assert_equal(-1, Tb::Func.smart_cmp_value("a") <=> Tb::Func.smart_cmp_value("b"))
+    assert_equal(1, Tb::Func.smart_cmp_value("08") <=> Tb::Func.smart_cmp_value("7"))
+    assert_raise(ArgumentError) { Tb::Func.smart_cmp_value(Object.new) }
   end
 
   def test_parse_aggregator_spec2

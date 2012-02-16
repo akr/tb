@@ -84,8 +84,8 @@ def (Tb::Cmd).main_cross(argv)
     }.extsort_reduce(op) {|pairs|
       vvs = vkfs.map {|f| pairs[f] }
       hvs = hkfs.map {|f| pairs[f] }
-      vvsc = vvs.map {|v| smart_cmp_value(v) }
-      hvsc = hvs.map {|v| smart_cmp_value(v) }
+      vvsc = vvs.map {|v| Tb::Func.smart_cmp_value(v) }
+      hvsc = hvs.map {|v| Tb::Func.smart_cmp_value(v) }
       hvs_hash[hvs] = hvsc
       aggs = opt_cross_fields.map {|dstf, func, srcf| func.start(srcf ? pairs[srcf] : true) }
       [[vvsc, hvsc], aggs]

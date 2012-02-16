@@ -58,7 +58,7 @@ def (Tb::Cmd).main_nest(argv)
       cv = pairs.reject {|f, v|
         oldfields_hash[f]
       }.map {|f, v|
-        [smart_cmp_value(f), smart_cmp_value(v)]
+        [Tb::Func.smart_cmp_value(f), Tb::Func.smart_cmp_value(v)]
       }.sort
       [cv, pairs]
     }

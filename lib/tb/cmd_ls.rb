@@ -104,7 +104,7 @@ class Tb::Cmd::Ls
       return
     end
     entries.map! {|filename| real_pathname_string(filename) }
-    entries = entries.sort_by {|filename| smart_cmp_value(filename) }
+    entries = entries.sort_by {|filename| Tb::Func.smart_cmp_value(filename) }
     if @opts[:a] || @opts[:A]
       entries1, entries2 = entries.partition {|filename| /\A\./ =~ filename }
       entries0, entries1 = entries1.partition {|filename| filename == '.' || filename == '..' }

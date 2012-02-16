@@ -63,7 +63,7 @@ def (Tb::Cmd).main_group(argv)
   result = Tb::Enumerator.new {|y|
     op = Tb::Zipper.new(opt_group_fields.map {|dstf, func, srcf| func })
     er = creader.extsort_reduce(op) {|pairs|
-      [kfs.map {|f| smart_cmp_value(pairs[f]) },
+      [kfs.map {|f| Tb::Func.smart_cmp_value(pairs[f]) },
        opt_group_fields.map {|dstf, func, srcf| func.start(srcf ? pairs[srcf] : true) } ]
     }
     fields = opt_group_fields.map {|dstf, func, srcf| dstf }

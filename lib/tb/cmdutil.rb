@@ -96,37 +96,6 @@ def err(msg)
   raise SystemExit.new(1, msg)
 end
 
-def smart_cmp_value(v)
-  case v
-  when nil
-    []
-  when Numeric
-    [0, v]
-  when String
-    if v.respond_to? :force_encoding
-      v = v.dup.force_encoding("ASCII-8BIT")
-    end
-    case v
-    when /\A\s*-?\d+\s*\z/
-      [0, v.to_i(10)]
-    when /\A\s*-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\s*\z/
-      [0, Float(v)]
-    else
-      a = []
-      v.scan(/(\d+)|\D+/) {
-        if $1
-          a << 0 << $1.to_i
-        else
-          a << 1 << $&
-        end
-      }
-      a
-    end
-  else
-    raise ArgumentError, "unexpected: #{v.inspect}"
-  end
-end
-
 def parse_aggregator_spec(spec)
   case spec
   when 'count'
