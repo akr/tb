@@ -36,8 +36,8 @@ class TestTbCmdUtil < Test::Unit::TestCase
     assert_raise(ArgumentError) { smart_cmp_value(Object.new) }
   end
 
-  def test_conv_to_numeric
-    assert_raise(ArgumentError) { conv_to_numeric("foo") }
+  def test_parse_aggregator_spec2
+    assert_raise(ArgumentError) { parse_aggregator_spec2("foo") }
   end
 
 end
