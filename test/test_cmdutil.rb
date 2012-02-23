@@ -40,4 +40,19 @@ class TestTbCmdUtil < Test::Unit::TestCase
     assert_raise(ArgumentError) { parse_aggregator_spec2("foo") }
   end
 
+  def test_with_output_preserve_mtime
+    Dir.mktmpdir {|d|
+      fn = "#{d}/a"
+      File.open(fn, "w") {|f| f.print "foo" }
+      t0 = Time.utc(2000)
+      File.utime(t0, t0, fn)
+      t1 = File.stat(fn).mtime
+      with_output(fn) {|f|
+        f.print "foo"
+      }
+      t2 = File.stat(fn).mtime
+      assert_equal(t1, t2)
+    }
+  end
+
 end

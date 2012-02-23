@@ -159,7 +159,11 @@ def with_output(filename=Tb::Cmd.opt_output)
       File.open(tmp, 'w') {|f|
         yield f
       }
-      File.rename tmp, filename
+      if File.exist?(filename) && FileUtils.compare_file(filename, tmp)
+        File.unlink tmp
+      else
+        File.rename tmp, filename
+      end
     ensure
       File.unlink tmp if File.exist? tmp
     end
