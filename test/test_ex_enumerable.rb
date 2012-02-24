@@ -218,10 +218,10 @@ class TestTbEnumerable < Test::Unit::TestCase
     assert_equal([[:cat, 4], [:dog, 3]], result)
   end
 
-  def test_each_group_element
+  def test_each_group_element_by_customeq
     result = []
-    (0..9).to_a.each_group_element(
-      lambda {|a, b| a / 3 != b / 3 },
+    (0..9).to_a.each_group_element_by(
+      lambda {|v| Tb::CustomEq.new(v) {|a, b| a / 3 == b / 3 } },
       lambda {|v| result << [:before, v] },
       lambda {|v| result << [:body, v] },
       lambda {|v| result << [:after, v] })

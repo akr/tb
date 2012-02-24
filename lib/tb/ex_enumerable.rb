@@ -524,36 +524,6 @@ module Enumerable
   end
   private :extsort_yield
 
-  # splits self by _boundary_p_ which is called with adjacent two elements.
-  #
-  # _before_group_ is called before each group with the first element.
-  # _after_group_ is called after each group with the last element.
-  # _body_ is called for each element.
-  #
-  def each_group_element(boundary_p, before_group, body, after_group)
-    prev = nil
-    first = true
-    self.each {|curr|
-      if first
-        before_group.call(curr)
-        body.call(curr)
-        prev = curr
-        first = false
-      elsif boundary_p.call(prev, curr)
-        after_group.call(prev)
-        before_group.call(curr)
-        body.call(curr)
-        prev = curr
-      else
-        body.call(curr)
-        prev = curr
-      end
-    }
-    if !first
-      after_group.call(prev)
-    end
-  end
-
   # splits self by _representative_ which is called with a element.
   #
   # _before_group_ is called before each group with the first element.
