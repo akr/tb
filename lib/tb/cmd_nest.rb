@@ -64,9 +64,6 @@ def (Tb::Cmd).main_nest(argv)
     }
 
     nested = nil
-    representative = lambda {|(cv, _)|
-      cv
-    }
     before_group = lambda {|(_, _)|
       nested = []
     }
@@ -85,7 +82,7 @@ def (Tb::Cmd).main_nest(argv)
       pairs = Hash[assoc]
       y.yield pairs
     }
-    sorted.each_group_element_by(representative, before_group, body, after_group)
+    sorted.detect_group_by(before_group, after_group) {|cv,| cv }.each(&body)
   }
   output_tbenum(er)
 end
