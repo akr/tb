@@ -40,7 +40,7 @@ module Tb::Func
       case v
       when /\A\s*-?\d+\s*\z/
         [0, v.to_i(10)]
-      when /\A\s*-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\s*\z/
+      when /\A\s*-?(\d+(\.\d+)?)([eE][-+]?\d+)?\s*\z/
         [0, Float(v)]
       else
         a = []
