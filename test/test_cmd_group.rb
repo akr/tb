@@ -178,4 +178,121 @@ class TestTbCmdGroup < Test::Unit::TestCase
     assert(!exc.success?)
   end
 
+  def test_sum_nil
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      k,v
+      a,2
+      b,3
+      a,
+      b,4
+    End
+    Tb::Cmd.main_group(['-o', o="o.csv", 'k', '-a', 'sum(v)', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      k,sum(v)
+      a,2
+      b,7
+    End
+  end
+
+  def test_avg_nil
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      k,v
+      a,2
+      b,3
+      c,
+      a,
+      b,4
+      c,
+    End
+    Tb::Cmd.main_group(['-o', o="o.csv", 'k', '-a', 'avg(v)', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      k,avg(v)
+      a,2.0
+      b,3.5
+      c,
+    End
+  end
+
+  def test_min_nil
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      k,v
+      a,9
+      b,9
+      c,
+      a,2
+      b,
+      c,
+      a,
+      b,4
+      c,
+    End
+    Tb::Cmd.main_group(['-o', o="o.csv", 'k', '-a', 'min(v)', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      k,min(v)
+      a,2
+      b,4
+      c,
+    End
+  end
+
+  def test_max_nil
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      k,v
+      a,1
+      b,1
+      c,
+      a,2
+      b,
+      c,
+      a,
+      b,4
+      c,
+    End
+    Tb::Cmd.main_group(['-o', o="o.csv", 'k', '-a', 'max(v)', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      k,max(v)
+      a,2
+      b,4
+      c,
+    End
+  end
+
+  def test_values_nil
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      k,v
+      a,2
+      b,
+      c,
+      a,
+      b,4
+      c,
+    End
+    Tb::Cmd.main_group(['-o', o="o.csv", 'k', '-a', 'values(v)', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      k,values(v)
+      a,2
+      b,4
+      c,""
+    End
+  end
+
+  def test_uniquevalues_nil
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      k,v
+      a,2
+      b,
+      c,
+      a,
+      b,4
+      c,
+    End
+    Tb::Cmd.main_group(['-o', o="o.csv", 'k', '-a', 'uniquevalues(v)', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      k,uniquevalues(v)
+      a,2
+      b,4
+      c,""
+    End
+  end
+
 end

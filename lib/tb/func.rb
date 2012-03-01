@@ -77,24 +77,24 @@ module Tb::Func
   def Count.aggregate(count) count end
 
   module Sum; end
-  def Sum.start(value) Tb::Func.smart_numerize(value) end
+  def Sum.start(value) value.nil? ? 0 : Tb::Func.smart_numerize(value) end
   def Sum.call(v1, v2) v1 + v2 end
   def Sum.aggregate(sum) sum end
 
   module Min; end
-  def Min.start(value) [value, Tb::Func.smart_cmp_value(value)]  end
-  def Min.call(vc1, vc2) (vc1.last <=> vc2.last) <= 0 ? vc1 : vc2 end
-  def Min.aggregate(vc) vc.first end
+  def Min.start(value) value.nil? ? nil : [value, Tb::Func.smart_cmp_value(value)] end
+  def Min.call(vc1, vc2) vc1.nil? ? vc2 : vc2.nil? ? vc1 : (vc1.last <=> vc2.last) <= 0 ? vc1 : vc2 end
+  def Min.aggregate(vc) vc.nil? ? nil : vc.first end
 
   module Max; end
-  def Max.start(value) [value, Tb::Func.smart_cmp_value(value)]  end
-  def Max.call(vc1, vc2) (vc1.last <=> vc2.last) >= 0 ? vc1 : vc2 end
-  def Max.aggregate(vc) vc.first end
+  def Max.start(value) value.nil? ? nil : [value, Tb::Func.smart_cmp_value(value)] end
+  def Max.call(vc1, vc2) vc1.nil? ? vc2 : vc2.nil? ? vc1 : (vc1.last <=> vc2.last) >= 0 ? vc1 : vc2 end
+  def Max.aggregate(vc) vc.nil? ? nil : vc.first end
 
   module Avg; end
-  def Avg.start(value) [Tb::Func.smart_numerize(value), 1] end
+  def Avg.start(value) value.nil? ? [0, 0] : [Tb::Func.smart_numerize(value), 1] end
   def Avg.call(v1, v2) [v1[0] + v2[0], v1[1] + v2[1]] end
-  def Avg.aggregate(sum_count) sum_count[0] / sum_count[1].to_f end
+  def Avg.aggregate(sum_count) sum_count[1] == 0 ? nil : sum_count[0] / sum_count[1].to_f end
 
   module First; end
   def First.start(value) value end
@@ -107,12 +107,12 @@ module Tb::Func
   def Last.aggregate(value) value end
 
   module Values; end
-  def Values.start(value) [value] end
+  def Values.start(value) value.nil? ? [] : [value] end
   def Values.call(a1, a2) a1.concat a2 end
   def Values.aggregate(ary) ary.join(',') end
 
   module UniqueValues; end
-  def UniqueValues.start(value) {value => true} end
+  def UniqueValues.start(value) value.nil? ? {} : {value => true} end
   def UniqueValues.call(h1, h2) h1.update h2 end
   def UniqueValues.aggregate(hash) hash.keys.join(',') end
 
