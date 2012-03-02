@@ -159,4 +159,16 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     assert(!log.empty?)
   end
 
+  def test_binary
+    system("git init -q")
+    File.open("foo", "w") {|f| f.print "\0\xff" }
+    system("git add foo")
+    system("git commit -q -m msg foo")
+    Tb::Cmd.main_git_log(['-o', o="o.csv"])
+    result = File.read(o)
+    tb = Tb.parse_csv(result)
+    assert_equal(1, tb.size)
+    assert_match(/,,,A,foo\n/, tb.get_record(0)["files"])
+  end
+
 end

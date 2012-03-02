@@ -83,6 +83,7 @@ def (Tb::Cmd).git_log_with_git_log(dir)
       "--pretty=#{Tb::Cmd::GIT_LOG_PRETTY_FORMAT}",
       '--decorate=full',
         '--raw',
+        '--numstat',
         '--abbrev=40',
         '.',
         {:chdir=>dir}
@@ -131,22 +132,34 @@ end
 
 def (Tb::Cmd).git_log_parse_commit(commit_info, files)
   commit_info = commit_info.split(/\n(?=[a-z])/)
-  Tb.csv_stream_output(files_csv="") {|gen|
-    gen << %w[mode1 mode2 hash1 hash2 status filename]
-    files.split(/\n/).each {|file_line|
-      if /\A:(\d+) (\d+) ([0-9a-f]+) ([0-9a-f]+) (\S+)\t(.+)\z/ !~ file_line
-        warn "unexpected git-log output: #{file_line.inspect}"
-        next
-      end
+  files_raw = {}
+  files_numstat = {}
+  files.split(/\n/).each {|file_line|
+    if /\A:(\d+) (\d+) ([0-9a-f]+) ([0-9a-f]+) (\S+)\t(.+)\z/ =~ file_line
       mode1, mode2, hash1, hash2, status, filename = $1, $2, $3, $4, $5, $6
       filename = git_log_unescape_filename(filename)
-      gen << [mode1, mode2, hash1, hash2, status, filename]
+      files_raw[filename] = [mode1, mode2, hash1, hash2, status]
+    elsif /\A(\d+|-)\t(\d+|-)\t(.+)\z/ =~ file_line
+      add, del, filename = $1, $2, $3
+      add = add == '-' ? nil : add.to_i
+      del = del == '-' ? nil : del.to_i
+      filename = git_log_unescape_filename(filename)
+      files_numstat[filename] = [add, del]
+    else
+      warn "unexpected git-log output (raw/numstat): #{file_line.inspect}"
+    end
+  }
+  Tb.csv_stream_output(files_csv="") {|gen|
+    gen << %w[mode1 mode2 hash1 hash2 add del status filename]
+    files_raw.each {|filename, (mode1, mode2, hash1, hash2, status)|
+      add, del = files_numstat[filename]
+      gen << [mode1, mode2, hash1, hash2, add, del, status, filename]
     }
   }
   h = {}
   commit_info.each {|s|
     if /:/ !~ s
-      warn "unexpected git-log output: #{s.inspect}"
+      warn "unexpected git-log output (header:value): #{s.inspect}"
       next
     end
     k = $`
@@ -171,7 +184,7 @@ def (Tb::Cmd).git_log_each_commit(f)
     chunk.chomp!("\x01commit-separator\x01\n")
     next if chunk.empty? # beginning of the output
     if /\nend-commit\n/ !~ chunk
-      warn "unexpected git-log output: #{chunk.inspect}"
+      warn "unexpected git-log output (end-commit): #{chunk.inspect}"
       next
     end
     commit_info, files = $`, $'
