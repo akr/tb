@@ -90,6 +90,7 @@ def (Tb::Cmd).git_log_with_git_log(dir)
     ]
     $stderr.puts "git command line: #{command.inspect}" if 1 <= Tb::Cmd.opt_debug
     if Tb::Cmd.opt_git_log_debug_output
+      # File.realdirpath is required before Ruby 2.0.
       command.last[:out] = File.realdirpath(Tb::Cmd.opt_git_log_debug_output)
       system(*command)
       File.open(Tb::Cmd.opt_git_log_debug_output) {|f|
