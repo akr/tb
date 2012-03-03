@@ -85,12 +85,11 @@ def (Tb::Cmd).git_log_with_git_log(dir)
         '--raw',
         '--numstat',
         '--abbrev=40',
-        '.',
         {:chdir=>dir}
     ]
     $stderr.puts "git command line: #{command.inspect}" if 1 <= Tb::Cmd.opt_debug
     if Tb::Cmd.opt_git_log_debug_output
-      command.last[:out] = Tb::Cmd.opt_git_log_debug_output
+      command.last[:out] = File.realdirpath(Tb::Cmd.opt_git_log_debug_output)
       system(*command)
       File.open(Tb::Cmd.opt_git_log_debug_output) {|f|
         yield f
