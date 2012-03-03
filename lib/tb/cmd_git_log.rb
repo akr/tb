@@ -82,10 +82,11 @@ def (Tb::Cmd).git_log_with_git_log(dir)
       'log',
       "--pretty=#{Tb::Cmd::GIT_LOG_PRETTY_FORMAT}",
       '--decorate=full',
-        '--raw',
-        '--numstat',
-        '--abbrev=40',
-        {:chdir=>dir}
+      '--raw',
+      '--numstat',
+      '--abbrev=40',
+      '.',
+      {:chdir=>dir}
     ]
     $stderr.puts "git command line: #{command.inspect}" if 1 <= Tb::Cmd.opt_debug
     if Tb::Cmd.opt_git_log_debug_output

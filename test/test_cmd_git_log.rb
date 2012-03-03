@@ -171,4 +171,20 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     assert_match(/,,,A,foo\n/, tb.get_record(0)["files"])
   end
 
+  def test_subdir
+    system("git init -q")
+    File.open("foo", "w") {|f| f.print "foo" }
+    system("git add foo")
+    system("git commit -q -m msg foo")
+    Dir.mkdir("bar")
+    File.open("bar/baz", "w") {|f| f.print "baz" }
+    system("git add bar")
+    system("git commit -q -m msg bar")
+    Tb::Cmd.main_git_log(['-o', o="o.csv", "bar"])
+    result = File.read(o)
+    tb = Tb.parse_csv(result)
+    assert_equal(1, tb.size)
+    assert_not_match(/foo\n/, tb.get_record(0)["files"])
+  end
+
 end
