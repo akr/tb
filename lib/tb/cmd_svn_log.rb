@@ -97,14 +97,23 @@ class Tb::Cmd::SVNLOGListener
         end
         @y.set_header @header
       end
+      assoc = @log.to_a.reject {|f, v| !%w[rev author date msg].include?(f) }
+      if !assoc.assoc('author')
+        assoc << ['author', '(no author)']
+      end
+      if !assoc.assoc('date')
+        assoc << ['date', '(no date)']
+      end
+      if !assoc.assoc('msg')
+        assoc << ['msg', '']
+      end
       if @log['paths']
         @log['paths'].each {|h|
-          assoc = @log.to_a.reject {|f, v| !%w[rev author date msg].include?(f) }
-          assoc += h.to_a.reject {|f, v| !%w[kind action path].include?(f) }
-          @y.yield Hash[assoc]
+          assoc2 = assoc.dup
+          assoc2.concat(h.to_a.reject {|f, v| !%w[kind action path].include?(f) })
+          @y.yield Hash[assoc2]
         }
       else
-        assoc = @log.to_a.reject {|f, v| !%w[rev author date msg].include?(f) }
         @y.yield Hash[assoc]
       end
       @log = nil

@@ -84,4 +84,25 @@ class TestTbCmdSvnLog < Test::Unit::TestCase
     assert_equal(1, tb.size)
     assert_match(/baz/, tb.get_record(0)["msg"])
   end
+
+  def test_no_props
+    system("svnadmin create repo")
+    File.open("repo/hooks/pre-revprop-change", "w", 0755) {|f| f.print "#!/bin/sh\nexit 0\0" }
+    system("svn co -q file://#{@tmpdir}/repo .")
+    File.open("foo", "w") {|f| f.puts "bar" }
+    system("svn add -q foo")
+    system("svn commit -q -m baz foo")
+    system("svn update -q") # update the revision of the directory.
+    system("svn propdel -q svn:author --revprop -r 1 .")
+    system("svn propdel -q svn:date --revprop -r 1 .")
+    system("svn propdel -q svn:log --revprop -r 1 .")
+    ###
+    Tb::Cmd.main_svn_log(['-o', o="o.csv"])
+    result = File.read(o)
+    tb = Tb.parse_csv(result)
+    assert_equal(1, tb.size)
+    assert_equal('(no author)', tb.get_record(0)["author"])
+    assert_equal('(no date)', tb.get_record(0)["date"])
+    assert_equal('', tb.get_record(0)["msg"])
+  end
 end
