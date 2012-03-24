@@ -79,6 +79,7 @@ Following example searches languages which name contains a non-alphabet characte
   F#,2002
 
 "grep" subcommand can take Ruby expression, instead of a regexp.
+The variable, "_", contains a hash which represents a record.
 
   % tb grep --ruby '(1990..1999).include?(_["year"].to_i)' sample/langs.csv
   language,year
@@ -146,12 +147,17 @@ There are more subcommands.
     tb join [OPTS] [TABLE1 TABLE2 ...]
     tb consecutive [OPTS] [TABLE ...]
     tb group [OPTS] KEY-FIELD1,... [TABLE ...]
-    tb cross [OPTS] HKEY-FIELD1,... VKEY-FIELD1,... [TABLE ...]
+    tb cross [OPTS] VKEY-FIELD1,... HKEY-FIELD1,... [TABLE ...]
+    tb melt KEY-FIELDS-LIST [OPTS] [TABLE ...]
+    tb nest [OPTS] NEWFIELD,OLDFIELD1,OLDFIELD2,... [TABLE ...]
+    tb unnest [OPTS] FIELD [TABLE ...]
     tb shape [OPTS] [TABLE ...]
     tb mheader [OPTS] [TABLE]
     tb crop [OPTS] [TABLE ...]
     tb ls [OPTS] [FILE ...]
+    tb tar-tvf [OPTS] [TAR-FILE ...]
     tb svn-log [OPTS] -- [SVN-LOG-ARGS]
+    tb git-log [OPTS] [GIT-DIR ...]
 
 == Command Line Tool
 
@@ -174,12 +180,17 @@ tb command has many subcommands.
   join        : Concatenate tables horizontally as left/right/full natural join.
   consecutive : Concatenate consecutive rows.
   group       : Group and aggregate rows.
-  cross       : Create a contingency table.
+  cross       : Create a cross table. (a.k.a contingency table, pivot table)
+  melt        : split value fields into records.
+  nest        : Nest fields.
+  unnest      : Unnest a field.
   shape       : Show table size.
   mheader     : Collapse multi rows header.
   crop        : Extract rectangle in a table.
   ls          : List directory entries as a table.
+  tar-tvf     : Show the file listing of tar file.
   svn-log     : Show the SVN log as a table.
+  git-log     : Show the GIT log as a table.
 
 == Install
 
