@@ -55,6 +55,7 @@ class Tb::Enumerator < Enumerator
   def self.new(&enumerator_proc)
     super() {|y|
       header_proc = Thread.current[:tb_enumerator_header_proc]
+      Thread.current[:tb_enumerator_header_proc] = nil
       ty = Tb::Yielder.new(header_proc, y)
       enumerator_proc.call(ty)
       if !ty.header_proc_called
