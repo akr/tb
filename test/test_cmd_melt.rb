@@ -59,6 +59,28 @@ class TestTbCmdMelt < Test::Unit::TestCase
     End
   end
 
+  def test_recnum_value
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c,d
+      0,1,2,3
+      4,5,6,7
+      8,9,a,b
+      c,d,e,f
+    End
+    Tb::Cmd.main_melt(['-o', o="o.csv", 'a,b', '--recnum=rec', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      rec,a,b,variable,value
+      1,0,1,c,2
+      1,0,1,d,3
+      2,4,5,c,6
+      2,4,5,d,7
+      3,8,9,c,a
+      3,8,9,d,b
+      4,c,d,c,e
+      4,c,d,d,f
+    End
+  end
+
   def test_variable_field
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c,d
