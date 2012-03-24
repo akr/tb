@@ -159,7 +159,7 @@ There are more subcommands.
     tb svn-log [OPTS] -- [SVN-LOG-ARGS]
     tb git-log [OPTS] [GIT-DIR ...]
 
-tb help -s shows one line description of the subcommands.
+tb help -s shows one line summary of the subcommands.
 
   % tb help -s
   help        : Show help message of tb command.
