@@ -28,8 +28,8 @@
 
 Tb::Cmd.subcommands << 'melt'
 
-#Tb::Cmd.default_option[:opt_melt_R] = nil
-#Tb::Cmd.default_option[:opt_melt_V] = nil
+Tb::Cmd.default_option[:opt_melt_regexps] = []
+Tb::Cmd.default_option[:opt_melt_list] = []
 Tb::Cmd.default_option[:opt_melt_variable_field] = 'variable'
 Tb::Cmd.default_option[:opt_melt_value_field] = 'value'
 
@@ -38,10 +38,21 @@ def (Tb::Cmd).op_melt
   op.banner = "Usage: tb melt KEY-FIELDS-LIST [OPTS] [TABLE ...]\n" +
     "split value fields into records."
   define_common_option(op, "hNo", "--no-pager")
-  #op.def_option('-R REGEXP', 'regexp for value fields') {|regexp| Tb::Cmd.opt_melt_R = regexp }
-  #op.def_option('-V FIELD,...', 'value fields') {|fields| Tb::Cmd.opt_melt_V = fields }
-  op.def_option('--variable-field FIELD', 'variable fields') {|field| Tb::Cmd.opt_melt_variable_field = field }
-  op.def_option('--value-field FIELD', 'value field') {|field| Tb::Cmd.opt_melt_value_field = field }
+  op.def_option('-R REGEXP',
+                '--melt-regexp REGEXP',
+                'regexp for melt fields') {|regexp|
+    Tb::Cmd.opt_melt_regexps << Regexp.compile(regexp)
+  }
+  op.def_option('--melt-fields FIELD,...',
+                'list of melt fields') {|fields|
+    Tb::Cmd.opt_melt_list.concat split_field_list_argument(fields)
+  }
+  op.def_option('--variable-field FIELD', 'variable fields (default: variable)') {|field|
+    Tb::Cmd.opt_melt_variable_field = field
+  }
+  op.def_option('--value-field FIELD', 'value field (default: value)') {|field|
+    Tb::Cmd.opt_melt_value_field = field
+  }
   op
 end
 
@@ -51,6 +62,12 @@ def (Tb::Cmd).main_melt(argv)
   err('no key-fields given.') if argv.empty?
   key_fields = split_field_list_argument(argv.shift)
   key_fields_hash = Hash[key_fields.map {|f| [f, true] }]
+  if Tb::Cmd.opt_melt_regexps.empty? && Tb::Cmd.opt_melt_list.empty?
+    melt_fields_pattern = //
+  else
+    list = Tb::Cmd.opt_melt_list + Tb::Cmd.opt_melt_regexps
+    melt_fields_pattern = /\A#{Regexp.union(list)}\z/
+  end
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   er = Tb::Enumerator.new {|y|
@@ -62,6 +79,7 @@ def (Tb::Cmd).main_melt(argv)
       }
       pairs.each {|f, v|
         next if key_fields_hash[f]
+        next if melt_fields_pattern !~ f
         h = h0.dup
         h[Tb::Cmd.opt_melt_variable_field] = f
         h[Tb::Cmd.opt_melt_value_field] = v
