@@ -28,6 +28,7 @@
 
 Tb::Cmd.subcommands << 'melt'
 
+Tb::Cmd.default_option[:opt_melt_recnum] = nil
 Tb::Cmd.default_option[:opt_melt_regexps] = []
 Tb::Cmd.default_option[:opt_melt_list] = []
 Tb::Cmd.default_option[:opt_melt_variable_field] = 'variable'
@@ -38,6 +39,10 @@ def (Tb::Cmd).op_melt
   op.banner = "Usage: tb melt KEY-FIELDS-LIST [OPTS] [TABLE ...]\n" +
     "split value fields into records."
   define_common_option(op, "hNo", "--no-pager")
+  op.def_option('--recnum[=FIELD]',
+                'add recnum field (default don\'t add)') {|field|
+    Tb::Cmd.opt_melt_recnum = field || 'recnum'
+  }
   op.def_option('-R REGEXP',
                 '--melt-regexp REGEXP',
                 'regexp for melt fields') {|regexp|
@@ -71,9 +76,16 @@ def (Tb::Cmd).main_melt(argv)
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   er = Tb::Enumerator.new {|y|
-    y.set_header [*key_fields, Tb::Cmd.opt_melt_variable_field, Tb::Cmd.opt_melt_value_field]
-    creader.each {|pairs|
+    header = []
+    header << Tb::Cmd.opt_melt_recnum if Tb::Cmd.opt_melt_recnum
+    header.concat key_fields
+    header << Tb::Cmd.opt_melt_variable_field
+    header << Tb::Cmd.opt_melt_value_field
+    y.set_header header
+    creader.each_with_index {|pairs, i|
+      recnum = i + 1
       h0 = {}
+      h0[Tb::Cmd.opt_melt_recnum] = nil if Tb::Cmd.opt_melt_recnum
       key_fields.each {|kf|
         h0[kf] = pairs[kf]
       }
@@ -81,6 +93,7 @@ def (Tb::Cmd).main_melt(argv)
         next if key_fields_hash[f]
         next if melt_fields_pattern !~ f
         h = h0.dup
+        h[Tb::Cmd.opt_melt_recnum] = recnum if Tb::Cmd.opt_melt_recnum
         h[Tb::Cmd.opt_melt_variable_field] = f
         h[Tb::Cmd.opt_melt_value_field] = v
         y.yield h
