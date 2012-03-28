@@ -52,10 +52,10 @@ def (Tb::Cmd).op_melt
                 'list of melt fields') {|fields|
     Tb::Cmd.opt_melt_list.concat split_field_list_argument(fields)
   }
-  op.def_option('--variable-field FIELD', 'variable fields (default: variable)') {|field|
+  op.def_option('--variable-field FIELD', 'variable field. (default: variable)') {|field|
     Tb::Cmd.opt_melt_variable_field = field
   }
-  op.def_option('--value-field FIELD', 'value field (default: value)') {|field|
+  op.def_option('--value-field FIELD', 'value field. (default: value)') {|field|
     Tb::Cmd.opt_melt_value_field = field
   }
   op
