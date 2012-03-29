@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = 'tb'
-  s.version = '0.4'
-  s.date = '2012-02-29'
+  s.version = '0.5'
+  s.date = '2012-03-29'
   s.author = 'Tanaka Akira'
   s.email = 'akr@fsij.org'
   s.required_ruby_version = '>= 1.9.2'
@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
     lib/tb/cmd_help.rb
     lib/tb/cmd_join.rb
     lib/tb/cmd_ls.rb
+    lib/tb/cmd_melt.rb
     lib/tb/cmd_mheader.rb
     lib/tb/cmd_nest.rb
     lib/tb/cmd_newfield.rb
@@ -37,6 +38,7 @@ Gem::Specification.new do |s|
     lib/tb/cmd_to_pp.rb
     lib/tb/cmd_to_tsv.rb
     lib/tb/cmd_to_yaml.rb
+    lib/tb/cmd_unmelt.rb
     lib/tb/cmd_unnest.rb
     lib/tb/cmdmain.rb
     lib/tb/cmdtop.rb
@@ -86,6 +88,7 @@ Gem::Specification.new do |s|
     test/test_cmd_help.rb
     test/test_cmd_join.rb
     test/test_cmd_ls.rb
+    test/test_cmd_melt.rb
     test/test_cmd_mheader.rb
     test/test_cmd_nest.rb
     test/test_cmd_newfield.rb
@@ -100,6 +103,7 @@ Gem::Specification.new do |s|
     test/test_cmd_to_pp.rb
     test/test_cmd_to_tsv.rb
     test/test_cmd_to_yaml.rb
+    test/test_cmd_unmelt.rb
     test/test_cmd_unnest.rb
     test/test_cmdtty.rb
     test/test_cmdutil.rb
@@ -131,6 +135,7 @@ tb is a manipulation tool for table: CSV, TSV, JSON, etc.
 tb provides a command and a library for manipulating tables:
 Unix filter like operations (grep, sort, cat, cut, ls, etc.),
 SQL like operations (join, group, etc.),
+other table operations (gsub, rename, cross, melt, unmelt, etc.),
 information extractions (git-log, svn-log, tar-tvf),
 and more.
 End
