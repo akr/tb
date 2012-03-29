@@ -149,6 +149,7 @@ There are more subcommands.
     tb group [OPTS] KEY-FIELD1,... [TABLE ...]
     tb cross [OPTS] VKEY-FIELD1,... HKEY-FIELD1,... [TABLE ...]
     tb melt KEY-FIELDS-LIST [OPTS] [TABLE ...]
+    tb unmelt [OPTS] [TABLE ...]
     tb nest [OPTS] NEWFIELD,OLDFIELD1,OLDFIELD2,... [TABLE ...]
     tb unnest [OPTS] FIELD [TABLE ...]
     tb shape [OPTS] [TABLE ...]
@@ -181,6 +182,7 @@ tb help -s shows one line summary of the subcommands.
   group       : Group and aggregate rows.
   cross       : Create a cross table. (a.k.a contingency table, pivot table)
   melt        : split value fields into records.
+  unmelt      : merge melted records into a record.
   nest        : Nest fields.
   unnest      : Unnest a field.
   shape       : Show table size.
