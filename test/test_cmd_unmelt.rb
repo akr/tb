@@ -48,6 +48,20 @@ class TestTbCmdUnmelt < Test::Unit::TestCase
     End
   end
 
+  def test_duplicated_variable
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,variable,value
+      0,1,x,3
+      0,1,x,4
+    End
+    Tb::Cmd.main_unmelt(['-o', o="o.csv", i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,b,x
+      0,1,3
+      0,1,4
+    End
+  end
+
   def test_keys
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,variable,value

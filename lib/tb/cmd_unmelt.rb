@@ -92,6 +92,10 @@ def (Tb::Cmd).main_unmelt(argv)
       pairs_ary.each {|pairs|
         var = pairs[Tb::Cmd.opt_unmelt_variable_field]
         val = pairs[Tb::Cmd.opt_unmelt_value_field]
+        if rec.has_key? var
+          y.yield rec
+          rec = keys.dup
+        end
         rec[var] = val
       }
       y.yield rec
