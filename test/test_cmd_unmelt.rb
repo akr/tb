@@ -154,4 +154,18 @@ class TestTbCmdUnmelt < Test::Unit::TestCase
     End
   end
 
+  def test_missing_value
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,variable,value
+      0,x,2
+      1,y,3
+    End
+    Tb::Cmd.main_unmelt(['-o', o="o.csv", '--missing-value=9', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      a,x,y
+      0,2,9
+      1,9,3
+    End
+  end
+
 end

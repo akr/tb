@@ -32,6 +32,7 @@ Tb::Cmd.default_option[:opt_unmelt_recnum] = nil
 Tb::Cmd.default_option[:opt_unmelt_keys] = []
 Tb::Cmd.default_option[:opt_unmelt_variable_field] = 'variable'
 Tb::Cmd.default_option[:opt_unmelt_value_field] = 'value'
+Tb::Cmd.default_option[:opt_unmelt_missing_value] = nil
 
 def (Tb::Cmd).op_unmelt
   op = OptionParser.new
@@ -51,6 +52,9 @@ def (Tb::Cmd).op_unmelt
   op.def_option('--value-field FIELD', 'value field. (default: value)') {|field|
     Tb::Cmd.opt_unmelt_value_field = field
   }
+  op.def_option('--missing-value FIELD', 'used for missing values. (default: not specified)') {|value|
+    Tb::Cmd.opt_unmelt_missing_value = value
+  }
   op
 end
 
@@ -69,6 +73,7 @@ def (Tb::Cmd).main_unmelt(argv)
     end
     key_fields += Tb::Cmd.opt_unmelt_keys
   end
+  melt_fields_hash = {}
   er = Tb::Enumerator.new {|y|
     creader.chunk {|pairs|
       keys = {}
@@ -92,6 +97,7 @@ def (Tb::Cmd).main_unmelt(argv)
       pairs_ary.each {|pairs|
         var = pairs[Tb::Cmd.opt_unmelt_variable_field]
         val = pairs[Tb::Cmd.opt_unmelt_value_field]
+        melt_fields_hash[var] = true
         if rec.has_key? var
           y.yield rec
           rec = keys.dup
@@ -101,6 +107,22 @@ def (Tb::Cmd).main_unmelt(argv)
       y.yield rec
     }
   }
-  output_tbenum(er)
+  if !Tb::Cmd.opt_unmelt_missing_value
+    er2 = er
+  else
+    er2 = Tb::Enumerator.new {|y|
+      header1 = nil
+      fgen, fnew = Tb::FileEnumerator.gen_new
+      er.to_fileenumerator.with_header {|header|
+        y.set_header header
+      }.each {|pairs|
+        melt_fields_hash.each_key {|f|
+          pairs[f] ||= Tb::Cmd.opt_unmelt_missing_value
+        }
+        y.yield pairs
+      }
+    }
+  end
+  output_tbenum(er2)
 end
 
