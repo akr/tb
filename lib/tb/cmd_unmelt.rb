@@ -111,8 +111,6 @@ def (Tb::Cmd).main_unmelt(argv)
     er2 = er
   else
     er2 = Tb::Enumerator.new {|y|
-      header1 = nil
-      fgen, fnew = Tb::FileEnumerator.gen_new
       er.to_fileenumerator.with_header {|header|
         y.set_header header
       }.each {|pairs|
