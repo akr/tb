@@ -32,7 +32,6 @@ Tb::Cmd.default_option[:opt_tar_tvf_l] = 0
 Tb::Cmd.default_option[:opt_tar_tvf_ustar] = nil
 Tb::Cmd.default_option[:opt_tar_tvf_hash] = []
 
-
 def (Tb::Cmd).op_tar_tvf
   op = OptionParser.new
   op.banner = "Usage: tb tar-tvf [OPTS] [TAR-FILE ...]\n" +
