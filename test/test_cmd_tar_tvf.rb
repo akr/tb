@@ -278,4 +278,30 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     }
   end
 
+  def test_hash_short
+    str = 'bar'
+    open('foo', 'w') {|f| f.print str }
+    assert(system('tar cf foo.tar foo'))
+    %w[MD5 SHA1 SHA256 SHA384 SHA512].each {|cname|
+      alg = cname.downcase
+      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', "--hash=#{alg}", 'foo.tar'])
+      result = File.read(o)
+      assert_equal(2, result.count("\n"), "hash algorithm: #{alg}")
+      assert_match(/,#{Regexp.escape Digest.const_get(cname).hexdigest(str)}$/, result, "hash algorithm: #{alg}")
+    }
+  end
+
+  def test_hash_long
+    str = 'bx' * 8000
+    open('foo', 'w') {|f| f.print str }
+    assert(system('tar cf foo.tar foo'))
+    %w[MD5 SHA1 SHA256 SHA384 SHA512].each {|cname|
+      alg = cname.downcase
+      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', "--hash=#{alg}", 'foo.tar'])
+      result = File.read(o)
+      assert_equal(2, result.count("\n"), "hash algorithm: #{alg}")
+      assert_match(/,#{Regexp.escape Digest.const_get(cname).hexdigest(str)}$/, result, "hash algorithm: #{alg}")
+    }
+  end
+
 end

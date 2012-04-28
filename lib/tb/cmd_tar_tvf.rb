@@ -30,6 +30,8 @@ Tb::Cmd.subcommands << 'tar-tvf'
 
 Tb::Cmd.default_option[:opt_tar_tvf_l] = 0
 Tb::Cmd.default_option[:opt_tar_tvf_ustar] = nil
+Tb::Cmd.default_option[:opt_tar_tvf_hash] = []
+
 
 def (Tb::Cmd).op_tar_tvf
   op = OptionParser.new
@@ -38,6 +40,7 @@ def (Tb::Cmd).op_tar_tvf
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-l', 'show more attributes.') {|fs| Tb::Cmd.opt_tar_tvf_l += 1 }
   op.def_option('--ustar', 'ustar format (POSIX.1-1988).  No GNU and POSIX.1-2001 extension.') {|fs| Tb::Cmd.opt_tar_tvf_ustar = true }
+  op.def_option('--hash=ALGORITHMS', 'hash algorithms such as md5,sha256,sha384,sha512 (default: none)') {|hs| Tb::Cmd.opt_tar_tvf_hash.concat split_field_list_argument(hs) }
   op
 end
 
@@ -72,6 +75,14 @@ Tb::Cmd::TAR_TYPEFLAG = {
   '4' => :block_special,        # [POSIX]
   '6' => :fifo,                 # [POSIX]
   '7' => :contiguous,           # [POSIX] Reserved for high-performance file.  (It is come from "contiguous file" (S_IFCTG) of Masscomp?)
+}
+
+Tb::Cmd::TAR_HASH_ALGORITHMS = {
+  'md5' => 'MD5',
+  'sha1' => 'SHA1',
+  'sha256' => 'SHA256',
+  'sha384' => 'SHA384',
+  'sha512' => 'SHA512',
 }
 
 def (Tb::Cmd).tar_tvf_parse_seconds_from_epoch(val)
@@ -196,6 +207,41 @@ class Tb::Cmd::TarReader
     end
     @offset += size
   end
+
+  def calculate_hash(blocklength, filesize, alg_list) # :yield: alg, result
+    digests = {}
+    alg_list.each {|alg|
+      c = Digest.const_get(Tb::Cmd::TAR_HASH_ALGORITHMS.fetch(alg))
+      digests[alg] = c.new
+    }
+    rest = blocklength
+    while 0 < rest
+      if rest < 4096
+        s = rest
+      else
+        s = 4096
+      end
+      ret = @input.read(s)
+      if !ret || ret.length != s
+        warn "premature end of tar archive content (#{kind})"
+        raise Tb::Cmd::TarFormatError
+      end
+      if filesize < s
+        ret = ret[0, filesize]
+      end
+      digests.each {|alg, d|
+        d.update ret
+      }
+      filesize -= s
+      rest -= s
+    end
+    @offset += blocklength
+    result = {}
+    digests.each {|alg, d|
+      result[alg] = d.hexdigest
+    }
+    result
+  end
 end
 
 def (Tb::Cmd).tar_tvf_read_end_of_archive_indicator(reader)
@@ -291,7 +337,13 @@ def (Tb::Cmd).tar_tvf_each(f)
     when :link, :symlink, :directory, :character_special, :block_special, :fifo
       # xxx: hardlink may have contents for posix archive.
     else
-      reader.skip(content_blocklength, 'file content')
+      if Tb::Cmd.opt_tar_tvf_hash.empty?
+        reader.skip(content_blocklength, 'file content')
+      else
+        reader.calculate_hash(content_blocklength, h[:size], Tb::Cmd.opt_tar_tvf_hash).each {|alg, result|
+          h[alg] = result
+        }
+      end
     end
     h[:size_in_tar] = reader.offset - offset
     yield h
@@ -405,6 +457,10 @@ end
 def (Tb::Cmd).main_tar_tvf(argv)
   op_tar_tvf.parse!(argv)
   exit_if_help('tar-tvf')
+  if Tb::Cmd.opt_tar_tvf_hash.any? {|alg| !Tb::Cmd::TAR_HASH_ALGORITHMS[alg] }
+    STDERR.puts "Unexpected hash algorithm: #{Tb::Cmd.opt_tar_tvf_hash.reject {|alg| Tb::Cmd::TAR_HASH_ALGORITHMS[alg] }.join(",")}"
+    exit false
+  end
   argv = ['-'] if argv.empty?
   er = Tb::Enumerator.new {|y|
     if Tb::Cmd.opt_tar_tvf_l == 0
@@ -412,6 +468,7 @@ def (Tb::Cmd).main_tar_tvf(argv)
     else
       header = Tb::Cmd::TAR_CSV_LONG_HEADER
     end
+    header += Tb::Cmd.opt_tar_tvf_hash
     y.set_header header
     argv.each {|filename|
       tar_tvf_open_with(filename) {|f|
@@ -436,6 +493,7 @@ def (Tb::Cmd).main_tar_tvf(argv)
           formatted["tar_typeflag"] = h[:typeflag]
           formatted["tar_magic"] = h[:magic]
           formatted["tar_version"] = h[:version]
+          Tb::Cmd.opt_tar_tvf_hash.each {|alg| formatted[alg] = h[alg] }
           y.yield Hash[header.map {|f2| [f2, formatted[f2]] }]
         }
       }
