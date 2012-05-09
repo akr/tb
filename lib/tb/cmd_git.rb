@@ -26,20 +26,20 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Tb::Cmd.subcommands << 'git-log'
+Tb::Cmd.subcommands << 'git'
 
-Tb::Cmd.default_option[:opt_git_log_git_command] = nil
-Tb::Cmd.default_option[:opt_git_log_debug_input] = nil
-Tb::Cmd.default_option[:opt_git_log_debug_output] = nil
+Tb::Cmd.default_option[:opt_git_command] = nil
+Tb::Cmd.default_option[:opt_git_debug_input] = nil
+Tb::Cmd.default_option[:opt_git_debug_output] = nil
 
-def (Tb::Cmd).op_git_log
+def (Tb::Cmd).op_git
   op = OptionParser.new
-  op.banner = "Usage: tb git-log [OPTS] [GIT-DIR ...]\n" +
+  op.banner = "Usage: tb git [OPTS] [GIT-DIR ...]\n" +
     "Show the GIT log as a table."
   define_common_option(op, "hNod", "--no-pager", '--debug')
-  op.def_option('--git-command COMMAND', 'specify the git command (default: git)') {|command| Tb::Cmd.opt_git_log_git_command = command }
-  op.def_option('--debug-git-log-output FILE', 'store the raw output of git-log (for debug)') {|filename| Tb::Cmd.opt_git_log_debug_output = filename }
-  op.def_option('--debug-git-log-input FILE', 'use the file as output of git-log (for debug)') {|filename| Tb::Cmd.opt_git_log_debug_input = filename }
+  op.def_option('--git-command COMMAND', 'specify the git command (default: git)') {|command| Tb::Cmd.opt_git_command = command }
+  op.def_option('--debug-git-output FILE', 'store the raw output of git (for debug)') {|filename| Tb::Cmd.opt_git_debug_output = filename }
+  op.def_option('--debug-git-input FILE', 'use the file as output of git (for debug)') {|filename| Tb::Cmd.opt_git_debug_input = filename }
   op
 end
 
@@ -69,13 +69,13 @@ Tb::Cmd::GIT_LOG_PRETTY_FORMAT = 'format:%x01commit-separator%x01%n' +
 
 Tb::Cmd::GIT_LOG_HEADER = Tb::Cmd::GIT_LOG_FORMAT_SPEC.map {|k, v| k } + ['files']
 
-def (Tb::Cmd).git_log_with_git_log(dir)
-  if Tb::Cmd.opt_git_log_debug_input
-    File.open(Tb::Cmd.opt_git_log_debug_input) {|f|
+def (Tb::Cmd).git_with_git_log(dir)
+  if Tb::Cmd.opt_git_debug_input
+    File.open(Tb::Cmd.opt_git_debug_input) {|f|
       yield f
     }
   else
-    git = Tb::Cmd.opt_git_log_git_command || 'git'
+    git = Tb::Cmd.opt_git_command || 'git'
     # depends Ruby 1.9.
     command = [
       git,
@@ -89,11 +89,11 @@ def (Tb::Cmd).git_log_with_git_log(dir)
       {:chdir=>dir}
     ]
     $stderr.puts "git command line: #{command.inspect}" if 1 <= Tb::Cmd.opt_debug
-    if Tb::Cmd.opt_git_log_debug_output
+    if Tb::Cmd.opt_git_debug_output
       # File.realdirpath is required before Ruby 2.0.
-      command.last[:out] = File.realdirpath(Tb::Cmd.opt_git_log_debug_output)
+      command.last[:out] = File.realdirpath(Tb::Cmd.opt_git_debug_output)
       system(*command)
-      File.open(Tb::Cmd.opt_git_log_debug_output) {|f|
+      File.open(Tb::Cmd.opt_git_debug_output) {|f|
         yield f
       }
     else
@@ -104,7 +104,7 @@ def (Tb::Cmd).git_log_with_git_log(dir)
   end
 end
 
-def (Tb::Cmd).git_log_unescape_filename(filename)
+def (Tb::Cmd).git_unescape_filename(filename)
   if /\A"/ =~ filename
     $'.chomp('"').gsub(/\\((\d\d\d)|[abtnvfr"\\])/) {
       str = $1
@@ -131,23 +131,23 @@ def (Tb::Cmd).git_log_unescape_filename(filename)
   end
 end
 
-def (Tb::Cmd).git_log_parse_commit(commit_info, files)
+def (Tb::Cmd).git_parse_commit(commit_info, files)
   commit_info = commit_info.split(/\n(?=[a-z])/)
   files_raw = {}
   files_numstat = {}
   files.split(/\n/).each {|file_line|
     if /\A:(\d+) (\d+) ([0-9a-f]+) ([0-9a-f]+) (\S+)\t(.+)\z/ =~ file_line
       mode1, mode2, hash1, hash2, status, filename = $1, $2, $3, $4, $5, $6
-      filename = git_log_unescape_filename(filename)
+      filename = git_unescape_filename(filename)
       files_raw[filename] = [mode1, mode2, hash1, hash2, status]
     elsif /\A(\d+|-)\t(\d+|-)\t(.+)\z/ =~ file_line
       add, del, filename = $1, $2, $3
       add = add == '-' ? nil : add.to_i
       del = del == '-' ? nil : del.to_i
-      filename = git_log_unescape_filename(filename)
+      filename = git_unescape_filename(filename)
       files_numstat[filename] = [add, del]
     else
-      warn "unexpected git-log output (raw/numstat): #{file_line.inspect}"
+      warn "unexpected git output (raw/numstat): #{file_line.inspect}"
     end
   }
   Tb.csv_stream_output(files_csv="") {|gen|
@@ -160,7 +160,7 @@ def (Tb::Cmd).git_log_parse_commit(commit_info, files)
   h = {}
   commit_info.each {|s|
     if /:/ !~ s
-      warn "unexpected git-log output (header:value): #{s.inspect}"
+      warn "unexpected git output (header:value): #{s.inspect}"
       next
     end
     k = $`
@@ -180,32 +180,32 @@ def (Tb::Cmd).git_log_parse_commit(commit_info, files)
   h
 end
 
-def (Tb::Cmd).git_log_each_commit(f)
+def (Tb::Cmd).git_each_commit(f)
   while chunk = f.gets("\x01commit-separator\x01\n")
     chunk.chomp!("\x01commit-separator\x01\n")
     next if chunk.empty? # beginning of the output
     if /\nend-commit\n/ !~ chunk
-      warn "unexpected git-log output (end-commit): #{chunk.inspect}"
+      warn "unexpected git output (end-commit): #{chunk.inspect}"
       next
     end
     commit_info, files = $`, $'
     files.sub!(/\A\n/, '')
-    h = git_log_parse_commit(commit_info, files)
+    h = git_parse_commit(commit_info, files)
     yield h
   end
 
 end
 
-def (Tb::Cmd).main_git_log(argv)
-  op_git_log.parse!(argv)
-  exit_if_help('git-log')
+def (Tb::Cmd).main_git(argv)
+  op_git.parse!(argv)
+  exit_if_help('git')
   argv = ['.'] if argv.empty?
   er = Tb::Enumerator.new {|y|
     y.set_header Tb::Cmd::GIT_LOG_HEADER
     argv.each {|dir|
-      git_log_with_git_log(dir) {|f|
+      git_with_git_log(dir) {|f|
         f.set_encoding("ASCII-8BIT") if f.respond_to? :set_encoding
-        git_log_each_commit(f) {|h|
+        git_each_commit(f) {|h|
           y.yield h
         }
       }

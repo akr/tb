@@ -30,7 +30,7 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     File.open("foo", "w") {|f| f.puts "bar" }
     system("git add foo")
     system("git commit -q -m msg foo")
-    Tb::Cmd.main_git_log(['-o', o="o.csv"])
+    Tb::Cmd.main_git(['-o', o="o.csv"])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)
@@ -43,7 +43,7 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     File.open(filename, "w") {|f| f.puts "bar" }
     system("git", "add", filename)
     system("git", "commit", "-q", "-m", "msg", filename)
-    Tb::Cmd.main_git_log(['-o', o="o.csv"])
+    Tb::Cmd.main_git(['-o', o="o.csv"])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)
@@ -53,12 +53,12 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     assert_equal(filename, ftb.get_record(0)["filename"])
   end
 
-  def test_debug_git_log_output_input
+  def test_debug_git_output_input
     system("git init -q")
     File.open("foo", "w") {|f| f.puts "bar" }
     system("git add foo")
     system("git commit -q -m msg foo")
-    Tb::Cmd.main_git_log(['-o', o="o.csv", '--debug-git-log-output', g='gitlog'])
+    Tb::Cmd.main_git(['-o', o="o.csv", '--debug-git-output', g='gitlog'])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)
@@ -66,7 +66,7 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     gresult = File.read(g)
     assert(!gresult.empty?)
     FileUtils.rmtree('.git')
-    Tb::Cmd.main_git_log(['-o', o="o.csv", '--debug-git-log-input', g])
+    Tb::Cmd.main_git(['-o', o="o.csv", '--debug-git-input', g])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)
@@ -78,7 +78,7 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     File.open("foo", "w") {|f| f.puts "bar" }
     system("git add foo")
     system("git commit -q -m msg foo")
-    Tb::Cmd.main_git_log(['-o', o="o.csv", '--debug-git-log-output', g='gitlog'])
+    Tb::Cmd.main_git(['-o', o="o.csv", '--debug-git-output', g='gitlog'])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)
@@ -91,7 +91,7 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     o2 = 'o2.csv'
     File.open('log', 'w') {|log|
       with_stderr(log) {
-        Tb::Cmd.main_git_log(['-o', o2, '--debug-git-log-input', g])
+        Tb::Cmd.main_git(['-o', o2, '--debug-git-input', g])
       }
     }
     result = File.read(o2)
@@ -107,7 +107,7 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     File.open("foo", "w") {|f| f.puts "bar" }
     system("git add foo")
     system("git commit -q -m msg foo")
-    Tb::Cmd.main_git_log(['-o', o="o.csv", '--debug-git-log-output', g='gitlog'])
+    Tb::Cmd.main_git(['-o', o="o.csv", '--debug-git-output', g='gitlog'])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)
@@ -120,7 +120,7 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     o2 = 'o2.csv'
     File.open('log', 'w') {|log|
       with_stderr(log) {
-        Tb::Cmd.main_git_log(['-o', o2, '--debug-git-log-input', g])
+        Tb::Cmd.main_git(['-o', o2, '--debug-git-input', g])
       }
     }
     result = File.read(o2)
@@ -136,7 +136,7 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     File.open("foo", "w") {|f| f.puts "bar" }
     system("git add foo")
     system("git commit -q -m msg foo")
-    Tb::Cmd.main_git_log(['-o', o="o.csv", '--debug-git-log-output', g='gitlog'])
+    Tb::Cmd.main_git(['-o', o="o.csv", '--debug-git-output', g='gitlog'])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)
@@ -149,7 +149,7 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     o2 = 'o2.csv'
     File.open('log', 'w') {|log|
       with_stderr(log) {
-        Tb::Cmd.main_git_log(['-o', o2, '--debug-git-log-input', g])
+        Tb::Cmd.main_git(['-o', o2, '--debug-git-input', g])
       }
     }
     result = File.read(o2)
@@ -164,7 +164,7 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     File.open("foo", "w") {|f| f.print "\0\xff" }
     system("git add foo")
     system("git commit -q -m msg foo")
-    Tb::Cmd.main_git_log(['-o', o="o.csv"])
+    Tb::Cmd.main_git(['-o', o="o.csv"])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)
@@ -180,7 +180,7 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     File.open("bar/baz", "w") {|f| f.print "baz" }
     system("git add bar")
     system("git commit -q -m msg bar")
-    Tb::Cmd.main_git_log(['-o', o="o.csv", "bar"])
+    Tb::Cmd.main_git(['-o', o="o.csv", "bar"])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)
