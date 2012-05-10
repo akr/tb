@@ -28,27 +28,27 @@
 
 require 'rexml/document'
 
-Tb::Cmd.subcommands << 'svn-log'
+Tb::Cmd.subcommands << 'svn'
 
-Tb::Cmd.default_option[:opt_svn_log_svn_command] = nil
+Tb::Cmd.default_option[:opt_svn_command] = nil
 Tb::Cmd.default_option[:opt_svn_log_xml] = nil
 
-def (Tb::Cmd).op_svn_log
+def (Tb::Cmd).op_svn
   op = OptionParser.new
-  op.banner = "Usage: tb svn-log [OPTS] -- [SVN-LOG-ARGS]\n" +
+  op.banner = "Usage: tb svn [OPTS] -- [SVN-LOG-ARGS]\n" +
     "Show the SVN log as a table."
   define_common_option(op, "hNo", "--no-pager")
-  op.def_option('--svn-command COMMAND', 'specify the svn command (default: svn)') {|command| Tb::Cmd.opt_svn_log_svn_command = command }
+  op.def_option('--svn-command COMMAND', 'specify the svn command (default: svn)') {|command| Tb::Cmd.opt_svn_command = command }
   op.def_option('--svn-log-xml FILE', 'specify the result svn log --xml') {|filename| Tb::Cmd.opt_svn_log_xml = filename }
   op
 end
 
-Tb::Cmd.def_vhelp('svn-log', <<'End')
+Tb::Cmd.def_vhelp('svn', <<'End')
 Example:
 
-  % tb svn-log
-  % tb svn-log -- -v
-  % tb svn-log -- -v http://svn.ruby-lang.org/repos/ruby/trunk
+  % tb svn
+  % tb svn -- -v
+  % tb svn -- -v http://svn.ruby-lang.org/repos/ruby/trunk
 End
 
 class Tb::Cmd::SVNLOGListener
@@ -157,24 +157,24 @@ class Tb::Cmd::SVNLOGListener
   end
 end
 
-def (Tb::Cmd).svn_log_with_svn_log(argv)
+def (Tb::Cmd).svn_with_svn_log(argv)
   if Tb::Cmd.opt_svn_log_xml
     File.open(Tb::Cmd.opt_svn_log_xml) {|f|
       yield f
     }
   else
-    svn = Tb::Cmd.opt_svn_log_svn_command || 'svn'
+    svn = Tb::Cmd.opt_svn_command || 'svn'
     IO.popen([svn, 'log', '--xml', *argv]) {|f|
       yield f
     }
   end
 end
 
-def (Tb::Cmd).main_svn_log(argv)
-  op_svn_log.parse!(argv)
-  exit_if_help('svn-log')
+def (Tb::Cmd).main_svn(argv)
+  op_svn.parse!(argv)
+  exit_if_help('svn')
   er = Tb::Enumerator.new {|y|
-    svn_log_with_svn_log(argv) {|f|
+    svn_with_svn_log(argv) {|f|
       listener = Tb::Cmd::SVNLOGListener.new(y)
       REXML::Parsers::StreamParser.new(f, listener).parse
     }

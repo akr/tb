@@ -33,7 +33,7 @@ class TestTbCmdSvnLog < Test::Unit::TestCase
     system("svn add -q foo hoge")
     system("svn commit -q -m baz foo hoge")
     system("svn update -q") # update the revision of the directory.
-    Tb::Cmd.main_svn_log(['-o', o="o.csv"])
+    Tb::Cmd.main_svn(['-o', o="o.csv"])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)
@@ -48,7 +48,7 @@ class TestTbCmdSvnLog < Test::Unit::TestCase
     system("svn add -q foo hoge")
     system("svn commit -q -m baz foo hoge")
     system("svn update -q") # update the revision of the directory.
-    Tb::Cmd.main_svn_log(['-o', o="o.csv", '--', '-v'])
+    Tb::Cmd.main_svn(['-o', o="o.csv", '--', '-v'])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(2, tb.size)
@@ -70,7 +70,7 @@ class TestTbCmdSvnLog < Test::Unit::TestCase
     system("svn commit -q -m baz foo hoge")
     system("svn update -q") # update the revision of the directory.
     ###
-    Tb::Cmd.main_svn_log(['-o', o="o.csv"])
+    Tb::Cmd.main_svn(['-o', o="o.csv"])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)
@@ -78,7 +78,7 @@ class TestTbCmdSvnLog < Test::Unit::TestCase
     ###
     system("svn log --xml > log.xml")
     FileUtils.rmtree('.svn')
-    Tb::Cmd.main_svn_log(['-o', o="o.csv", '--svn-log-xml=log.xml'])
+    Tb::Cmd.main_svn(['-o', o="o.csv", '--svn-log-xml=log.xml'])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)
@@ -97,7 +97,7 @@ class TestTbCmdSvnLog < Test::Unit::TestCase
     system("svn propdel -q svn:date --revprop -r 1 .")
     system("svn propdel -q svn:log --revprop -r 1 .")
     ###
-    Tb::Cmd.main_svn_log(['-o', o="o.csv"])
+    Tb::Cmd.main_svn(['-o', o="o.csv"])
     result = File.read(o)
     tb = Tb.parse_csv(result)
     assert_equal(1, tb.size)

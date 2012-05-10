@@ -62,7 +62,7 @@ require 'tb/cmd_mheader'
 require 'tb/cmd_crop'
 require 'tb/cmd_ls'
 require 'tb/cmd_tar_tvf'
-require 'tb/cmd_svn_log'
+require 'tb/cmd_svn'
 require 'tb/cmd_git'
 require 'tb/cmdmain'
 
