@@ -26,20 +26,20 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Tb::Cmd.subcommands << 'tar-tvf'
+Tb::Cmd.subcommands << 'tar'
 
-Tb::Cmd.default_option[:opt_tar_tvf_l] = 0
-Tb::Cmd.default_option[:opt_tar_tvf_ustar] = nil
-Tb::Cmd.default_option[:opt_tar_tvf_hash] = []
+Tb::Cmd.default_option[:opt_tar_l] = 0
+Tb::Cmd.default_option[:opt_tar_ustar] = nil
+Tb::Cmd.default_option[:opt_tar_hash] = []
 
-def (Tb::Cmd).op_tar_tvf
+def (Tb::Cmd).op_tar
   op = OptionParser.new
-  op.banner = "Usage: tb tar-tvf [OPTS] [TAR-FILE ...]\n" +
+  op.banner = "Usage: tb tar [OPTS] [TAR-FILE ...]\n" +
     "Show the file listing of tar file."
   define_common_option(op, "hNo", "--no-pager")
-  op.def_option('-l', 'show more attributes.') {|fs| Tb::Cmd.opt_tar_tvf_l += 1 }
-  op.def_option('--ustar', 'ustar format (POSIX.1-1988).  No GNU and POSIX.1-2001 extension.') {|fs| Tb::Cmd.opt_tar_tvf_ustar = true }
-  op.def_option('--hash=ALGORITHMS', 'hash algorithms such as md5,sha256,sha384,sha512 (default: none)') {|hs| Tb::Cmd.opt_tar_tvf_hash.concat split_field_list_argument(hs) }
+  op.def_option('-l', 'show more attributes.') {|fs| Tb::Cmd.opt_tar_l += 1 }
+  op.def_option('--ustar', 'ustar format (POSIX.1-1988).  No GNU and POSIX.1-2001 extension.') {|fs| Tb::Cmd.opt_tar_ustar = true }
+  op.def_option('--hash=ALGORITHMS', 'hash algorithms such as md5,sha256,sha384,sha512 (default: none)') {|hs| Tb::Cmd.opt_tar_hash.concat split_field_list_argument(hs) }
   op
 end
 
@@ -84,7 +84,7 @@ Tb::Cmd::TAR_HASH_ALGORITHMS = {
   'sha512' => 'SHA512',
 }
 
-def (Tb::Cmd).tar_tvf_parse_seconds_from_epoch(val)
+def (Tb::Cmd).tar_parse_seconds_from_epoch(val)
   if /\./ =~ val
     num = ($` + $').to_i
     den = 10 ** $'.length
@@ -101,9 +101,9 @@ def (Tb::Cmd).tar_tvf_parse_seconds_from_epoch(val)
 end
 
 Tb::Cmd::TAR_PAX_KEYWORD_RECOGNIZERS = {
-  'atime' => [:atime, lambda {|val| Tb::Cmd.tar_tvf_parse_seconds_from_epoch(val) }],
-  'mtime' => [:mtime, lambda {|val| Tb::Cmd.tar_tvf_parse_seconds_from_epoch(val) }],
-  'ctime' => [:ctime, lambda {|val| Tb::Cmd.tar_tvf_parse_seconds_from_epoch(val) }],
+  'atime' => [:atime, lambda {|val| Tb::Cmd.tar_parse_seconds_from_epoch(val) }],
+  'mtime' => [:mtime, lambda {|val| Tb::Cmd.tar_parse_seconds_from_epoch(val) }],
+  'ctime' => [:ctime, lambda {|val| Tb::Cmd.tar_parse_seconds_from_epoch(val) }],
   'gid' => [:gid, lambda {|val| val.to_i }],
   'gname' => [:gname, lambda {|val| val }],
   'uid' => [:uid, lambda {|val| val.to_i }],
@@ -116,7 +116,7 @@ Tb::Cmd::TAR_PAX_KEYWORD_RECOGNIZERS = {
 Tb::Cmd::TAR_CSV_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime path linkname]
 Tb::Cmd::TAR_CSV_LONG_HEADER = %w[mode filemode uid user gid group devmajor devminor size mtime atime ctime path linkname size_in_tar tar_typeflag tar_magic tar_version tar_chksum]
 
-def (Tb::Cmd).tar_tvf_parse_header(header_record)
+def (Tb::Cmd).tar_parse_header(header_record)
   ary = header_record.unpack(Tb::Cmd::TAR_HEADER_TEPMLATE)
   h = {}
   Tb::Cmd::TAR_HEADER_STRUCTURE.each_with_index {|(k, _), i|
@@ -243,7 +243,7 @@ class Tb::Cmd::TarReader
   end
 end
 
-def (Tb::Cmd).tar_tvf_read_end_of_archive_indicator(reader)
+def (Tb::Cmd).tar_read_end_of_archive_indicator(reader)
   # The end of archive indicator is two consecutive records of NULs.
   # The first record is already read.
   second_end_of_archive_indicator_record = reader.get_single_record("second record of the end of archive indicator")
@@ -259,7 +259,7 @@ def (Tb::Cmd).tar_tvf_read_end_of_archive_indicator(reader)
   # archive indicator.  ("ustar Interchange Format" in POSIX)
 end
 
-def (Tb::Cmd).tar_tvf_check_extension_record(reader, h, content_blocklength)
+def (Tb::Cmd).tar_check_extension_record(reader, h, content_blocklength)
   prefix_parameters = {}
   case h[:typeflag]
   when 'L' # GNU
@@ -302,7 +302,7 @@ def (Tb::Cmd).tar_tvf_check_extension_record(reader, h, content_blocklength)
   nil
 end
 
-def (Tb::Cmd).tar_tvf_each(f)
+def (Tb::Cmd).tar_each(f)
   offset = 0
   reader = Tb::Cmd::TarReader.new(f)
   prefix_parameters = {}
@@ -312,14 +312,14 @@ def (Tb::Cmd).tar_tvf_each(f)
       break
     end
     if /\A\0*\z/ =~ header_record
-      tar_tvf_read_end_of_archive_indicator(reader)
+      tar_read_end_of_archive_indicator(reader)
       break
     end
-    h = tar_tvf_parse_header(header_record)
+    h = tar_parse_header(header_record)
     content_numrecords = (h[:size] + Tb::Cmd::TAR_RECORD_LENGTH - 1) / Tb::Cmd::TAR_RECORD_LENGTH
     content_blocklength = content_numrecords * Tb::Cmd::TAR_RECORD_LENGTH
-    if !Tb::Cmd.opt_tar_tvf_ustar
-      extension_params = tar_tvf_check_extension_record(reader, h, content_blocklength)
+    if !Tb::Cmd.opt_tar_ustar
+      extension_params = tar_check_extension_record(reader, h, content_blocklength)
       if extension_params
         prefix_parameters.update extension_params
         next
@@ -336,10 +336,10 @@ def (Tb::Cmd).tar_tvf_each(f)
     when :link, :symlink, :directory, :character_special, :block_special, :fifo
       # xxx: hardlink may have contents for posix archive.
     else
-      if Tb::Cmd.opt_tar_tvf_hash.empty?
+      if Tb::Cmd.opt_tar_hash.empty?
         reader.skip(content_blocklength, 'file content')
       else
-        reader.calculate_hash(content_blocklength, h[:size], Tb::Cmd.opt_tar_tvf_hash).each {|alg, result|
+        reader.calculate_hash(content_blocklength, h[:size], Tb::Cmd.opt_tar_hash).each {|alg, result|
           h[alg] = result
         }
       end
@@ -351,7 +351,7 @@ def (Tb::Cmd).tar_tvf_each(f)
   end
 end
 
-def (Tb::Cmd).tar_tvf_open_with0(arg)
+def (Tb::Cmd).tar_open_with0(arg)
   if arg == '-'
     yield $stdin
   else
@@ -361,8 +361,8 @@ def (Tb::Cmd).tar_tvf_open_with0(arg)
   end
 end
 
-def (Tb::Cmd).tar_tvf_open_with(arg)
-  tar_tvf_open_with0(arg) {|f|
+def (Tb::Cmd).tar_open_with(arg)
+  tar_open_with0(arg) {|f|
     magic = f.read(8)
     case magic
     when /\A\x1f\x8b/, /\A\037\235/ # \x1f\x8b is gzip format.  \037\235 is "compress" format of old Unix.
@@ -423,7 +423,7 @@ def (Tb::Cmd).tar_tvf_open_with(arg)
   }
 end
 
-def (Tb::Cmd).tar_tvf_format_filemode(typeflag, mode)
+def (Tb::Cmd).tar_format_filemode(typeflag, mode)
   entry_type =
     case Tb::Cmd::TAR_TYPEFLAG[typeflag]
     when :regular then '-'
@@ -453,34 +453,34 @@ def (Tb::Cmd).tar_tvf_format_filemode(typeflag, mode)
                      (m & 01000 == 0 ? ?x : ?t)))
 end
 
-def (Tb::Cmd).main_tar_tvf(argv)
-  op_tar_tvf.parse!(argv)
-  exit_if_help('tar-tvf')
-  if Tb::Cmd.opt_tar_tvf_hash.any? {|alg| !Tb::Cmd::TAR_HASH_ALGORITHMS[alg] }
-    STDERR.puts "Unexpected hash algorithm: #{Tb::Cmd.opt_tar_tvf_hash.reject {|alg| Tb::Cmd::TAR_HASH_ALGORITHMS[alg] }.join(",")}"
+def (Tb::Cmd).main_tar(argv)
+  op_tar.parse!(argv)
+  exit_if_help('tar')
+  if Tb::Cmd.opt_tar_hash.any? {|alg| !Tb::Cmd::TAR_HASH_ALGORITHMS[alg] }
+    STDERR.puts "Unexpected hash algorithm: #{Tb::Cmd.opt_tar_hash.reject {|alg| Tb::Cmd::TAR_HASH_ALGORITHMS[alg] }.join(",")}"
     exit false
   end
   argv = ['-'] if argv.empty?
   er = Tb::Enumerator.new {|y|
-    if Tb::Cmd.opt_tar_tvf_l == 0
+    if Tb::Cmd.opt_tar_l == 0
       header = Tb::Cmd::TAR_CSV_HEADER
     else
       header = Tb::Cmd::TAR_CSV_LONG_HEADER
     end
-    header += Tb::Cmd.opt_tar_tvf_hash
+    header += Tb::Cmd.opt_tar_hash
     y.set_header header
     argv.each {|filename|
-      tar_tvf_open_with(filename) {|f|
-        tar_tvf_each(f) {|h|
+      tar_open_with(filename) {|f|
+        tar_each(f) {|h|
           formatted = {}
           formatted["mode"] = sprintf("0%o", h[:mode])
-          formatted["filemode"] = tar_tvf_format_filemode(h[:typeflag], h[:mode])
+          formatted["filemode"] = tar_format_filemode(h[:typeflag], h[:mode])
           formatted["uid"] = h[:uid].to_s
           formatted["gid"] = h[:gid].to_s
           formatted["size"] = h[:size].to_s
-          formatted["mtime"] = h[:mtime].iso8601(0 < Tb::Cmd.opt_tar_tvf_l ? 9 : 0)
-          formatted["atime"] = h[:atime].iso8601(0 < Tb::Cmd.opt_tar_tvf_l ? 9 : 0) if h[:atime]
-          formatted["ctime"] = h[:ctime].iso8601(0 < Tb::Cmd.opt_tar_tvf_l ? 9 : 0) if h[:ctime]
+          formatted["mtime"] = h[:mtime].iso8601(0 < Tb::Cmd.opt_tar_l ? 9 : 0)
+          formatted["atime"] = h[:atime].iso8601(0 < Tb::Cmd.opt_tar_l ? 9 : 0) if h[:atime]
+          formatted["ctime"] = h[:ctime].iso8601(0 < Tb::Cmd.opt_tar_l ? 9 : 0) if h[:ctime]
           formatted["user"] = h[:uname]
           formatted["group"] = h[:gname]
           formatted["devmajor"] = h[:devmajor].to_s
@@ -492,7 +492,7 @@ def (Tb::Cmd).main_tar_tvf(argv)
           formatted["tar_typeflag"] = h[:typeflag]
           formatted["tar_magic"] = h[:magic]
           formatted["tar_version"] = h[:version]
-          Tb::Cmd.opt_tar_tvf_hash.each {|alg| formatted[alg] = h[alg] }
+          Tb::Cmd.opt_tar_hash.each {|alg| formatted[alg] = h[alg] }
           y.yield Hash[header.map {|f2| [f2, formatted[f2]] }]
         }
       }

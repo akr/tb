@@ -54,7 +54,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
   def test_basic
     open('foo', 'w') {|f| }
     assert(system('tar cf bar.tar foo'))
-    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', 'bar.tar'])
+    Tb::Cmd.main_tar(['-o', o='o.csv', 'bar.tar'])
     assert_match(/,foo,/, File.read(o))
   end
 
@@ -64,7 +64,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     o = nil
     open('bar.tar') {|f|
       with_stdin(f) {
-        Tb::Cmd.main_tar_tvf(['-o', o='o.csv'])
+        Tb::Cmd.main_tar(['-o', o='o.csv'])
       }
     }
     assert_match(/,foo,/, File.read(o))
@@ -77,7 +77,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     o = nil
     IO.popen('cat bar.tar') {|f|
       with_stdin(f) {
-        Tb::Cmd.main_tar_tvf(['-o', o='o.csv'])
+        Tb::Cmd.main_tar(['-o', o='o.csv'])
       }
     }
     assert_match(/,foo,/, File.read(o))
@@ -88,7 +88,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     open('foo', 'w') {|f| }
     assert(system('tar cf bar.tar foo'))
     assert(system('gzip bar.tar'))
-    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', 'bar.tar.gz'])
+    Tb::Cmd.main_tar(['-o', o='o.csv', 'bar.tar.gz'])
     assert_match(/,foo,/, File.read(o))
   end
 
@@ -100,7 +100,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     o = nil
     open('bar.tar.gz') {|f|
       with_stdin(f) {
-        Tb::Cmd.main_tar_tvf(['-o', o='o.csv'])
+        Tb::Cmd.main_tar(['-o', o='o.csv'])
       }
     }
     assert_match(/,foo,/, File.read(o))
@@ -114,7 +114,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     o = nil
     IO.popen('cat bar.tar.gz') {|f|
       with_stdin(f) {
-        Tb::Cmd.main_tar_tvf(['-o', o='o.csv'])
+        Tb::Cmd.main_tar(['-o', o='o.csv'])
       }
     }
     assert_match(/,foo,/, File.read(o))
@@ -124,7 +124,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     Dir.mkdir("d")
     open('d/foo', 'w') {|f| f << "hahaha" }
     assert(system('tar cf bar.tar d'))
-    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+    Tb::Cmd.main_tar(['-o', o='o.csv', '-l', 'bar.tar'])
     result = File.read(o)
     assert_match(%r{,d/,}, result)
     assert_match(%r{,d/foo,}, result)
@@ -134,7 +134,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     open('foo', 'w') {|f| f << "hahaha" }
     File.link('foo', 'baz')
     assert(system('tar cf bar.tar foo baz'))
-    Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+    Tb::Cmd.main_tar(['-o', o='o.csv', '-l', 'bar.tar'])
     result = File.read(o)
     assert_match(/,foo,/, result)
     assert_match(/,h/, result)
@@ -150,7 +150,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
       next unless tar_and_formats.last.include? format
       tar = tar_and_formats.first
       assert(system("#{tar} cf bar.tar --format=#{format} #{name}"))
-      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      Tb::Cmd.main_tar(['-o', o='o.csv', '-l', 'bar.tar'])
       result = File.read(o)
       assert_equal(2, result.count("\n"), "tar format: #{format}")
       assert_match(/,#{name},/, result)
@@ -165,7 +165,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
       next unless tar_and_formats.last.include? format
       tar = tar_and_formats.first
       assert(system("#{tar} cf bar.tar --format=#{format} #{name}"))
-      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      Tb::Cmd.main_tar(['-o', o='o.csv', '-l', 'bar.tar'])
       result = File.read(o)
       assert_equal(2, result.count("\n"), "tar format: #{format}")
       assert_match(/,#{name},/, result)
@@ -180,7 +180,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
       next unless tar_and_formats.last.include? format
       tar = tar_and_formats.first
       assert(system("#{tar} cf bar.tar --format=#{format} foo"))
-      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      Tb::Cmd.main_tar(['-o', o='o.csv', '-l', 'bar.tar'])
       result = File.read(o)
       assert_equal(2, result.count("\n"), "tar format: #{format}")
       assert_match(/,#{link},/, result)
@@ -196,7 +196,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
       next unless tar_and_formats.last.include? format
       tar = tar_and_formats.first
       assert(system("#{tar} cf bar.tar --format=#{format} #{name}"))
-      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      Tb::Cmd.main_tar(['-o', o='o.csv', '-l', 'bar.tar'])
       result = File.read(o)
       assert_equal(2, result.count("\n"))
       assert_match(/,#{name},/, result)
@@ -215,7 +215,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
       next unless tar_and_formats.last.include? format
       tar = tar_and_formats.first
       assert(system("#{tar} cf bar.tar --format=#{format} #{name}"))
-      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      Tb::Cmd.main_tar(['-o', o='o.csv', '-l', 'bar.tar'])
       result = File.read(o)
       assert_equal(2, result.count("\n"), "tar format: #{format}")
       assert_match(/,#{Regexp.escape mtime.iso8601(9)},/, result, "tar format: #{format}")
@@ -233,7 +233,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
       next unless tar_and_formats.last.include? format
       tar = tar_and_formats.first
       assert(system("#{tar} cf bar.tar --format=#{format} #{name}"))
-      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      Tb::Cmd.main_tar(['-o', o='o.csv', '-l', 'bar.tar'])
       result = File.read(o)
       assert_equal(2, result.count("\n"), "tar format: #{format}")
       assert_match(/,#{Regexp.escape atime.iso8601(9)},/, result, "tar format: #{format}")
@@ -252,7 +252,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
       next unless tar_and_formats.last.include? format
       tar = tar_and_formats.first
       assert(system("#{tar} cf bar.tar --format=#{format} #{name}"))
-      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      Tb::Cmd.main_tar(['-o', o='o.csv', '-l', 'bar.tar'])
       result = File.read(o)
       assert_equal(2, result.count("\n"), "tar format: #{format}")
       assert_match(/,#{Regexp.escape mtime.iso8601(9)},/, result, "tar format: #{format}")
@@ -271,7 +271,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
       next unless tar_and_formats.last.include? format
       tar = tar_and_formats.first
       assert(system("#{tar} cf bar.tar --format=#{format} #{name}"))
-      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', '-l', 'bar.tar'])
+      Tb::Cmd.main_tar(['-o', o='o.csv', '-l', 'bar.tar'])
       result = File.read(o)
       assert_equal(2, result.count("\n"), "tar format: #{format}")
       assert_match(/,#{Regexp.escape atime.iso8601(9)},/, result, "tar format: #{format}")
@@ -284,7 +284,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     assert(system('tar cf foo.tar foo'))
     %w[MD5 SHA1 SHA256 SHA384 SHA512].each {|cname|
       alg = cname.downcase
-      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', "--hash=#{alg}", 'foo.tar'])
+      Tb::Cmd.main_tar(['-o', o='o.csv', "--hash=#{alg}", 'foo.tar'])
       result = File.read(o)
       assert_equal(2, result.count("\n"), "hash algorithm: #{alg}")
       assert_match(/,#{Regexp.escape Digest.const_get(cname).hexdigest(str)}$/, result, "hash algorithm: #{alg}")
@@ -297,7 +297,7 @@ class TestTbCmdTarTvf < Test::Unit::TestCase
     assert(system('tar cf foo.tar foo'))
     %w[MD5 SHA1 SHA256 SHA384 SHA512].each {|cname|
       alg = cname.downcase
-      Tb::Cmd.main_tar_tvf(['-o', o='o.csv', "--hash=#{alg}", 'foo.tar'])
+      Tb::Cmd.main_tar(['-o', o='o.csv', "--hash=#{alg}", 'foo.tar'])
       result = File.read(o)
       assert_equal(2, result.count("\n"), "hash algorithm: #{alg}")
       assert_match(/,#{Regexp.escape Digest.const_get(cname).hexdigest(str)}$/, result, "hash algorithm: #{alg}")
