@@ -189,9 +189,9 @@ tb help -s shows one line summary of the subcommands.
   mheader     : Collapse multi rows header.
   crop        : Extract rectangle in a table.
   ls          : List directory entries as a table.
-  tar     : Show the file listing of tar file.
-  svn     : Show the SVN log as a table.
-  git     : Show the GIT log as a table.
+  tar        : Show the file listing of tar file.
+  svn        : Show the SVN log as a table.
+  git        : Show the GIT log as a table.
 
 == Install
 
