@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = 'tb'
-  s.version = '0.6'
-  s.date = '2012-04-29'
+  s.version = '0.7'
+  s.date = '2012-05-29'
   s.author = 'Tanaka Akira'
   s.email = 'akr@fsij.org'
   s.required_ruby_version = '>= 1.9.2'
@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
     lib/tb/cmd_crop.rb
     lib/tb/cmd_cross.rb
     lib/tb/cmd_cut.rb
-    lib/tb/cmd_git_log.rb
+    lib/tb/cmd_git.rb
     lib/tb/cmd_grep.rb
     lib/tb/cmd_group.rb
     lib/tb/cmd_gsub.rb
@@ -30,8 +30,8 @@ Gem::Specification.new do |s|
     lib/tb/cmd_rename.rb
     lib/tb/cmd_shape.rb
     lib/tb/cmd_sort.rb
-    lib/tb/cmd_svn_log.rb
-    lib/tb/cmd_tar_tvf.rb
+    lib/tb/cmd_svn.rb
+    lib/tb/cmd_tar.rb
     lib/tb/cmd_to_csv.rb
     lib/tb/cmd_to_json.rb
     lib/tb/cmd_to_pnm.rb
