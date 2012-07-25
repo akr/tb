@@ -39,7 +39,7 @@ def (Tb::Cmd).op_tar
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-l', 'show more attributes.') {|fs| Tb::Cmd.opt_tar_l += 1 }
   op.def_option('--ustar', 'ustar format (POSIX.1-1988).  No GNU and POSIX.1-2001 extension.') {|fs| Tb::Cmd.opt_tar_ustar = true }
-  op.def_option('--hash=ALGORITHMS', 'hash algorithms such as md5,sha256,sha384,sha512 (default: none)') {|hs| Tb::Cmd.opt_tar_hash.concat split_field_list_argument(hs) }
+  op.def_option('--hash=ALGORITHMS', 'show the hash of contents.  algorithms can be some of md5,sha256,sha384,sha512 (default: none)') {|hs| Tb::Cmd.opt_tar_hash.concat split_field_list_argument(hs) }
   op
 end
 
