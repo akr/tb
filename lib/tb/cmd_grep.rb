@@ -39,8 +39,8 @@ def (Tb::Cmd).op_grep
     "Search rows using regexp or ruby expression."
   define_common_option(op, "hNo", "--no-pager")
   op.def_option('-f FIELD', 'search field') {|field| Tb::Cmd.opt_grep_f = field }
-  op.def_option('-e REGEXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|pattern| Tb::Cmd.opt_grep_e = pattern }
-  op.def_option('--ruby RUBY-EXP', 'specify a regexp.  no usual regexp argument.') {|ruby_exp| Tb::Cmd.opt_grep_ruby = ruby_exp }
+  op.def_option('-e REGEXP', 'specify a regexp.') {|pattern| Tb::Cmd.opt_grep_e = pattern }
+  op.def_option('--ruby RUBY-EXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|ruby_exp| Tb::Cmd.opt_grep_ruby = ruby_exp }
   op.def_option('-v', 'ouput the records which doesn\'t match') { Tb::Cmd.opt_grep_v = true }
   op
 end
