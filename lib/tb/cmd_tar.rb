@@ -365,11 +365,11 @@ def (Tb::Cmd).tar_open_with(arg)
   tar_open_with0(arg) {|f|
     magic = f.read(8)
     case magic
-    when /\A\x1f\x8b/, /\A\037\235/ # \x1f\x8b is gzip format.  \037\235 is "compress" format of old Unix.
+    when /\A\x1f\x8b/n, /\A\037\235/n # \x1f\x8b is gzip format.  \037\235 is "compress" format of old Unix.
       decompression = ['gzip', '-dc']
     when /\ABZh/
       decompression = ['bzip2', '-dc']
-    when /\A\xFD7zXZ\x00/
+    when /\A\xFD7zXZ\x00/n
       decompression = ['xz', '-dc']
     end
     begin
