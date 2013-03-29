@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = 'tb'
-  s.version = '0.7'
-  s.date = '2012-05-29'
+  s.version = '0.8'
+  s.date = '2013-03-29'
   s.author = 'Tanaka Akira'
   s.email = 'akr@fsij.org'
   s.required_ruby_version = '>= 1.9.2'
@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
     lib/tb/cmd_tar.rb
     lib/tb/cmd_to_csv.rb
     lib/tb/cmd_to_json.rb
+    lib/tb/cmd_to_ltsv.rb
     lib/tb/cmd_to_pnm.rb
     lib/tb/cmd_to_pp.rb
     lib/tb/cmd_to_tsv.rb
@@ -54,6 +55,7 @@ Gem::Specification.new do |s|
     lib/tb/fileenumerator.rb
     lib/tb/func.rb
     lib/tb/json.rb
+    lib/tb/ltsv.rb
     lib/tb/pager.rb
     lib/tb/pnm.rb
     lib/tb/reader.rb
@@ -99,6 +101,7 @@ Gem::Specification.new do |s|
     test/test_cmd_tar_tvf.rb
     test/test_cmd_to_csv.rb
     test/test_cmd_to_json.rb
+    test/test_cmd_to_ltsv.rb
     test/test_cmd_to_pnm.rb
     test/test_cmd_to_pp.rb
     test/test_cmd_to_tsv.rb
@@ -114,6 +117,7 @@ Gem::Specification.new do |s|
     test/test_fieldset.rb
     test/test_fileenumerator.rb
     test/test_json.rb
+    test/test_ltsv.rb
     test/test_pager.rb
     test/test_pnm.rb
     test/test_reader.rb
@@ -128,9 +132,9 @@ Gem::Specification.new do |s|
   s.homepage = 'https://github.com/akr/tb'
   s.require_path = 'lib'
   s.executables << 'tb'
-  s.summary = 'manipulation tool for tables: CSV, TSV, JSON, etc.'
+  s.summary = 'manipulation tool for tables: CSV, TSV, LTSV, JSON, etc.'
   s.description = <<'End'
-tb is a manipulation tool for table: CSV, TSV, JSON, etc.
+tb is a manipulation tool for table: CSV, TSV, LTSV, JSON, etc.
 
 tb provides a command and a library for manipulating tables:
 Unix filter like operations (grep, sort, cat, cut, ls, etc.),
