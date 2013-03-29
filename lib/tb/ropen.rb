@@ -1,6 +1,6 @@
 # lib/tb/ropen.rb - Tb::Reader.open
 #
-# Copyright (C) 2011-2012 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2011-2013 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -37,6 +37,9 @@ def Tb.open_reader(filename, opts={})
   when /\Atsv:/
     filename = $'
     rawreader_maker_for_tb_reader = lambda {|io| Tb::TSVReader.new(io) }
+  when /\Altsv:/
+    filename = $'
+    rawreader_maker_for_tb_reader = lambda {|io| Tb::LTSVReader.new(io) }
   when /\Ap[pgbn]m:/
     filename = $'
     rawreader_maker_for_tb_reader = lambda {|io| Tb.pnm_stream_input(io) }
@@ -47,6 +50,8 @@ def Tb.open_reader(filename, opts={})
     rawreader_maker_for_tb_reader = lambda {|io| Tb::CSVReader.new(io) }
   when /\.tsv\z/
     rawreader_maker_for_tb_reader = lambda {|io| Tb::TSVReader.new(io) }
+  when /\.ltsv\z/
+    reader_maker_for_tb_reader = lambda {|io| Tb::LTSVReader.new(io) }
   when /\.p[pgbn]m\z/
     rawreader_maker_for_tb_reader = lambda {|io| Tb.pnm_stream_input(io) }
   when /\.json\z/
@@ -64,6 +69,12 @@ def Tb.open_reader(filename, opts={})
       reader = File.open(filename) {|io|
         json_reader_maker.call(io)
       }
+    end
+  elsif reader_maker_for_tb_reader
+    if filename == '-'
+      reader = reader_maker_for_tb_reader.call($stdin)
+    else
+      reader = reader_maker_for_tb_reader.call(File.open(filename))
     end
   else
     # rawreader_maker_for_tb_reader should be available.

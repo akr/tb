@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2012 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2011-2013 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -152,6 +152,20 @@ def tbl_generate_tsv(tbl, out)
   end
 end
 
+def tbl_generate_ltsv(tbl, out)
+  if Tb::Cmd.opt_N
+    header = tbl.list_fields
+    Tb.ltsv_stream_output(out) {|gen|
+      tbl.each {|rec|
+        assoc = header.map {|f| [f, rec[f]] }
+        gen << assoc
+      }
+    }
+  else
+    tbl.generate_ltsv(out)
+  end
+end
+
 def with_output(filename=Tb::Cmd.opt_output)
   if filename && filename != '-'
     tmp = filename + ".part"
@@ -188,6 +202,8 @@ def output_tbenum(te)
     case filename
     when /\.csv\z/
       fmt = 'csv'
+    when /\.ltsv\z/
+      fmt = 'ltsv'
     when /\.json\z/
       fmt = 'json'
     end
@@ -196,6 +212,8 @@ def output_tbenum(te)
     case fmt
     when 'csv'
       write_proc = lambda {|out| te.write_to_csv(out, !Tb::Cmd.opt_N) }
+    when 'ltsv'
+      write_proc = lambda {|out| te.write_to_ltsv(out) }
     when 'json'
       write_proc = lambda {|out| te.write_to_json(out) }
     else

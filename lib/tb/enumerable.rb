@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2012-2013 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -230,6 +230,13 @@ module Tb::Enumerable
         io.puts Tb.csv_encode_row(ary)
       }
     end
+  end
+
+  def write_to_ltsv(out)
+    self.each {|pairs|
+      out.print Tb.ltsv_assoc_join(pairs)
+      out.print "\n"
+    }
   end
 
   def write_to_json(out)

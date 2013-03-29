@@ -1,6 +1,4 @@
-# lib/tb.rb - entry file for table library
-#
-# Copyright (C) 2010-2013 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2013 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,31 +26,23 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'tempfile'
+Tb::Cmd.subcommands << 'to-ltsv'
 
-class Tb
+def (Tb::Cmd).op_to_ltsv
+  op = OptionParser.new
+  op.banner = "Usage: tb to-ltsv [OPTS] [TABLE]\n" +
+    "Convert a table to LTSV (Tab Separated Value)."
+  define_common_option(op, "hNo", "--no-pager")
+  op
 end
 
-require 'pp'
-require 'tb/enumerable'
-require 'tb/enumerator'
-require 'tb/func'
-require 'tb/zipper'
-require 'tb/basic'
-require 'tb/record'
-require 'tb/csv'
-require 'tb/tsv'
-require 'tb/ltsv'
-require 'tb/pnm'
-require 'tb/json'
-require 'tb/reader'
-require 'tb/ropen'
-require 'tb/catreader'
-require 'tb/fieldset'
-require 'tb/search'
-require 'tb/ex_enumerable'
-require 'tb/ex_enumerator'
-require 'tb/fileenumerator'
-require 'tb/revcmp'
-require 'tb/customcmp'
-require 'tb/customeq'
+def (Tb::Cmd).main_to_ltsv(argv)
+  op_to_ltsv.parse!(argv)
+  exit_if_help('to-ltsv')
+  argv = ['-'] if argv.empty?
+  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N).to_tb
+  with_output {|out|
+    tbl_generate_ltsv(tbl, out)
+  }
+end
+

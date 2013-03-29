@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2012 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2011-2013 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -38,6 +38,7 @@ require 'tb/cmdutil'
 require 'tb/cmd_help'
 require 'tb/cmd_to_csv'
 require 'tb/cmd_to_tsv'
+require 'tb/cmd_to_ltsv'
 require 'tb/cmd_to_pnm'
 require 'tb/cmd_to_json'
 require 'tb/cmd_to_yaml'
