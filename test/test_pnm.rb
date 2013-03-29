@@ -1,3 +1,5 @@
+# coding: ASCII-8BIT
+
 require 'tb'
 require 'tmpdir'
 require 'test/unit'
