@@ -133,6 +133,7 @@ There are more subcommands.
     tb help [OPTS] [SUBCOMMAND]
     tb to-csv [OPTS] [TABLE ...]
     tb to-tsv [OPTS] [TABLE]
+    tb to-ltsv [OPTS] [TABLE]
     tb to-pnm [OPTS] [TABLE]
     tb to-json [OPTS] [TABLE]
     tb to-yaml [OPTS] [TABLE]
@@ -164,8 +165,9 @@ tb help -s shows one line summary of the subcommands.
 
   % tb help -s
   help        : Show help message of tb command.
-  to-csv      : Convert a table to CSV (Comma Separated Value).
-  to-tsv      : Convert a table to TSV (Tab Separated Value).
+  to-csv      : Convert a table to CSV (Comma Separated Values).
+  to-tsv      : Convert a table to TSV (Tab Separated Values).
+  to-ltsv     : Convert a table to LTSV (Labeled Tab Separated Values).
   to-pnm      : Convert a table to PNM (Portable Anymap: PPM, PGM, PBM).
   to-json     : Convert a table to JSON (JavaScript Object Notation).
   to-yaml     : Convert a table to YAML (YAML Ain't a Markup Language).
@@ -189,9 +191,9 @@ tb help -s shows one line summary of the subcommands.
   mheader     : Collapse multi rows header.
   crop        : Extract rectangle in a table.
   ls          : List directory entries as a table.
-  tar        : Show the file listing of tar file.
-  svn        : Show the SVN log as a table.
-  git        : Show the GIT log as a table.
+  tar         : Show the file listing of tar file.
+  svn         : Show the SVN log as a table.
+  git         : Show the GIT log as a table.
 
 == Install
 

@@ -31,7 +31,7 @@ Tb::Cmd.subcommands << 'to-ltsv'
 def (Tb::Cmd).op_to_ltsv
   op = OptionParser.new
   op.banner = "Usage: tb to-ltsv [OPTS] [TABLE]\n" +
-    "Convert a table to LTSV (Tab Separated Value)."
+    "Convert a table to LTSV (Labeled Tab Separated Values)."
   define_common_option(op, "hNo", "--no-pager")
   op
 end
