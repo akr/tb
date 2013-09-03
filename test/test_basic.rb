@@ -314,10 +314,10 @@ class TestTbBasic < Test::Unit::TestCase
   end
 
   def test_has_field?
-    t = Tb.new %w[fruit color], 
-               %w[apple red], 
-               %w[banana yellow], 
-               %w[orange orange] 
+    t = Tb.new %w[fruit color],
+               %w[apple red],
+               %w[banana yellow],
+               %w[orange orange]
     assert_equal(true, t.has_field?("fruit"))
     assert_equal(false, t.has_field?("foo"))
   end

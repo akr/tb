@@ -1,11 +1,11 @@
 # lib/tb/basic.rb - basic fetures for table library
 #
 # Copyright (C) 2010-2012 Tanaka Akira  <akr@fsij.org>
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 #  1. Redistributions of source code must retain the above copyright
 #     notice, this list of conditions and the following disclaimer.
 #  2. Redistributions in binary form must reproduce the above
@@ -15,7 +15,7 @@
 #  3. The name of the author may not be used to endorse or promote
 #     products derived from this software without specific prior
 #     written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
 # OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -220,11 +220,11 @@ class Tb
   #
   # returns true if the field specified by the argument is exist.
   #
-  #   t = Tb.new %w[fruit color], 
-  #              %w[apple red], 
-  #              %w[banana yellow], 
-  #              %w[orange orange] 
-  #   pp t 
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
+  #   pp t
   #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
@@ -323,7 +323,7 @@ class Tb
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
   #   p t.list_recordids #=> [0, 1, 2]
-  #   
+  #
   def list_recordids
     @tbl["_recordid"].compact
   end
@@ -333,10 +333,10 @@ class Tb
   #
   # returns the number of records.
   #
-  #   t = Tb.new %w[fruit],      
-  #              %w[apple],    
-  #              %w[banana],       
-  #              %w[orange]       
+  #   t = Tb.new %w[fruit],
+  #              %w[apple],
+  #              %w[banana],
+  #              %w[orange]
   #   pp t
   #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple"}
@@ -360,10 +360,10 @@ class Tb
   #   p t0.empty?
   #   #=> true
   #
-  #   t3 = Tb.new %w[fruit],      
-  #               %w[apple],    
-  #               %w[banana],       
-  #               %w[orange]       
+  #   t3 = Tb.new %w[fruit],
+  #               %w[apple],
+  #               %w[banana],
+  #               %w[orange]
   #   pp t3
   #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple"}
@@ -514,7 +514,7 @@ class Tb
   #   t = Tb.new %w[fruit color],
   #              %w[apple red],
   #              %w[banana yellow],
-  #              %w[orange orange] 
+  #              %w[orange orange]
   #   pp t
   #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
@@ -531,7 +531,7 @@ class Tb
   def delete_cell(recordid, field)
     recordid = check_recordid(recordid)
     field = check_field(field)
-    raise ArgumentError, "can not delete reserved field: #{field.inspect}" if field.start_with?("_") 
+    raise ArgumentError, "can not delete reserved field: #{field.inspect}" if field.start_with?("_")
     ary = @tbl[field]
     index = @recordid2index[recordid]
     old = ary[index]
@@ -703,7 +703,7 @@ class Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   p t.update_record(1, {"color"=>"green"}) 
+  #   p t.update_record(1, {"color"=>"green"})
   #   #=> nil
   #   pp t
   #   #=> #<Tb
@@ -761,7 +761,7 @@ class Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   p t.get_record(1)                    
+  #   p t.get_record(1)
   #   #=> #<Tb::Record: "_recordid"=>1, "fruit"=>"banana", "color"=>"yellow">
   #
   def get_record(recordid)
@@ -774,10 +774,10 @@ class Tb
   #
   # iterates over the non-reserved field names of the table.
   #
-  #   t = Tb.new %w[fruit color],    
-  #              %w[apple red], 
-  #              %w[banana yellow], 
-  #              %w[orange orange] 
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
   #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
@@ -800,10 +800,10 @@ class Tb
   #
   # iterates over the reserved and non-reserved field names of the table.
   #
-  #   t = Tb.new %w[fruit color],    
-  #              %w[apple red], 
-  #              %w[banana yellow], 
-  #              %w[orange orange] 
+  #   t = Tb.new %w[fruit color],
+  #              %w[apple red],
+  #              %w[banana yellow],
+  #              %w[orange orange]
   #   pp t
   #   #=> #<Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
@@ -862,7 +862,7 @@ class Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   pp t.to_a                         
+  #   pp t.to_a
   #   #=> [#<Tb::Record: "fruit"=>"apple", "color"=>"red">,
   #   #    #<Tb::Record: "fruit"=>"banana", "color"=>"yellow">,
   #   #    #<Tb::Record: "fruit"=>"orange", "color"=>"orange">]
@@ -892,7 +892,7 @@ class Tb
   #   #    {"_recordid"=>0, "fruit"=>"apple", "color"=>"red"}
   #   #    {"_recordid"=>1, "fruit"=>"banana", "color"=>"yellow"}
   #   #    {"_recordid"=>2, "fruit"=>"orange", "color"=>"orange"}>
-  #   t.each_record {|record| p record }   
+  #   t.each_record {|record| p record }
   #   #=> #<Tb::Record: "fruit"=>"apple", "color"=>"red">
   #   #   #<Tb::Record: "fruit"=>"banana", "color"=>"yellow">
   #   #   #<Tb::Record: "fruit"=>"orange", "color"=>"orange">
@@ -918,7 +918,7 @@ class Tb
   #   table.header_and_each(header_proc) {|record| ... }
   #
   # +header_and_each+ calls _header_proc_ at first.
-  # The block is called for each record after that. 
+  # The block is called for each record after that.
   #
   def header_and_each(header_proc, &block)
     header_proc.call(list_fields) if header_proc
@@ -952,7 +952,7 @@ class Tb
         y.yield record.to_h
       }
     }
-    er = t1.natjoin2(t2, missing, retain_left, retain_right) 
+    er = t1.natjoin2(t2, missing, retain_left, retain_right)
     result = nil
     er.with_header {|header|
       result = Tb.new header
@@ -984,7 +984,7 @@ class Tb
   def delete_field(*fields)
     fields.each {|f|
       f = check_field(f)
-      raise ArgumentError, "can not delete reserved field: #{f.inspect}" if f.start_with?("_") 
+      raise ArgumentError, "can not delete reserved field: #{f.inspect}" if f.start_with?("_")
       @tbl.delete(f)
       @field_list.delete(f)
     }

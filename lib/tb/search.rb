@@ -1,11 +1,11 @@
 # lib/tb/search.rb - pattern matcher for two-dimensional array.
 #
 # Copyright (C) 2011-2012 Tanaka Akira  <akr@fsij.org>
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 #  1. Redistributions of source code must retain the above copyright
 #     notice, this list of conditions and the following disclaimer.
 #  2. Redistributions in binary form must reproduce the above
@@ -15,7 +15,7 @@
 #  3. The name of the author may not be used to endorse or promote
 #     products derived from this software without specific prior
 #     written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
 # OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -144,7 +144,7 @@ module Tb::Search
     #
     # However try_rmove permits movement to/from outside of _aa_.
     # It don't permit between two position outside of _aa_, though.
-    # This make match [:rep, "a", :e] to %w[a a a] with three "a"s. 
+    # This make match [:rep, "a", :e] to %w[a a a] with three "a"s.
     # If try_rmove don't permit movement to outside of _aa_,
     # the last movement is forbidden.
     #
@@ -215,7 +215,7 @@ module Tb::Search
     visited2[st.values_at(*visit_keys)] = true
     result = []
     if min <= 0 && !greedy
-      result << lambda { 
+      result << lambda {
         st = st.merge(var => visited.size) if var
         yield st
       }
@@ -256,7 +256,7 @@ module Tb::Search
       result = []
       result << lambda {
         yield st
-      } 
+      }
       result << lambda {
         try_cat(ps, aa, st) {|st2|
           k = st2.values_at(*keys)
@@ -269,7 +269,7 @@ module Tb::Search
       }
       result << lambda {
         try_bfs_loop(queue, visited, keys, ps, aa, &b)
-      } 
+      }
       result
     end
   end

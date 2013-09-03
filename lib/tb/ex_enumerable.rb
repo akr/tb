@@ -315,7 +315,7 @@ module Enumerable
     mapfunc = opts[:map]
     opts = opts.dup
     opts[:map] = mapfunc ?
-      lambda {|v| Marshal.dump(mapfunc.call(v)) } : 
+      lambda {|v| Marshal.dump(mapfunc.call(v)) } :
       lambda {|v| Marshal.dump(v) }
     uniqfunc = opts[:unique]
     if uniqfunc
@@ -566,7 +566,7 @@ module Enumerable
   # Note that +detect_group_by+ can be cascaeded but
   # It doesn't work as nested manner.
   #
-  #   (0..9).detect_group_by( 
+  #   (0..9).detect_group_by(
   #     lambda {|v| print "[" },
   #     lambda {|v| print "]" }) {|v|
   #     v.even?

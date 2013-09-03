@@ -16,32 +16,32 @@ class TestTbEnumerable < Test::Unit::TestCase
                  a.tb_categorize(:taste, :color))
     assert_equal({?n=>["banana", "melon"], ?e=>["grapefruit"]},
                  a.tb_categorize(lambda {|elt| elt[:fruit][4] }, :fruit))
-    
+
     assert_equal({"yellow"=>[true, true], "green"=>[true]},
                  a.tb_categorize(:color, lambda {|e| true }))
-    
+
     i = -1
     assert_equal({"yellow"=>[0, 2], "green"=>[1]},
                  a.tb_categorize(:color, lambda {|e| i += 1 }))
-    
+
     assert_equal({"yellow"=>[{:fruit=>"banana", :color=>"yellow", :taste=>"sweet", :price=>100},
                              {:fruit=>"grapefruit", :color=>"yellow", :taste=>"tart", :price=>200}],
                   "green"=>[{:fruit=>"melon", :color=>"green", :taste=>"sweet", :price=>300}]},
                  a.tb_categorize(:color, lambda {|e| e }))
-    
+
     assert_equal({"yellow"=>[{:fruit=>"banana", :color=>"yellow", :taste=>"sweet", :price=>100},
                              {:fruit=>"grapefruit", :color=>"yellow", :taste=>"tart", :price=>200}],
                   "green"=>[{:fruit=>"melon", :color=>"green", :taste=>"sweet", :price=>300}]},
                  a.tb_categorize(:color, lambda {|e| e }))
-    
+
     i = -1
     assert_equal({"yellow"=>[["banana", "sweet", 0], ["grapefruit", "tart", 2]],
                   "green"=>[["melon", "sweet", 1]]},
                  a.tb_categorize(:color, [:fruit, :taste, lambda {|e| i += 1 }]))
-    
+
     assert_equal({true=>["banana", "melon", "grapefruit"]},
                  a.tb_categorize(lambda {|e| true }, :fruit))
-    
+
     assert_equal({"yellow"=>2, "green"=>1},
                  a.tb_categorize(:color, lambda {|e| true }, :seed=>0, :op=>lambda {|s, v| s+1 }))
 
@@ -49,22 +49,22 @@ class TestTbEnumerable < Test::Unit::TestCase
                                                :seed=>nil,
                                                :op=>lambda {|s, v| s+1 },
                                                :update=>lambda {|ks, s, v| s+1 }) }
-    
+
     assert_equal({"yellow"=>"bananagrapefruit", "green"=>"melon"},
                  a.tb_categorize(:color, :fruit, :seed=>"", :op=>:+))
 
     assert_equal({"yellow"=>2, "green"=>1},
                  a.tb_categorize(:color, lambda {|e| 1 }, :op=>:+))
-    
+
     assert_equal({"yellow"=>"banana,grapefruit", "green"=>"melon"},
                  a.tb_categorize(:color, :fruit) {|ks, vs| vs.join(",") } )
-    
+
     assert_equal({"yellow"=>150.0, "green"=>300.0},
                  a.tb_categorize(:color, :price) {|ks, vs| vs.inject(0.0, &:+) / vs.length })
 
     assert_equal({"yellow"=>{"banana"=>100.0, "grapefruit"=>200.0}, "green"=>{"melon"=>300.0}},
                  a.tb_categorize(:color, :fruit, :price) {|ks, vs| vs.inject(0.0, &:+) / vs.length })
-    
+
     assert_raise(ArgumentError) { a.tb_categorize('a') }
   end
 
@@ -95,12 +95,12 @@ class TestTbEnumerable < Test::Unit::TestCase
          {:fruit => "grapefruit", :color => "yellow", :taste => "tart", :price => 200}]
     assert_equal({"banana"=>100, "melon"=>300, "grapefruit"=>200},
                  a.tb_unique_categorize(:fruit, :price))
-  
+
     assert_raise(ArgumentError) { a.tb_unique_categorize(:color, :price) }
-  
+
     assert_equal({"sweet"=>400, "tart"=>200},
                  a.tb_unique_categorize(:taste, :price) {|s, v| !s ? v : s + v })
-  
+
     assert_equal({"yellow"=>300, "green"=>300},
                  a.tb_unique_categorize(:color, :price, :seed=>0) {|s, v| s + v })
   end
@@ -109,13 +109,13 @@ class TestTbEnumerable < Test::Unit::TestCase
     a = [{:fruit => "banana", :color => "yellow", :taste => "sweet", :price => 100},
          {:fruit => "melon", :color => "green", :taste => "sweet", :price => 300},
          {:fruit => "grapefruit", :color => "yellow", :taste => "tart", :price => 200}]
-  
+
     assert_equal({"yellow"=>2, "green"=>1},
                  a.tb_category_count(:color))
-  
+
     assert_equal({"sweet"=>2, "tart"=>1},
                  a.tb_category_count(:taste))
-  
+
     assert_equal({"sweet"=>{"yellow"=>1, "green"=>1}, "tart"=>{"yellow"=>1}},
                  a.tb_category_count(:taste, :color))
   end
@@ -328,7 +328,7 @@ class TestTbEnumerable < Test::Unit::TestCase
     [].detect_nested_group_by(
       [[lambda {|v| v.even? },
         lambda {|v| result << [:s, v] },
-        lambda {|v| result << [:e, v] }]]).each {|v| result << v } 
+        lambda {|v| result << [:e, v] }]]).each {|v| result << v }
     assert_equal([], result)
   end
 
