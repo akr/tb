@@ -33,8 +33,6 @@
 # usage:
 #   tbplot [-x field,...] [-y field,...] [--shape field] [--color field] [--size field] [--facet-x field] [--facet-y field] filename
 
-$:.unshift '/home/akr/ruby/tb/lib'
-
 require 'tb/cmdtop'
 
 def gnuplot_escape_string(string)
