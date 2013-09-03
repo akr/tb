@@ -212,6 +212,17 @@ def main_body(argv)
       $y_field = [AxisScale.new(header.shift)]
     end
     uniq_fields = [$shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field].compact.uniq
+    $x_field.each {|x_scale|
+      x_field = x_scale.field
+      checkers[x_field] ||= ValueChecker.new
+    }
+    $y_field.each {|y_scale|
+      y_field = y_scale.field
+      checkers[y_field] ||= ValueChecker.new
+    }
+    uniq_fields.each {|f|
+      checkers[f] ||= ValueChecker.new
+    }
   }.each {|pairs|
     $x_field.each {|x_scale|
       x_field = x_scale.field
@@ -220,12 +231,9 @@ def main_body(argv)
         next if uniq_fields.any? {|f| pairs[f].nil? }
         next if pairs[x_field].nil?
         vs = {}
-        checkers[x_field] ||= ValueChecker.new
         vs[x_field] = checkers[x_field].check(pairs[x_field])
-        checkers[y_field] ||= ValueChecker.new
         vs[y_field] = checkers[y_field].check(pairs[y_field])
         uniq_fields.each {|f|
-          checkers[f] ||= ValueChecker.new
           vs[f] = checkers[f].check(pairs[f])
         }
         x = vs[x_field]
