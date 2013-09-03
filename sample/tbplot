@@ -168,10 +168,6 @@ def process_options(argv)
   op.def_option('--max-size=MAX-SIZE', 'maximum point size') {|v| $max_size = v.to_f }
 
   op.parse!(argv)
-end
-
-def main_body(argv)
-  process_options(argv)
 
   if !$max_size
     if $size_field
@@ -180,6 +176,10 @@ def main_body(argv)
       $max_size = 1.0
     end
   end
+end
+
+def main_body(argv)
+  process_options(argv)
 
   tmps = {}
 
