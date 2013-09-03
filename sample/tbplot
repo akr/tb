@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright (C) 2011-2012 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2011-2013 Tanaka Akira  <akr@fsij.org>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 # plot a graph using gnuplot.
 
 # usage:
-#   tbplot [-x field,...] [-y field,...] [--shape field] [--color field] [--size field] [--facet-x field] [--facet-y field] filename 
+#   tbplot [-x field,...] [-y field,...] [--shape field] [--color field] [--size field] [--facet-x field] [--facet-y field] filename
 
 $:.unshift '/home/akr/ruby/tb/lib'
 
@@ -175,7 +175,7 @@ def main_body(argv)
 
   checkers = {}
   uniq_fields = nil
-  r.with_header {|header0|
+  r.to_fileenumerator.with_header {|header0|
     header = header0.dup
     fields = [$shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field]
     fields.concat $x_field.map {|as| as.field } if $x_field
