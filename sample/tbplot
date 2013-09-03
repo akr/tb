@@ -196,79 +196,81 @@ def main_body(argv)
   r = Tb::CatReader.open(argv).to_fileenumerator
 
   checkers = {}
-  uniq_fields = nil
-  r.with_header {|header0|
-    header = header0.dup
-    fields = [$shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field]
-    fields.concat $x_field.map {|as| as.field } if $x_field
-    fields.concat $y_field.map {|as| as.field } if $y_field
-    fields.each {|f|
-      if f && !header.include?(f)
-        err("field not found: #{f.inspect}")
-      end
-    }
-    header -= fields.compact
-    if !$x_field
-      if header.empty?
-        err("x-field not found")
-      end
-      $x_field = [AxisScale.new(header.shift)]
-    end
-    if !$y_field
-      if header.empty?
-        err("y-field not found")
-      end
-      $y_field = [AxisScale.new(header.shift)]
-    end
-    uniq_fields = [$shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field].compact.uniq
-    $x_field.each {|x_scale|
-      x_field = x_scale.field
-      checkers[x_field] ||= ValueChecker.new
-    }
-    $y_field.each {|y_scale|
-      y_field = y_scale.field
-      checkers[y_field] ||= ValueChecker.new
-    }
-    uniq_fields.each {|f|
-      checkers[f] ||= ValueChecker.new
-    }
-  }.each {|pairs|
-    $x_field.each {|x_scale|
-      x_field = x_scale.field
-      $y_field.each {|y_scale|
-        y_field = y_scale.field
-        next if uniq_fields.any? {|f| pairs[f].nil? }
-        next if pairs[x_field].nil?
-        vs = {}
-        vs[x_field] = checkers[x_field].check(pairs[x_field])
-        vs[y_field] = checkers[y_field].check(pairs[y_field])
-        uniq_fields.each {|f|
-          vs[f] = checkers[f].check(pairs[f])
-        }
-        x = vs[x_field]
-        y = vs[y_field]
 
-        size = 1
-        if $shape_field
-          shape = vs[$shape_field]
+  r.use {
+    r.with_header {|header|
+      header.each {|f|
+        checkers[f] ||= ValueChecker.new
+      }
+    }.each {|pairs|
+      pairs.each {|f, v|
+        checkers[f].check(v)
+      }
+    }
+
+    uniq_fields = nil
+    r.with_header {|header0|
+      header = header0.dup
+      fields = [$shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field]
+      fields.concat $x_field.map {|as| as.field } if $x_field
+      fields.concat $y_field.map {|as| as.field } if $y_field
+      fields.each {|f|
+        if f && !header.include?(f)
+          err("field not found: #{f.inspect}")
         end
-        if $color_field
-          color = vs[$color_field]
+      }
+      header -= fields.compact
+      if !$x_field
+        if header.empty?
+          err("x-field not found")
         end
-        if $size_field
-          size = vs[$size_field]
+        $x_field = [AxisScale.new(header.shift)]
+      end
+      if !$y_field
+        if header.empty?
+          err("y-field not found")
         end
-        if $facet_x_field
-          facet_x = vs[$facet_x_field]
-        end
-        if $facet_y_field
-          facet_y = vs[$facet_y_field]
-        end
-        key1 = [facet_x, facet_y, x_scale, y_scale]
-        key2 = [shape, color]
-        tmps[key1] ||= {}
-        tmps[key1][key2] ||= Tempfile.new('tbplot')
-        tmps[key1][key2].puts "#{x} #{y} #{size}"
+        $y_field = [AxisScale.new(header.shift)]
+      end
+      uniq_fields = [$shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field].compact.uniq
+    }.each {|pairs|
+      $x_field.each {|x_scale|
+        x_field = x_scale.field
+        $y_field.each {|y_scale|
+          y_field = y_scale.field
+          next if uniq_fields.any? {|f| pairs[f].nil? }
+          next if pairs[x_field].nil?
+          vs = {}
+          vs[x_field] = checkers[x_field].check(pairs[x_field])
+          vs[y_field] = checkers[y_field].check(pairs[y_field])
+          uniq_fields.each {|f|
+            vs[f] = checkers[f].check(pairs[f])
+          }
+          x = vs[x_field]
+          y = vs[y_field]
+
+          size = 1
+          if $shape_field
+            shape = vs[$shape_field]
+          end
+          if $color_field
+            color = vs[$color_field]
+          end
+          if $size_field
+            size = vs[$size_field]
+          end
+          if $facet_x_field
+            facet_x = vs[$facet_x_field]
+          end
+          if $facet_y_field
+            facet_y = vs[$facet_y_field]
+          end
+          key1 = [facet_x, facet_y, x_scale, y_scale]
+          key2 = [shape, color]
+          tmps[key1] ||= {}
+          tmps[key1][key2] ||= Tempfile.new('tbplot')
+          tmps[key1][key2].puts "#{x} #{y} #{size}"
+        }
       }
     }
   }
