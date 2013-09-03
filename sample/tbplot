@@ -184,11 +184,11 @@ def main_body(argv)
   tmps = {}
 
   argv = ['-'] if argv.empty?
-  r = Tb::CatReader.open(argv)
+  r = Tb::CatReader.open(argv).to_fileenumerator
 
   checkers = {}
   uniq_fields = nil
-  r.to_fileenumerator.with_header {|header0|
+  r.with_header {|header0|
     header = header0.dup
     fields = [$shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field]
     fields.concat $x_field.map {|as| as.field } if $x_field
