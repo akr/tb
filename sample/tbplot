@@ -275,6 +275,10 @@ def main_body(argv)
     }
   }
 
+  output_gnuplot(checkers, tmps)
+end
+
+def output_gnuplot(checkers, tmps)
   tmps.each {|k1, h| h.each {|k2, v| v.close } }
   gnuplot_command = ''
   gnuplot_command << 'set timefmt "%Y-%m-%dT%H:%M:%SZ"' << "\n"
