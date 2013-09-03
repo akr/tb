@@ -68,14 +68,25 @@ class ValueChecker
         @numeric_min = val if val < @numeric_min
         @numeric_max = val if @numeric_max < val
       end
-    elsif /\A\s*-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\s*\z/ =~ val
+    elsif /\A\s*-?(\d+)\s*\z/ =~ val
+      v = val.to_i
       @numeric += 1
       if @numeric == 1
-        @numeric_min = @numeric_max = val
+        @numeric_min = @numeric_max = v
       else
-        @numeric_min = val if val < @numeric_min
-        @numeric_max = val if @numeric_max < val
+        @numeric_min = v if v < @numeric_min
+        @numeric_max = v if @numeric_max < v
       end
+    elsif /\A\s*-?(\d+\.\d*|\.\d+)([eE][-+]?\d+)?\s*\z/ =~ val
+      v = val.to_f
+      @numeric += 1
+      if @numeric == 1
+        @numeric_min = @numeric_max = v
+      else
+        @numeric_min = v if v < @numeric_min
+        @numeric_max = v if @numeric_max < v
+      end
+
     elsif /\A\s*-?\d+-\d\d(-\d\d(T\d\d(:\d\d(:\d\d(\.\d+)?(Z|[+-]\d\d:?\d\d)?)?)?)?)?\s*\z/ =~ val ||
        /\A\s*-?\d+\d\d\d\dT\d\d(\d\d(\d\d(\.\d+)?(Z|[+-]\d\d:?\d\d)?)?)?\s*\z/ =~ val
       @time += 1
