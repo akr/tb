@@ -31,7 +31,16 @@
 # plot a graph using gnuplot.
 
 # usage:
-#   tbplot [-x field,...] [-y field,...] [--shape field] [--color field] [--size field] [--facet-x field] [--facet-y field] filename
+#   tbplot [options] filename
+#
+# options:
+#   -x field,...
+#   -y field,...
+#   --shape field
+#   --color field
+#   --size field
+#   --facet-x field
+#   --facet-y field
 
 require 'tb/cmdtop'
 
