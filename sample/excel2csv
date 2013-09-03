@@ -85,9 +85,9 @@ def convert_cell(cell)
     val = cell.MergeArea.Item(1,1).Value
     if $opt_mergecells == 'topleft'
       if c_row == m_row && c_col == m_col
-	v = val
+        v = val
       else
-	v = nil
+        v = nil
       end
     else
       v = val
@@ -114,43 +114,43 @@ def convert_horizontal_borders(sheet_xrange, sheet_yrange, usedrange, upper_y)
       upperleft_cell = (sheet_yrange.include?(usedrange_yoff+upper_y) && sheet_yrange.include?(usedrange_xoff+left_x)) ?
                        usedrange.Cells(upper_y, left_x) : nil
       upperright_cell = (sheet_yrange.include?(usedrange_yoff+upper_y) && sheet_xrange.include?(usedrange_xoff+right_x)) ?
-			usedrange.Cells(upper_y, right_x) : nil
+                        usedrange.Cells(upper_y, right_x) : nil
       lowerleft_cell = (sheet_yrange.include?(usedrange_yoff+lower_y) && sheet_xrange.include?(usedrange_xoff+left_x)) ?
                        usedrange.Cells(lower_y, left_x) : nil
       lowerright_cell = (sheet_yrange.include?(usedrange_yoff+lower_y) && sheet_xrange.include?(usedrange_xoff+right_x)) ?
-      			usedrange.Cells(lower_y, right_x) : nil
+                        usedrange.Cells(lower_y, right_x) : nil
       upper_line = lower_line = left_line = right_line = false
       if (!upperleft_cell || !upperright_cell ||
           !upperleft_cell.MergeCells || !upperright_cell.MergeCells ||
-	  upperleft_cell.MergeArea.Row != upperright_cell.MergeArea.Row ||
-	  upperleft_cell.MergeArea.Column != upperright_cell.MergeArea.Column) &&
+          upperleft_cell.MergeArea.Row != upperright_cell.MergeArea.Row ||
+          upperleft_cell.MergeArea.Column != upperright_cell.MergeArea.Column) &&
          ((upperleft_cell && upperleft_cell.borders(Excel::XlEdgeRight).linestyle != Excel::XlNone) ||
           (upperright_cell && upperright_cell.borders(Excel::XlEdgeLeft).linestyle != Excel::XlNone))
-	upper_line = true
+        upper_line = true
       end
       if (!lowerleft_cell || !lowerright_cell ||
           !lowerleft_cell.MergeCells || !lowerright_cell.MergeCells ||
-	  lowerleft_cell.MergeArea.Row != lowerright_cell.MergeArea.Row ||
-	  lowerleft_cell.MergeArea.Column != lowerright_cell.MergeArea.Column) &&
+          lowerleft_cell.MergeArea.Row != lowerright_cell.MergeArea.Row ||
+          lowerleft_cell.MergeArea.Column != lowerright_cell.MergeArea.Column) &&
          ((lowerleft_cell && lowerleft_cell.borders(Excel::XlEdgeRight).linestyle != Excel::XlNone) ||
           (lowerright_cell && lowerright_cell.borders(Excel::XlEdgeLeft).linestyle != Excel::XlNone))
-	lower_line = true
+        lower_line = true
       end
       if (!upperleft_cell || !lowerleft_cell ||
           !upperleft_cell.MergeCells || !lowerleft_cell.MergeCells ||
-	  upperleft_cell.MergeArea.Row != lowerleft_cell.MergeArea.Row ||
-	  upperleft_cell.MergeArea.Column != lowerleft_cell.MergeArea.Column) &&
+          upperleft_cell.MergeArea.Row != lowerleft_cell.MergeArea.Row ||
+          upperleft_cell.MergeArea.Column != lowerleft_cell.MergeArea.Column) &&
          ((upperleft_cell && upperleft_cell.borders(Excel::XlEdgeBottom).linestyle != Excel::XlNone) ||
           (lowerleft_cell && lowerleft_cell.borders(Excel::XlEdgeTop).linestyle != Excel::XlNone))
-	left_line = true
+        left_line = true
       end
       if (!upperright_cell || !lowerright_cell ||
           !upperright_cell.MergeCells || !lowerright_cell.MergeCells ||
-	  upperright_cell.MergeArea.Row != lowerright_cell.MergeArea.Row ||
-	  upperright_cell.MergeArea.Column != lowerright_cell.MergeArea.Column) &&
+          upperright_cell.MergeArea.Row != lowerright_cell.MergeArea.Row ||
+          upperright_cell.MergeArea.Column != lowerright_cell.MergeArea.Column) &&
          ((upperright_cell && upperright_cell.borders(Excel::XlEdgeBottom).linestyle != Excel::XlNone) ||
           (lowerright_cell && lowerright_cell.borders(Excel::XlEdgeTop).linestyle != Excel::XlNone))
-	right_line = true
+        right_line = true
       end
       if upper_line && lower_line && !left_line && !right_line
         joint = '|'
@@ -170,8 +170,8 @@ def convert_horizontal_borders(sheet_xrange, sheet_yrange, usedrange, upper_y)
       lower_cell = (0 < lower_y) ? usedrange.Cells(lower_y, cell_x) : nil
       if (!upper_cell || !lower_cell ||
           !upper_cell.MergeCells || !lower_cell.MergeCells ||
-	  upper_cell.MergeArea.Row != lower_cell.MergeArea.Row ||
-	  upper_cell.MergeArea.Column != lower_cell.MergeArea.Column) &&
+          upper_cell.MergeArea.Row != lower_cell.MergeArea.Row ||
+          upper_cell.MergeArea.Column != lower_cell.MergeArea.Column) &&
          ((upper_cell && upper_cell.borders(Excel::XlEdgeBottom).linestyle != Excel::XlNone) ||
           (lower_cell && lower_cell.borders(Excel::XlEdgeTop).linestyle != Excel::XlNone))
         hborder = '-'
@@ -247,25 +247,25 @@ begin
     ARGV.each {|excel_filename|
       if File.directory? excel_filename
         filenames = []
-	Find.find(excel_filename) {|path| filenames << path if /\.xls\z/ =~ path }
+        Find.find(excel_filename) {|path| filenames << path if /\.xls\z/ =~ path }
       else
         filenames = [excel_filename]
       end
       filenames.each {|ifn0|
-	ifn = getAbsolutePath(ifn0)
-	wb = excel.Workbooks.Open(ifn)
-	begin
-	  if $opt_all_sheets
-	    wb.Worksheets.each {|sheet|
-	      sheetname = sheet.Name
-	      convert_sheet(ifn0, sheet, csvgen)
-	    }
-	  else
-	    convert_sheet(ifn0, wb.Worksheets(1), csvgen)
-	  end
-	ensure
-	  wb.Close
-	end
+        ifn = getAbsolutePath(ifn0)
+        wb = excel.Workbooks.Open(ifn)
+        begin
+          if $opt_all_sheets
+            wb.Worksheets.each {|sheet|
+              sheetname = sheet.Name
+              convert_sheet(ifn0, sheet, csvgen)
+            }
+          else
+            convert_sheet(ifn0, wb.Worksheets(1), csvgen)
+          end
+        ensure
+          wb.Close
+        end
       }
     }
   }
