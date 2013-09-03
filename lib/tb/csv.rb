@@ -62,6 +62,12 @@ class Tb
     nil
   end
 
+  def Tb.csv_read_aa(csv)
+    aa = []
+    Tb.csv_stream_input(csv) {|ary| aa << ary }
+    aa
+  end
+
   class CSVReader
     def initialize(input)
       @csv = CSV.new(input)
