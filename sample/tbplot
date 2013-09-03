@@ -187,15 +187,11 @@ def process_options(argv)
   end
 end
 
-def main_body(argv)
-  process_options(argv)
-
+def input_table(argv)
   tmps = {}
-
-  argv = ['-'] if argv.empty?
-  r = Tb::CatReader.open(argv).to_fileenumerator
-
   checkers = {}
+
+  r = Tb::CatReader.open(argv).to_fileenumerator
 
   r.use {
     r.with_header {|header|
@@ -274,8 +270,7 @@ def main_body(argv)
       }
     }
   }
-
-  output_gnuplot(checkers, tmps)
+  return checkers, tmps
 end
 
 def output_gnuplot(checkers, tmps)
@@ -376,6 +371,12 @@ def output_gnuplot(checkers, tmps)
   system('gnuplot', tmp_gnuplot_command.path)
 end
 
+def main_body(argv)
+  process_options(argv)
+  argv = ['-'] if argv.empty?
+  checkers, tmps = input_table(argv)
+  output_gnuplot(checkers, tmps)
+end
 
 def main(argv)
   main_body(argv)
