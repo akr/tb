@@ -183,7 +183,7 @@ def main_body(argv)
 
   tmps = {}
 
-  argv = ARGV.empty? ? ['-'] : ARGV
+  argv = ['-'] if argv.empty?
   r = Tb::CatReader.open(argv)
 
   checkers = {}
