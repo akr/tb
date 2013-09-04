@@ -141,10 +141,10 @@ class AxisScale
   # create an AxisScale object.
   #
   #   AxisScale.new("fieldname")
-  #   AxisScale.new("logscale(fieldname)")
+  #   AxisScale.new("log(fieldname)")
   def initialize(desc)
     @desc = desc
-    if /\Alogscale\((.*)\)\z/ =~ desc
+    if /\Alog\((.*)\)\z/ =~ desc
       @field = $1
       @logscale = true
     else
