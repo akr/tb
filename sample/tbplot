@@ -41,6 +41,10 @@
 #   --size field
 #   --facet-x field
 #   --facet-y field
+#   --loglog
+#   --logx
+#   --logy
+#   --prompt
 
 require 'tb/cmdtop'
 
@@ -166,6 +170,7 @@ $facet_y_field = nil
 $max_size = nil
 $logx = nil
 $logy = nil
+$prompt = nil
 
 def process_options(argv)
   op = OptionParser.new
@@ -181,6 +186,7 @@ def process_options(argv)
   op.def_option('--loglog', 'use full log scale') {|v| $logx = $logy = true }
   op.def_option('--logx', 'use log scale for x-axis') {|v| $logx = true }
   op.def_option('--logy', 'use log scale for y-axis') {|v| $logy = true }
+  op.def_option('--prompt', 'enter gnuplot interactive mode') {|v| $prompt = true }
 
   op.parse!(argv)
 
@@ -411,14 +417,18 @@ def output_gnuplot(checkers, tmps, image_filename)
   if use_multiplot
     gnuplot_command << "unset multiplot\n"
   end
-  if !image_filename
+  if !image_filename && !$prompt
     gnuplot_command << "pause mouse any\n"
   end
   tmp_gnuplot_command = Tempfile.new(['tbplot', '.gp'])
   tmp_gnuplot_command << gnuplot_command
   tmp_gnuplot_command.close
   #puts gnuplot_command; sleep 100
-  system('gnuplot', tmp_gnuplot_command.path)
+  args = ['gnuplot', tmp_gnuplot_command.path]
+  if $prompt
+    args << '-' # enter interactive mode.
+  end
+  system(*args)
 end
 
 def main_body(argv)
