@@ -31,7 +31,7 @@
 # plot a graph using gnuplot.
 
 # usage:
-#   tbplot [options] table-filename
+#   tbplot [options] table-filename [image-filename]
 #
 # options:
 #   -x field,...
@@ -228,11 +228,11 @@ def bind_fields(header0, checkers)
   uniq_fields = [$shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field].compact.uniq
 end
 
-def input_table(argv)
+def input_table(table_filename)
   tmps = {}
   checkers = {}
 
-  r = Tb::CatReader.open(argv).to_fileenumerator
+  r = Tb.open_reader(table_filename).to_fileenumerator
 
   r.use {
     r.with_header {|header|
@@ -292,9 +292,28 @@ def input_table(argv)
   return checkers, tmps
 end
 
-def output_gnuplot(checkers, tmps)
+def output_gnuplot(checkers, tmps, image_filename)
   tmps.each {|k1, h| h.each {|k2, v| v.close } }
   gnuplot_command = ''
+
+  if image_filename
+    case image_filename
+    when /\.png\z/
+      gnuplot_command << "set term png\n"
+    when /\.ps\z/
+      gnuplot_command << "set term postscript\n"
+    when /\.pdf\z/
+      gnuplot_command << "set term pdfcairo\n"
+    when /\.svg\z/
+      gnuplot_command << "set term svg\n"
+    when /\.jpeg\z|\.jpg\z/
+      gnuplot_command << "set term jpeg\n"
+    else
+      err("unknown image filename extension: #{image_filename.inspect}")
+    end
+    gnuplot_command << "set output #{gnuplot_escape_string image_filename}\n"
+  end
+
   gnuplot_command << 'set timefmt "%Y-%m-%dT%H:%M:%SZ"' << "\n"
   use_multiplot = false
   if $facet_x_field || $facet_y_field || 1 < $x_field.length || 1 < $y_field.length
@@ -392,7 +411,9 @@ def output_gnuplot(checkers, tmps)
   if use_multiplot
     gnuplot_command << "unset multiplot\n"
   end
-  gnuplot_command << "pause mouse any\n"
+  if !image_filename
+    gnuplot_command << "pause mouse any\n"
+  end
   tmp_gnuplot_command = Tempfile.new(['tbplot', '.gp'])
   tmp_gnuplot_command << gnuplot_command
   tmp_gnuplot_command.close
@@ -403,8 +424,10 @@ end
 def main_body(argv)
   process_options(argv)
   argv = ['-'] if argv.empty?
-  checkers, tmps = input_table(argv)
-  output_gnuplot(checkers, tmps)
+  table_filename = argv.shift
+  image_filename = argv.shift
+  checkers, tmps = input_table(table_filename)
+  output_gnuplot(checkers, tmps, image_filename)
 end
 
 def main(argv)
