@@ -31,7 +31,7 @@
 # plot a graph using gnuplot.
 
 # usage:
-#   tbplot [options] filename
+#   tbplot [options] table-filename
 #
 # options:
 #   -x field,...
@@ -152,7 +152,8 @@ class AxisScale
       @logscale = false
     end
   end
-  attr_reader :desc, :field, :logscale
+  attr_reader :desc, :field
+  attr_accessor :logscale
 end
 
 $x_field = nil
@@ -163,6 +164,8 @@ $size_field = nil
 $facet_x_field = nil
 $facet_y_field = nil
 $max_size = nil
+$logx = nil
+$logy = nil
 
 def process_options(argv)
   op = OptionParser.new
@@ -175,6 +178,9 @@ def process_options(argv)
   op.def_option('--facet-y=FIELD', 'facet-y-field') {|f| $facet_y_field = f }
   op.def_option('--shapecolor=FIELD', 'shape-field and color-field') {|f| $shape_field = $color_field = f }
   op.def_option('--max-size=MAX-SIZE', 'maximum point size') {|v| $max_size = v.to_f }
+  op.def_option('--loglog', 'use full log scale') {|v| $logx = $logy = true }
+  op.def_option('--logx', 'use log scale for x-axis') {|v| $logx = true }
+  op.def_option('--logy', 'use log scale for y-axis') {|v| $logy = true }
 
   op.parse!(argv)
 
@@ -185,6 +191,41 @@ def process_options(argv)
       $max_size = 1.0
     end
   end
+end
+
+def bind_fields(header0, checkers)
+  header = header0.dup
+  fields = [$shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field]
+  fields.concat $x_field.map {|as| as.field } if $x_field
+  fields.concat $y_field.map {|as| as.field } if $y_field
+  fields.each {|f|
+    if f && !header.include?(f)
+      err("field not found: #{f.inspect}")
+    end
+  }
+  header -= fields.compact
+  if !$x_field
+    if header.empty?
+      err("x-field not found")
+    end
+    $x_field = [AxisScale.new(header.shift)]
+  end
+  if !$y_field
+    if header.empty?
+      err("y-field not found")
+    end
+    $y_field = [AxisScale.new(header.shift)]
+  end
+  if !$shape_field && !$color_field && !header.empty?
+    $shape_field = $color_field = header.shift
+  end
+  if $logx
+    $x_field.each {|axis| axis.logscale = true }
+  end
+  if $logy
+    $y_field.each {|axis| axis.logscale = true }
+  end
+  uniq_fields = [$shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field].compact.uniq
 end
 
 def input_table(argv)
@@ -206,29 +247,7 @@ def input_table(argv)
 
     uniq_fields = nil
     r.with_header {|header0|
-      header = header0.dup
-      fields = [$shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field]
-      fields.concat $x_field.map {|as| as.field } if $x_field
-      fields.concat $y_field.map {|as| as.field } if $y_field
-      fields.each {|f|
-        if f && !header.include?(f)
-          err("field not found: #{f.inspect}")
-        end
-      }
-      header -= fields.compact
-      if !$x_field
-        if header.empty?
-          err("x-field not found")
-        end
-        $x_field = [AxisScale.new(header.shift)]
-      end
-      if !$y_field
-        if header.empty?
-          err("y-field not found")
-        end
-        $y_field = [AxisScale.new(header.shift)]
-      end
-      uniq_fields = [$shape_field, $color_field, $size_field, $facet_x_field, $facet_y_field].compact.uniq
+      uniq_fields = bind_fields(header0, checkers)
     }.each {|pairs|
       $x_field.each {|x_scale|
         x_field = x_scale.field
@@ -308,6 +327,15 @@ def output_gnuplot(checkers, tmps)
       gnuplot_command << "set pointsize #{pointsize}\n"
     end
 
+    gnuplot_command << "set key outside\n"
+    key_title = []
+    key_title << $shape_field if $shape_field
+    key_title << $color_field if $color_field
+    if !key_title.empty?
+      key_title = key_title.uniq.join(' ')
+      gnuplot_command << "set key title #{gnuplot_escape_string(key_title)}\n"
+    end
+
     if use_multiplot
       x_graphindex = 0.0
       if $facet_x_field
@@ -337,11 +365,12 @@ def output_gnuplot(checkers, tmps)
       gnuplot_command << ' using 1:2:3 '
       title = []
       if shape_value
-        title << " #{$shape_field}=#{shape_value.to_s}"
+        title << " #{shape_value.to_s}"
       end
       if color_value
-        title << " #{$color_field}=#{color_value.to_s}"
+        title << " #{color_value.to_s}"
       end
+
       title = title.uniq.join(' ')
       gnuplot_command << ' title ' << gnuplot_escape_string(title)
       gnuplot_command << ' with points'
