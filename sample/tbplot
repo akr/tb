@@ -32,21 +32,47 @@
 
 # usage:
 #   tbplot [options] table-filename [image-filename]
-#
-# options:
-#   -x field,...
-#   -y field,...
-#   --shape field
-#   --color field
-#   --size field
-#   --facet-x field
-#   --facet-y field
-#   --loglog
-#   --logx
-#   --logy
-#   --prompt
 
 require 'tb/cmdtop'
+
+$x_field = nil
+$y_field = nil
+$shape_field = nil
+$color_field = nil
+$size_field = nil
+$facet_x_field = nil
+$facet_y_field = nil
+$max_size = nil
+$logx = nil
+$logy = nil
+$prompt = nil
+
+def process_options(argv)
+  op = OptionParser.new
+  op.def_option('-x FIELD,...', 'x-fields') {|f| $x_field = split_field_list_argument(f).map {|ff| AxisScale.new(ff) } }
+  op.def_option('-y FIELD,...', 'y-fields') {|f| $y_field = split_field_list_argument(f).map {|ff| AxisScale.new(ff) } }
+  op.def_option('--shape=FIELD', 'shape-field') {|f| $shape_field = f }
+  op.def_option('--color=FIELD', 'color-field') {|f| $color_field = f }
+  op.def_option('--size=FIELD', 'size-field') {|f| $size_field = f }
+  op.def_option('--facet-x=FIELD', 'facet-x-field') {|f| $facet_x_field = f }
+  op.def_option('--facet-y=FIELD', 'facet-y-field') {|f| $facet_y_field = f }
+  op.def_option('--shapecolor=FIELD', 'shape-field and color-field') {|f| $shape_field = $color_field = f }
+  op.def_option('--max-size=MAX-SIZE', 'maximum point size') {|v| $max_size = v.to_f }
+  op.def_option('--loglog', 'use full log scale') {|v| $logx = $logy = true }
+  op.def_option('--logx', 'use log scale for x-axis') {|v| $logx = true }
+  op.def_option('--logy', 'use log scale for y-axis') {|v| $logy = true }
+  op.def_option('--prompt', 'enter gnuplot interactive mode') {|v| $prompt = true }
+
+  op.parse!(argv)
+
+  if !$max_size
+    if $size_field
+      $max_size = 100.0
+    else
+      $max_size = 1.0
+    end
+  end
+end
 
 def gnuplot_escape_string(string)
   string = string.dup.force_encoding("ascii-8bit") if string.respond_to? :force_encoding
@@ -158,45 +184,6 @@ class AxisScale
   end
   attr_reader :desc, :field
   attr_accessor :logscale
-end
-
-$x_field = nil
-$y_field = nil
-$shape_field = nil
-$color_field = nil
-$size_field = nil
-$facet_x_field = nil
-$facet_y_field = nil
-$max_size = nil
-$logx = nil
-$logy = nil
-$prompt = nil
-
-def process_options(argv)
-  op = OptionParser.new
-  op.def_option('-x FIELD,...', 'x-fields') {|f| $x_field = split_field_list_argument(f).map {|ff| AxisScale.new(ff) } }
-  op.def_option('-y FIELD,...', 'y-fields') {|f| $y_field = split_field_list_argument(f).map {|ff| AxisScale.new(ff) } }
-  op.def_option('--shape=FIELD', 'shape-field') {|f| $shape_field = f }
-  op.def_option('--color=FIELD', 'color-field') {|f| $color_field = f }
-  op.def_option('--size=FIELD', 'size-field') {|f| $size_field = f }
-  op.def_option('--facet-x=FIELD', 'facet-x-field') {|f| $facet_x_field = f }
-  op.def_option('--facet-y=FIELD', 'facet-y-field') {|f| $facet_y_field = f }
-  op.def_option('--shapecolor=FIELD', 'shape-field and color-field') {|f| $shape_field = $color_field = f }
-  op.def_option('--max-size=MAX-SIZE', 'maximum point size') {|v| $max_size = v.to_f }
-  op.def_option('--loglog', 'use full log scale') {|v| $logx = $logy = true }
-  op.def_option('--logx', 'use log scale for x-axis') {|v| $logx = true }
-  op.def_option('--logy', 'use log scale for y-axis') {|v| $logy = true }
-  op.def_option('--prompt', 'enter gnuplot interactive mode') {|v| $prompt = true }
-
-  op.parse!(argv)
-
-  if !$max_size
-    if $size_field
-      $max_size = 100.0
-    else
-      $max_size = 1.0
-    end
-  end
 end
 
 def bind_fields(header0, checkers)
