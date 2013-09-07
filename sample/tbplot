@@ -46,6 +46,7 @@ $max_size = nil
 $logx = nil
 $logy = nil
 $prompt = nil
+$gnuplot_terminal = nil
 
 def process_options(argv)
   op = OptionParser.new
@@ -62,6 +63,7 @@ def process_options(argv)
   op.def_option('--logx', 'use log scale for x-axis') {|v| $logx = true }
   op.def_option('--logy', 'use log scale for y-axis') {|v| $logy = true }
   op.def_option('--prompt', 'enter gnuplot interactive mode') {|v| $prompt = true }
+  op.def_option('--gnuplot-terminal=TERMINAL', 'gnuplot terminal.  e.g. "png size 500,500"') {|v| $gnuplot_terminal = v }
 
   op.parse!(argv)
 
@@ -290,21 +292,25 @@ def output_gnuplot(checkers, tmps, image_filename)
   gnuplot_command = ''
 
   if image_filename
-    case image_filename
-    when /\.png\z/
-      gnuplot_command << "set term png\n"
-    when /\.eps\z/
-      gnuplot_command << "set term epscairo\n"
-    when /\.ps\z/
-      gnuplot_command << "set term postscript\n"
-    when /\.pdf\z/
-      gnuplot_command << "set term pdfcairo\n"
-    when /\.svg\z/
-      gnuplot_command << "set term svg\n"
-    when /\.jpeg\z|\.jpg\z/
-      gnuplot_command << "set term jpeg\n"
+    if $gnuplot_terminal
+      gnuplot_command << "set term #{$gnuplot_terminal}\n"
     else
-      err("unknown image filename extension: #{image_filename.inspect}")
+      case image_filename
+      when /\.png\z/
+        gnuplot_command << "set term png\n"
+      when /\.eps\z/
+        gnuplot_command << "set term epscairo\n"
+      when /\.ps\z/
+        gnuplot_command << "set term postscript\n"
+      when /\.pdf\z/
+        gnuplot_command << "set term pdfcairo\n"
+      when /\.svg\z/
+        gnuplot_command << "set term svg\n"
+      when /\.jpeg\z|\.jpg\z/
+        gnuplot_command << "set term jpeg\n"
+      else
+        err("unknown image filename extension: #{image_filename.inspect}")
+      end
     end
     gnuplot_command << "set output #{gnuplot_escape_string image_filename}\n"
   end
