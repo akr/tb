@@ -287,7 +287,7 @@ def input_table(table_filename)
   return checkers, tmps
 end
 
-def output_gnuplot(checkers, tmps, image_filename)
+def output_gnuplot(checkers, tmps, table_filename, image_filename)
   tmps.each {|k1, h| h.each {|k2, v| v.close } }
   gnuplot_command = ''
 
@@ -314,6 +314,9 @@ def output_gnuplot(checkers, tmps, image_filename)
     end
     gnuplot_command << "set output #{gnuplot_escape_string image_filename}\n"
   end
+
+  whole_title = File.basename(table_filename).sub(/\..*\z/, '')
+  gnuplot_command << "set title #{gnuplot_escape_string(whole_title)}\n"
 
   gnuplot_command << 'set timefmt "%Y-%m-%dT%H:%M:%SZ"' << "\n"
   use_multiplot = false
@@ -432,7 +435,7 @@ def main_body(argv)
   table_filename = argv.shift
   image_filename = argv.shift
   checkers, tmps = input_table(table_filename)
-  output_gnuplot(checkers, tmps, image_filename)
+  output_gnuplot(checkers, tmps, table_filename, image_filename)
 end
 
 def main(argv)
