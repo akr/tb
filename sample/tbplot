@@ -306,6 +306,8 @@ def output_gnuplot(checkers, tmps, image_filename)
     case image_filename
     when /\.png\z/
       gnuplot_command << "set term png\n"
+    when /\.eps\z/
+      gnuplot_command << "set term epscairo\n"
     when /\.ps\z/
       gnuplot_command << "set term postscript\n"
     when /\.pdf\z/
