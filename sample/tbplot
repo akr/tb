@@ -313,6 +313,10 @@ def output_gnuplot(checkers, tmps, table_filename, image_filename)
       end
     end
     gnuplot_command << "set output #{gnuplot_escape_string image_filename}\n"
+  else
+    if $gnuplot_terminal
+      gnuplot_command << "set term #{$gnuplot_terminal}\n"
+    end
   end
 
   whole_title = File.basename(table_filename).sub(/\.(csv|json|ltsv|tsv)\z/, '')
