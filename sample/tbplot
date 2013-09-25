@@ -315,7 +315,7 @@ def output_gnuplot(checkers, tmps, table_filename, image_filename)
     gnuplot_command << "set output #{gnuplot_escape_string image_filename}\n"
   end
 
-  whole_title = File.basename(table_filename).sub(/\..*\z/, '')
+  whole_title = File.basename(table_filename).sub(/\.(csv|json|ltsv|tsv)\z/, '')
   gnuplot_command << "set title #{gnuplot_escape_string(whole_title)}\n"
 
   gnuplot_command << 'set timefmt "%Y-%m-%dT%H:%M:%SZ"' << "\n"
@@ -351,6 +351,7 @@ def output_gnuplot(checkers, tmps, table_filename, image_filename)
     end
 
     gnuplot_command << "set key outside\n"
+    #gnuplot_command << "unset key\n"
     key_title = []
     key_title << $shape_field if $shape_field
     key_title << $color_field if $color_field
