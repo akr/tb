@@ -91,7 +91,7 @@ class Tb
     if /\A\s*"(.*)"\s*\z/ =~ str
       $1.gsub(/\\([0abfnrtve]|x([0-9A-Fa-f][0-9A-Fa-f]))/) {
         if $2
-          [$2.to_i].pack("H2")
+          [$2].pack("H2")
         else
           case $1
           when "0"; "\0"
