@@ -199,6 +199,11 @@ tb help -s shows one line summary of the subcommands.
 
   gem install tb
 
+== Run without gem
+
+  git clone https://github.com/akr/tb.git
+  ruby -Itb/lib tb/bin/tb help
+
 == Links
 
 * ((<source repository on github|URL:https://github.com/akr/tb>))
