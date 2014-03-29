@@ -62,10 +62,35 @@ class Tb
     nil
   end
 
-  def Tb.ltsv_escape_string(str)
+  def Tb.ltsv_escape_key(str)
     if /[\0-\x1f":\\\x7f]/ =~ str
       '"' +
       str.gsub(/[\0-\x1f":\\\x7f]/) {
+        ch = $&
+        case ch
+        when "\0"; '\0'
+        when "\a"; '\a'
+        when "\b"; '\b'
+        when "\f"; '\f'
+        when "\n"; '\n'
+        when "\r"; '\r'
+        when "\t"; '\t'
+        when "\v"; '\v'
+        when "\e"; '\e'
+        else
+          "\\x%02X" % ch.ord
+        end
+      } +
+      '"'
+    else
+      str
+    end
+  end
+
+  def Tb.ltsv_escape_value(str)
+    if /[\0-\x1f"\\\x7f]/ =~ str
+      '"' +
+      str.gsub(/[\0-\x1f"\\\x7f]/) {
         ch = $&
         case ch
         when "\0"; '\0'
@@ -181,7 +206,7 @@ class Tb
 
   def Tb.ltsv_assoc_join(assoc)
     assoc.map {|key, val|
-      Tb.ltsv_escape_string(key) + ':' + Tb.ltsv_escape_string(val)
+      Tb.ltsv_escape_key(key) + ':' + Tb.ltsv_escape_value(val)
     }.join("\t")
   end
 end

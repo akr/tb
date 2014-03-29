@@ -2,6 +2,14 @@ require 'tb'
 require 'test/unit'
 
 class TestTbLTSV < Test::Unit::TestCase
+  def test_escape_and_unescape
+    0x00.upto(0x7f) {|c|
+      s = [c].pack("C")
+      assert_equal(s, Tb.ltsv_unescape_string(Tb.ltsv_escape_key(s)))
+      assert_equal(s, Tb.ltsv_unescape_string(Tb.ltsv_escape_value(s)))
+    }
+  end
+
   def test_parse
     r = Tb::LTSVReader.new("a:1\tb:2\na:3\tb:4\n")
     result = []
