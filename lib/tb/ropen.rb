@@ -33,58 +33,58 @@ def Tb.open_reader(filename, opts={})
   case filename
   when /\Acsv:/
     filename = $'
-    rawreader_maker_for_tb_reader = lambda {|io| Tb::CSVReader.new(io) }
+    table_reader_maker = lambda {|io| Tb::CSVReader.new(io) }
   when /\Atsv:/
     filename = $'
-    rawreader_maker_for_tb_reader = lambda {|io| Tb::TSVReader.new(io) }
+    table_reader_maker = lambda {|io| Tb::TSVReader.new(io) }
   when /\Altsv:/
     filename = $'
-    reader_maker_for_tb_reader = lambda {|io| Tb::LTSVReader.new(io) }
+    pairs_reader_maker = lambda {|io| Tb::LTSVReader.new(io) }
   when /\Ap[pgbn]m:/
     filename = $'
-    rawreader_maker_for_tb_reader = lambda {|io| Tb.pnm_stream_input(io) }
+    table_reader_maker = lambda {|io| Tb.pnm_stream_input(io) }
   when /\Ajson:/
     filename = $'
-    json_reader_maker = lambda {|io| Tb::JSONReader.new(io.read) }
+    whole_reader_maker = lambda {|io| Tb::JSONReader.new(io.read) }
   when /\.csv\z/
-    rawreader_maker_for_tb_reader = lambda {|io| Tb::CSVReader.new(io) }
+    table_reader_maker = lambda {|io| Tb::CSVReader.new(io) }
   when /\.tsv\z/
-    rawreader_maker_for_tb_reader = lambda {|io| Tb::TSVReader.new(io) }
+    table_reader_maker = lambda {|io| Tb::TSVReader.new(io) }
   when /\.ltsv\z/
-    reader_maker_for_tb_reader = lambda {|io| Tb::LTSVReader.new(io) }
+    pairs_reader_maker = lambda {|io| Tb::LTSVReader.new(io) }
   when /\.p[pgbn]m\z/
-    rawreader_maker_for_tb_reader = lambda {|io| Tb.pnm_stream_input(io) }
+    table_reader_maker = lambda {|io| Tb.pnm_stream_input(io) }
   when /\.json\z/
-    json_reader_maker = lambda {|io| Tb::JSONReader.new(io.read) }
+    whole_reader_maker = lambda {|io| Tb::JSONReader.new(io.read) }
   else
-    rawreader_maker_for_tb_reader = lambda {|io| Tb::CSVReader.new(io) }
+    table_reader_maker = lambda {|io| Tb::CSVReader.new(io) }
   end
   if !filename.respond_to?(:to_str) && !filename.respond_to?(:to_path)
     raise ArgumentError, "unexpected filename: #{filename.inspect}"
   end
-  if json_reader_maker
+  if whole_reader_maker
     if filename == '-'
-      reader = json_reader_maker.call($stdin)
+      reader = whole_reader_maker.call($stdin)
     else
       reader = File.open(filename) {|io|
-        json_reader_maker.call(io)
+        whole_reader_maker.call(io)
       }
     end
-  elsif reader_maker_for_tb_reader
+  elsif pairs_reader_maker
     if filename == '-'
-      reader = reader_maker_for_tb_reader.call($stdin)
+      reader = pairs_reader_maker.call($stdin)
     else
-      reader = reader_maker_for_tb_reader.call(File.open(filename))
+      reader = pairs_reader_maker.call(File.open(filename))
     end
   else
-    # rawreader_maker_for_tb_reader should be available.
+    # table_reader_maker should be available.
     reader = Tb::Reader.new(opts) {|body|
       if filename == '-'
-        rawreader = rawreader_maker_for_tb_reader.call($stdin)
+        rawreader = table_reader_maker.call($stdin)
         body.call(rawreader)
       else
         File.open(filename) {|io|
-          rawreader = rawreader_maker_for_tb_reader.call(io)
+          rawreader = table_reader_maker.call(io)
           body.call(rawreader)
         }
       end
