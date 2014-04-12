@@ -39,7 +39,7 @@ def Tb.open_reader(filename, opts={})
     rawreader_maker_for_tb_reader = lambda {|io| Tb::TSVReader.new(io) }
   when /\Altsv:/
     filename = $'
-    rawreader_maker_for_tb_reader = lambda {|io| Tb::LTSVReader.new(io) }
+    reader_maker_for_tb_reader = lambda {|io| Tb::LTSVReader.new(io) }
   when /\Ap[pgbn]m:/
     filename = $'
     rawreader_maker_for_tb_reader = lambda {|io| Tb.pnm_stream_input(io) }
