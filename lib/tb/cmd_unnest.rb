@@ -91,7 +91,8 @@ def (Tb::Cmd).main_unnest(argv)
       }
       y.set_header header2
     }.each {|pairs|
-      pairs2 = pairs.reject {|f, v| f == target_field }
+      pairs2 = {}
+      pairs.each {|f, v| pairs2[f] = v if f != target_field }
       ntbl = pairs[target_field]
       if ntbl.nil? || ntbl.empty?
         if Tb::Cmd.opt_unnest_outer
