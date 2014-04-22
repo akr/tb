@@ -21,7 +21,21 @@ class TestTbCmdNewfield < Test::Unit::TestCase
       1,2
       3,4
     End
-    Tb::Cmd.main_newfield(['-o', o="o.csv", 'c', '_["a"].to_i + _["b"].to_i', i])
+    Tb::Cmd.main_newfield(['-o', o="o.csv", 'c', 'z', i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      c,a,b
+      z,1,2
+      z,3,4
+    End
+  end
+
+  def test_rubyexp
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b
+      1,2
+      3,4
+    End
+    Tb::Cmd.main_newfield(['-o', o="o.csv", 'c', '--ruby', '_["a"].to_i + _["b"].to_i', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       c,a,b
       3,1,2
@@ -34,7 +48,7 @@ class TestTbCmdNewfield < Test::Unit::TestCase
     assert(!exc.success?)
   end
 
-  def test_no_newfield_ruby_exp
+  def test_no_newfield_value
     exc = assert_raise(SystemExit) { Tb::Cmd.main_newfield(['foo']) }
     assert(!exc.success?)
   end
@@ -50,7 +64,7 @@ class TestTbCmdNewfield < Test::Unit::TestCase
       5,6
       7,8
     End
-    Tb::Cmd.main_newfield(['-o', o="o.csv", 'c', '_["a"].to_i - _["b"].to_i', i1, i2])
+    Tb::Cmd.main_newfield(['-o', o="o.csv", 'c', '--ruby', '_["a"].to_i - _["b"].to_i', i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       c,a,b
       -1,1,2

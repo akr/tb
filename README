@@ -143,7 +143,7 @@ There are more subcommands.
     tb sort [OPTS] [TABLE]
     tb cut [OPTS] FIELD,... [TABLE]
     tb rename [OPTS] SRC,DST,... [TABLE]
-    tb newfield [OPTS] FIELD RUBY-EXP [TABLE]
+    tb newfield [OPTS] FIELD VALUE [TABLE]
     tb cat [OPTS] [TABLE ...]
     tb join [OPTS] [TABLE1 TABLE2 ...]
     tb consecutive [OPTS] [TABLE ...]

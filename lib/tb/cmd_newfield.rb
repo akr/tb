@@ -28,11 +28,16 @@
 
 Tb::Cmd.subcommands << 'newfield'
 
+Tb::Cmd.default_option[:opt_newfield_ruby] = nil
+
 def (Tb::Cmd).op_newfield
   op = OptionParser.new
-  op.banner = "Usage: tb newfield [OPTS] FIELD RUBY-EXP [TABLE]\n" +
+  op.banner = "Usage: tb newfield [OPTS] FIELD VALUE [TABLE]\n" +
     "Add a field."
   define_common_option(op, "ho", "--no-pager")
+  op.def_option('--ruby RUBY-EXP', 'ruby expression to generate values.  A hash is given as _.  no VALUE argument.') {|ruby_exp|
+    Tb::Cmd.opt_newfield_ruby = ruby_exp
+  }
   op
 end
 
@@ -41,9 +46,14 @@ def (Tb::Cmd).main_newfield(argv)
   exit_if_help('newfield')
   err('no new field name given.') if argv.empty?
   field = argv.shift
-  err('no ruby expression given.') if argv.empty?
-  rubyexp = argv.shift
-  pr = eval("lambda {|_| #{rubyexp} }")
+  if Tb::Cmd.opt_newfield_ruby
+    rubyexp = Tb::Cmd.opt_newfield_ruby
+    pr = eval("lambda {|_| #{rubyexp} }")
+  else
+    err('no ruby expression given.') if argv.empty?
+    value = argv.shift
+    pr = lambda {|_| value }
+  end
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   er = creader.newfield(field) {|pairs| pr.call(pairs) }
