@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = 'tb'
-  s.version = '0.8'
-  s.date = '2013-03-29'
+  s.version = '0.9'
+  s.date = '2013-04-29'
   s.author = 'Tanaka Akira'
   s.email = 'akr@fsij.org'
   s.required_ruby_version = '>= 1.9.2'
