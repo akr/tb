@@ -50,7 +50,7 @@ def (Tb::Cmd).main_newfield(argv)
     rubyexp = Tb::Cmd.opt_newfield_ruby
     pr = eval("lambda {|_| #{rubyexp} }")
   else
-    err('no ruby expression given.') if argv.empty?
+    err('no value given.') if argv.empty?
     value = argv.shift
     pr = lambda {|_| value }
   end
