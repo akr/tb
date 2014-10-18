@@ -152,18 +152,7 @@ class Tb
     def shift
       line = @input.gets
       return nil if !line
-      line = line.chomp("\n")
-      line = line.chomp("\r")
-      ary = line.split(/\t/, -1)
-      assoc = ary.map {|str|
-        /:/ =~ str
-        key = $`
-        val = $'
-        key = Tb.ltsv_unescape_string(key)
-        val = Tb.ltsv_unescape_string(val)
-        [key, val]
-      }
-      assoc
+      Tb.ltsv_split_line(line)
     end
 
     def header_and_each(header_proc)
@@ -204,9 +193,45 @@ class Tb
     out
   end
 
+  def Tb.ltsv_split_line(line)
+    line = line.chomp("\n")
+    line = line.chomp("\r")
+    ary = line.split(/\t/, -1)
+    assoc = ary.map {|str|
+      /:/ =~ str
+      key = $`
+      val = $'
+      key = Tb.ltsv_unescape_string(key)
+      val = Tb.ltsv_unescape_string(val)
+      [key, val]
+    }
+    assoc
+  end
+
   def Tb.ltsv_assoc_join(assoc)
     assoc.map {|key, val|
       Tb.ltsv_escape_key(key) + ':' + Tb.ltsv_escape_value(val)
     }.join("\t")
+  end
+
+  class LTSVReader2 < Tb::HashReader
+    def initialize(io)
+      super lambda {
+        line = io.gets
+        if line
+          Hash[Tb.ltsv_split_line(line)]
+        else
+          nil
+        end
+      }
+    end
+  end
+
+  class LTSVWriter < Tb::HashWriter
+    def initialize(io)
+      super lambda {|hash|
+        io << (Tb.ltsv_assoc_join(hash) + "\n")
+      }
+    end
   end
 end
