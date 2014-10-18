@@ -32,8 +32,9 @@ require 'tempfile'
 
 class Tb
   class HashWriter
-    def initialize(put_hash)
+    def initialize(put_hash, put_finish=nil)
       @put_hash = put_hash
+      @put_finish = put_finish
     end
 
     def header_required?
@@ -49,6 +50,7 @@ class Tb
     end
 
     def finish
+      @put_finish.call if @put_finish
     end
   end
 end

@@ -47,4 +47,25 @@ class Tb
       header_and_each(nil, &block)
     end
   end
+
+  class JSONReader2 < Tb::HashReader
+    def initialize(io)
+      ary = JSON.parse(io.read)
+      super lambda { ary.shift }
+    end
+  end
+
+  class JSONWriter < Tb::HashWriter
+    def initialize(io)
+      io << "[\n"
+      sep = ""
+      super lambda {|hash|
+        io << sep << JSON.pretty_generate(hash)
+        sep = ",\n"
+      },
+      lambda {
+        io << "\n]\n"
+      }
+    end
+  end
 end
