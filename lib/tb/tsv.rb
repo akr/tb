@@ -116,35 +116,28 @@ class Tb
     values.map {|v| v.to_s.gsub(/[\t\r\n]/, ' ') }.join("\t")
   end
 
-  class HeaderTSVReader
-    include HeaderReaderMixin
+  class HeaderTSVReader < HeaderReader
 
     def initialize(io)
-      @io = io
-    end
-
-    def get_array
-      line = @io.gets
-      if line
-        line = line.chomp("\n")
-        line = line.chomp("\r")
-        line.split(/\t/, -1)
-      else
-        nil
-      end
+      super lambda {
+        line = @io.gets
+        if line
+          line = line.chomp("\n")
+          line = line.chomp("\r")
+          line.split(/\t/, -1)
+        else
+          nil
+        end
+      }
     end
   end
 
-  class HeaderTSVWriter
-    include HeaderWriterMixin
-
+  class HeaderTSVWriter < HeaderWriter
     # io is an object which has "<<" method.
     def initialize(io)
-      @io = io
-    end
-
-    def put_array(ary)
-      @io << Tb.tsv_fields_join(ary)
+      super lambda {|ary|
+        io << Tb.tsv_fields_join(ary)
+      }
     end
   end
 end

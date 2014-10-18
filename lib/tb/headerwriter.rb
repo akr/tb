@@ -31,7 +31,11 @@
 require 'tempfile'
 
 class Tb
-  module HeaderWriterMixin
+  class HeaderWriter
+    def initialize(put_array)
+      @put_array = put_array
+    end
+
     def header_required?
       true
     end
@@ -45,7 +49,7 @@ class Tb
       if defined? @header_generator
         @header_use_buffer = false
         @header = @header_generator.call
-        put_array @header
+        @put_array.call @header
       else
         @header_use_buffer = true
         @header = []
@@ -78,7 +82,7 @@ class Tb
       end
       if @header_use_buffer
         @header_buffer.rewind
-        put_array(@header)
+        @put_array.call @header
         begin
           while true
             hash = Marshal.load(@header_buffer)
@@ -100,7 +104,7 @@ class Tb
         @header << f
         ary << hash[f]
       }
-      put_array ary
+      @put_array.call ary
     end
     private :put_hash_immediate
   end

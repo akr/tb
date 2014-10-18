@@ -31,28 +31,17 @@
 require 'csv'
 
 class Tb
-  class HeaderCSVReader
-    include HeaderReaderMixin
-
+  class HeaderCSVReader < HeaderReader
     def initialize(io)
-      @aryreader = CSV.new(io)
-    end
-
-    def get_array
-      @aryreader.shift
+      aryreader = CSV.new(io)
+      super lambda { aryreader.shift }
     end
   end
 
-  class HeaderCSVWriter
-    include HeaderWriterMixin
-
+  class HeaderCSVWriter < HeaderWriter
     # io is an object which has "<<" method.
     def initialize(io)
-      @io = io
-    end
-
-    def put_array(ary)
-      @io << ary.to_csv
+      super lambda {|ary| io << ary.to_csv}
     end
   end
 

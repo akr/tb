@@ -29,15 +29,18 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class Tb
-  # HeaderReaderMixin should be mixed to a class which get_array is implemented.
-  module HeaderReaderMixin
+  class HeaderReader
+    def initialize(get_array)
+      @get_array = get_array
+    end
+
     def header_known?
       true
     end
 
     def read_header_once
       return if defined? @header
-      @header = get_array
+      @header = @get_array.call
     end
     private :read_header_once
 
@@ -48,7 +51,7 @@ class Tb
 
     def get_hash
       read_header_once
-      ary = get_array
+      ary = @get_array.call
       if !ary
         return nil
       end
