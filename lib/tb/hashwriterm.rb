@@ -1,4 +1,4 @@
-# lib/tb/hashwriterm.rb - writer mixin for table without header
+# lib/tb/hashwriterm.rb - writer mixin for table containing hashes
 #
 # Copyright (C) 2014 Tanaka Akira  <akr@fsij.org>
 #
