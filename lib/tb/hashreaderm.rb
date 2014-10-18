@@ -1,4 +1,4 @@
-# lib/tb/hashreaderm.rb - reader mixin for table without header
+# lib/tb/hashreaderm.rb - reader mixin for table containing hashes
 #
 # Copyright (C) 2014 Tanaka Akira  <akr@fsij.org>
 #
@@ -37,7 +37,7 @@ class Tb
       false
     end
 
-    def get_header
+    def get_named_header
       if defined? @hashreader_header_complete
         return @hashreader_header_complete
       end

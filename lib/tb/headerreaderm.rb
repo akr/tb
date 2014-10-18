@@ -41,7 +41,7 @@ class Tb
     end
     private :read_header_once
 
-    def get_header
+    def get_named_header
       read_header_once
       @header
     end
