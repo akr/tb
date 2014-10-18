@@ -5,6 +5,7 @@ Gem::Specification.new do |s|
   s.author = 'Tanaka Akira'
   s.email = 'akr@fsij.org'
   s.required_ruby_version = '>= 1.9.2'
+  s.add_development_dependency 'test-unit', '~> 2.5.5'
   s.files = %w[
     README
     bin/tb
