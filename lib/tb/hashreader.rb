@@ -31,8 +31,11 @@
 require 'tempfile'
 
 class Tb
-  # HashReaderMixin should be mixed to a class which get_hash_internal is implemented.
-  module HashReaderMixin
+  class HashReader
+    def initialize(get_hash)
+      @get_hash = get_hash
+    end
+
     def header_known?
       false
     end
@@ -42,7 +45,7 @@ class Tb
         return @hashreader_header_complete
       end
       @hashreader_buffer = []
-      while hash = get_hash_internal
+      while hash = @get_hash.call
         update_header hash
         @hashreader_buffer << hash
       end
@@ -53,7 +56,7 @@ class Tb
       if defined? @hashreader_buffer
         return @hashreader_buffer.shift
       end
-      hash = get_hash_internal
+      hash = @get_hash.call
       update_header hash
       hash
     end

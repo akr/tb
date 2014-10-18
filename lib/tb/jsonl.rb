@@ -29,33 +29,25 @@
 require 'json'
 
 class Tb
-  class JSONLReader
-    include Tb::HashReaderMixin
-
+  class JSONLReader < Tb::HashReader
     # io.gets should returns a string.
     def initialize(io)
-      @io = io
-    end
-
-    def get_hash_internal
-      line = @io.gets
-      if line
-        JSON.parse(line)
-      else
-        nil
-      end
+      super lambda {
+        line = io.gets
+        if line
+          JSON.parse(line)
+        else
+          nil
+        end
+      }
     end
   end
 
-  class JSONLWriter
-    include Tb::HashWriterMixin
-
+  class JSONLWriter < Tb::HashWriter
     def initialize(io)
-      @io = io
-    end
-
-    def put_hash_internal(hash)
-      @io << (JSON.generate(hash) + "\n")
+      super lambda {|hash|
+        io << (JSON.generate(hash) + "\n")
+      }
     end
   end
 end

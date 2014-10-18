@@ -31,7 +31,11 @@
 require 'tempfile'
 
 class Tb
-  module HashWriterMixin
+  class HashWriter
+    def initialize(put_hash)
+      @put_hash = put_hash
+    end
+
     def header_required?
       false
     end
@@ -40,7 +44,7 @@ class Tb
     end
 
     def put_hash(hash)
-      put_hash_internal(hash)
+      @put_hash.call hash
       nil
     end
 
