@@ -1,6 +1,6 @@
 # lib/tb/tsv.rb - TSV related fetures for table library
 #
-# Copyright (C) 2010-2012 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2010-2014 Tanaka Akira  <akr@fsij.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -114,5 +114,37 @@ class Tb
 
   def Tb.tsv_fields_join(values)
     values.map {|v| v.to_s.gsub(/[\t\r\n]/, ' ') }.join("\t")
+  end
+
+  class HeaderTSVReader
+    include HeaderReaderMixin
+
+    def initialize(io)
+      @io = io
+    end
+
+    def get_array
+      line = @io.gets
+      if line
+        line = line.chomp("\n")
+        line = line.chomp("\r")
+        line.split(/\t/, -1)
+      else
+        nil
+      end
+    end
+  end
+
+  class HeaderTSVWriter
+    include HeaderWriterMixin
+
+    # io is an object which has "<<" method.
+    def initialize(io)
+      @io = io
+    end
+
+    def put_array(ary)
+      @io << Tb.tsv_fields_join(ary)
+    end
   end
 end

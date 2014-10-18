@@ -40,6 +40,19 @@ require 'tb/func'
 require 'tb/zipper'
 require 'tb/basic'
 require 'tb/record'
+
+require 'tb/headerreaderm'
+require 'tb/headerwriterm'
+require 'tb/headercsv'
+
+require 'tb/numericreaderm'
+require 'tb/numericwriterm'
+require 'tb/numericcsv'
+
+require 'tb/hashreaderm'
+require 'tb/hashwriterm'
+require 'tb/jsonl'
+
 require 'tb/csv'
 require 'tb/tsv'
 require 'tb/ltsv'
@@ -56,15 +69,3 @@ require 'tb/fileenumerator'
 require 'tb/revcmp'
 require 'tb/customcmp'
 require 'tb/customeq'
-
-require 'tb/headerreaderm'
-require 'tb/headerwriterm'
-require 'tb/headercsv'
-
-require 'tb/numericreaderm'
-require 'tb/numericwriterm'
-require 'tb/numericcsv'
-
-require 'tb/hashreaderm'
-require 'tb/hashwriterm'
-require 'tb/jsonl'
