@@ -31,7 +31,11 @@
 require 'tempfile'
 
 class Tb
-  module NumericWriterMixin
+  class NumericWriter
+    def initialize(put_array)
+      @put_array = put_array
+    end
+
     def header_required?
       false
     end
@@ -47,7 +51,7 @@ class Tb
         end
         ary[k.to_i-1] = v
       }
-      put_array ary
+      @put_array.call ary
       nil
     end
   end

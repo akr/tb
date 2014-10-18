@@ -29,8 +29,11 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class Tb
-  # NumericReaderMixin should be mixed to a class which get_array is implemented.
-  module NumericReaderMixin
+  class NumericReader
+    def initialize(get_array)
+      @get_array = get_array
+    end
+
     def header_known?
       false
     end
@@ -40,7 +43,7 @@ class Tb
     end
 
     def get_hash
-      ary = get_array
+      ary = @get_array.call
       if !ary
         return nil
       end
