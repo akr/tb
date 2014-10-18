@@ -1,6 +1,6 @@
-# lib/tb.rb - entry file for table library
+# lib/tb/numericreaderm.rb - reader mixin for table without header
 #
-# Copyright (C) 2010-2013 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2014 Tanaka Akira  <akr@fsij.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,43 +28,35 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'tempfile'
-
 class Tb
+  # NumericReaderMixin should be mixed to a class which get_array is implemented.
+  module NumericReaderMixin
+    def header_known?
+      false
+    end
+
+    def get_named_header
+      []
+    end
+
+    def get_hash
+      ary = get_array
+      if !ary
+        return nil
+      end
+      hash = {}
+      ary.each_with_index {|v, i|
+        field = (i+1).to_s
+        hash[field] = v
+      }
+      hash
+    end
+
+    def each
+      while hash = get_hash
+        yield hash
+      end
+      nil
+    end
+  end
 end
-
-require 'pp'
-require 'tb/enumerable'
-require 'tb/enumerator'
-require 'tb/func'
-require 'tb/zipper'
-require 'tb/basic'
-require 'tb/record'
-require 'tb/csv'
-require 'tb/tsv'
-require 'tb/ltsv'
-require 'tb/pnm'
-require 'tb/json'
-require 'tb/reader'
-require 'tb/ropen'
-require 'tb/catreader'
-require 'tb/fieldset'
-require 'tb/search'
-require 'tb/ex_enumerable'
-require 'tb/ex_enumerator'
-require 'tb/fileenumerator'
-require 'tb/revcmp'
-require 'tb/customcmp'
-require 'tb/customeq'
-
-require 'tb/headerreaderm'
-require 'tb/headerwriterm'
-require 'tb/headercsv'
-
-require 'tb/numericreaderm'
-require 'tb/numericwriterm'
-require 'tb/numericcsv'
-
-require 'tb/hashreaderm'
-require 'tb/hashwriterm'
-require 'tb/jsonl'
