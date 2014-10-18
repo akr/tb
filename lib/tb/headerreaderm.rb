@@ -1,4 +1,4 @@
-# lib/tb/arraywriterm.rb - writer mixin for table with header
+# lib/tb/headerreaderm.rb - reader mixin for table with header
 #
 # Copyright (C) 2014 Tanaka Akira  <akr@fsij.org>
 #
@@ -28,79 +28,43 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'tempfile'
-
 class Tb
-  module ArrayWriterMixin
-    def header_required?
+  # HeaderReaderMixin should be mixed to a class which get_array is implemented.
+  module HeaderReaderMixin
+    def header_known?
       true
     end
 
-    def header_generator=(gen)
-      @header_generator = gen
+    def read_header_once
+      return if defined? @header
+      @header = get_array
+    end
+    private :read_header_once
+
+    def get_header
+      read_header_once
+      @header
     end
 
-    def generate_header_if_possible
-      return if defined? @header_use_buffer
-      if defined? @header_generator
-        @header_use_buffer = false
-        @header = @header_generator.call
-        put_array @header
-      else
-        @header_use_buffer = true
-        @header = []
-        @header_buffer = Tempfile.new('tb')
+    def get_hash
+      read_header_once
+      ary = get_array
+      if !ary
+        return nil
       end
+      hash = {}
+      ary.each_with_index {|v, i|
+        field = i < @header.length ? @header[i] : (i+1).to_s
+        hash[field] = v
+      }
+      hash
     end
 
-    def put_hash(hash)
-      generate_header_if_possible
-      if @header_use_buffer
-        put_hash_buffer(hash)
-      else
-        put_hash_immediate(hash)
+    def each
+      while hash = get_hash
+        yield hash
       end
       nil
     end
-
-    def put_hash_buffer(hash)
-      Marshal.dump(hash, @header_buffer)
-      (hash.keys - @header).each {|f|
-        @header << f
-      }
-    end
-    private :put_hash_buffer
-
-    def finish
-      generate_header_if_possible
-      if @header_use_buffer == nil
-        generate_header_if_possible
-      end
-      if @header_use_buffer
-        @header_buffer.rewind
-        put_array(@header)
-        begin
-          while true
-            hash = Marshal.load(@header_buffer)
-            put_hash_immediate(hash)
-          end
-        rescue EOFError
-        end
-      end
-    end
-
-    def put_hash_immediate(hash)
-      ary = []
-      @header.each {|f|
-        ary << hash[f]
-      }
-      (hash.keys - @header).each {|f|
-        warn "unexpected field: #{f.inspect}"
-        @header << f
-        ary << hash[f]
-      }
-      put_array ary
-    end
-    private :put_hash_immediate
   end
 end

@@ -32,7 +32,7 @@ require 'csv'
 
 class Tb
   class HeaderCSVReader
-    include ArrayReaderMixin
+    include HeaderReaderMixin
 
     def initialize(io)
       @aryreader = CSV.new(io)
@@ -44,7 +44,7 @@ class Tb
   end
 
   class HeaderCSVWriter
-    include ArrayWriterMixin
+    include HeaderWriterMixin
 
     # io is an object which has "<<" method.
     def initialize(io)
