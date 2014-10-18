@@ -86,6 +86,7 @@ class Tb
           end
         rescue EOFError
         end
+        @header_buffer.close!
       end
     end
 
