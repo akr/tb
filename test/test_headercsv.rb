@@ -3,12 +3,12 @@ require 'test/unit'
 
 class TestTbHeaderCSV < Test::Unit::TestCase
   def test_reader
-    arys = [
-      %w[A B C],
-      %w[a b c],
-      %w[d e f],
-    ]
-    reader = Tb::HeaderCSVReader.new(arys)
+    csv = <<-'End'.gsub(/^\s*/, '')
+      A,B,C
+      a,b,c
+      d,e,f
+    End
+    reader = Tb::HeaderCSVReader.new(StringIO.new(csv))
     assert_equal({"A"=>"a", "B"=>"b", "C"=>"c"}, reader.get_hash)
     assert_equal({"A"=>"d", "B"=>"e", "C"=>"f"}, reader.get_hash)
     assert_equal(nil, reader.get_hash)

@@ -34,12 +34,8 @@ class Tb
   class HeaderCSVReader
     include ArrayReaderMixin
 
-    # aryreader is an object which "shift" method returns an array.
-    #
-    # CSV.new(io) and nested array [[...], [...], ...] can be used.
-    #
-    def initialize(aryreader)
-      @aryreader = aryreader
+    def initialize(io)
+      @aryreader = CSV.new(io)
     end
 
     def get_array
