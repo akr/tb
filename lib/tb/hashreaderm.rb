@@ -1,6 +1,6 @@
-# lib/tb.rb - entry file for table library
+# lib/tb/hashreaderm.rb - reader mixin for table without header
 #
-# Copyright (C) 2010-2013 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2014 Tanaka Akira  <akr@fsij.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,35 +31,49 @@
 require 'tempfile'
 
 class Tb
+  # HashReaderMixin should be mixed to a class which get_hash_internal is implemented.
+  module HashReaderMixin
+    def header_known?
+      false
+    end
+
+    def get_header
+      if defined? @hashreader_header_complete
+        return @hashreader_header_complete
+      end
+      @hashreader_buffer = []
+      while hash = get_hash_internal
+        update_header hash
+        @hashreader_buffer << hash
+      end
+      update_header nil
+    end
+
+    def get_hash
+      if defined? @hashreader_buffer
+        return @hashreader_buffer.shift
+      end
+      hash = get_hash_internal
+      update_header hash
+      hash
+    end
+
+    def update_header(hash)
+      unless defined? @hashreader_header_partial
+        @hashreader_header_partial = []
+      end
+      if hash
+        @hashreader_header_partial.concat(hash.keys - @hashreader_header_partial)
+      else
+        @hashreader_header_complete = @hashreader_header_partial
+      end
+    end
+
+    def each
+      while hash = get_hash
+        yield hash
+      end
+      nil
+    end
+  end
 end
-
-require 'pp'
-require 'tb/enumerable'
-require 'tb/enumerator'
-require 'tb/func'
-require 'tb/zipper'
-require 'tb/basic'
-require 'tb/record'
-require 'tb/csv'
-require 'tb/tsv'
-require 'tb/ltsv'
-require 'tb/pnm'
-require 'tb/json'
-require 'tb/reader'
-require 'tb/ropen'
-require 'tb/catreader'
-require 'tb/fieldset'
-require 'tb/search'
-require 'tb/ex_enumerable'
-require 'tb/ex_enumerator'
-require 'tb/fileenumerator'
-require 'tb/revcmp'
-require 'tb/customcmp'
-require 'tb/customeq'
-
-require 'tb/arrayreaderm'
-require 'tb/arraywriterm'
-require 'tb/headercsv'
-require 'tb/hashreaderm'
-require 'tb/hashwriterm'
-require 'tb/jsonl'
