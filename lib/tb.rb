@@ -41,16 +41,16 @@ require 'tb/zipper'
 require 'tb/basic'
 require 'tb/record'
 
-require 'tb/headerreaderm'
-require 'tb/headerwriterm'
+require 'tb/headerreader'
+require 'tb/headerwriter'
 require 'tb/headercsv'
 
-require 'tb/numericreaderm'
-require 'tb/numericwriterm'
+require 'tb/numericreader'
+require 'tb/numericwriter'
 require 'tb/numericcsv'
 
-require 'tb/hashreaderm'
-require 'tb/hashwriterm'
+require 'tb/hashreader'
+require 'tb/hashwriter'
 require 'tb/jsonl'
 
 require 'tb/csv'
