@@ -30,6 +30,8 @@
 
 class Tb
   class HeaderReader
+    include Tb::Enumerable
+
     def initialize(get_array)
       @get_array = get_array
     end
@@ -57,13 +59,14 @@ class Tb
       end
       hash = {}
       ary.each_with_index {|v, i|
-        field = i < @header.length ? @header[i] : (i+1).to_s
+        field = i < @header.length ? @header[i] : (i-@header.length+1).to_s
         hash[field] = v
       }
       hash
     end
 
-    def each
+    def header_and_each(header_proc)
+      header_proc.call(get_named_header) if header_proc
       while hash = get_hash
         yield hash
       end

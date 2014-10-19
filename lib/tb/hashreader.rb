@@ -32,6 +32,8 @@ require 'tempfile'
 
 class Tb
   class HashReader
+    include Tb::Enumerable
+
     def initialize(get_hash)
       @get_hash = get_hash
     end
@@ -72,7 +74,8 @@ class Tb
       end
     end
 
-    def each
+    def header_and_each(header_proc)
+      header_proc.call(get_named_header) if header_proc
       while hash = get_hash
         yield hash
       end
