@@ -72,5 +72,9 @@ class Tb
       end
       nil
     end
+
+    def each(&b)
+      header_and_each(nil, &b)
+    end
   end
 end
