@@ -96,13 +96,14 @@ class Tb
 
     def put_hash_immediate(hash)
       ary = []
-      @header.each {|f|
-        ary << hash[f]
+      @header.each_with_index {|f, i|
+        ary[i] = hash[f] if hash.has_key? f
       }
       (hash.keys - @header).each {|f|
         warn "unexpected field: #{f.inspect}"
+        i = @header.length
         @header << f
-        ary << hash[f]
+        ary[i] = hash[f]
       }
       @put_array.call ary
     end
