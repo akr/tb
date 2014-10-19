@@ -131,8 +131,7 @@ def split_field_list_argument(arg)
 end
 
 def split_csv_argument(arg)
-  Tb.csv_stream_input(arg) {|ary| return ary }
-  return []
+  return CSV.new(arg).shift || []
 end
 
 def tablereader_open(filename, &b)
