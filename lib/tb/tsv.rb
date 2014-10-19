@@ -57,29 +57,17 @@ class Tb
   end
 
   def Tb.tsv_stream_input(tsv)
-    tsvreader = TSVReader.new(tsv)
-    while ary = tsvreader.shift
-      yield ary
+    if tsv.respond_to? :to_str
+      input = StringIO.new(tsv)
+    else
+      input = tsv
     end
-    nil
-  end
-
-  class TSVReader
-    def initialize(input)
-      if input.respond_to? :to_str
-        @input = StringIO.new(input)
-      else
-        @input = input
-      end
-    end
-
-    def shift
-      line = @input.gets
-      return nil if !line
+    while line = input.gets
       line = line.chomp("\n")
       line = line.chomp("\r")
-      line.split(/\t/, -1)
+      yield line.split(/\t/, -1)
     end
+    nil
   end
 
   def Tb.tsv_stream_output(out)
