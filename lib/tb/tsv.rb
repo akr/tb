@@ -120,7 +120,7 @@ class Tb
 
     def initialize(io)
       super lambda {
-        line = @io.gets
+        line = io.gets
         if line
           line = line.chomp("\n")
           line = line.chomp("\r")
