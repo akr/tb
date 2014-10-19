@@ -32,8 +32,9 @@ require 'tempfile'
 
 class Tb
   class NumericWriter
-    def initialize(put_array)
+    def initialize(put_array, put_finish=nil)
       @put_array = put_array
+      @put_finish = put_finish
     end
 
     def header_required?
@@ -53,6 +54,10 @@ class Tb
       }
       @put_array.call ary
       nil
+    end
+
+    def finish
+      @put_finish.call if @put_finish
     end
   end
 end
