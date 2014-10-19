@@ -56,9 +56,11 @@ class Tb
     end
   end
 
-  def Tb.csv_stream_input(csv, &b)
-    csvreader = CSVReader.new(csv)
-    csvreader.each(&b)
+  def Tb.csv_stream_input(input)
+    csv = CSV.new(input)
+    while ary = csv.shift
+      yield ary
+    end
     nil
   end
 
@@ -66,23 +68,6 @@ class Tb
     aa = []
     Tb.csv_stream_input(csv) {|ary| aa << ary }
     aa
-  end
-
-  class CSVReader
-    def initialize(input)
-      @csv = CSV.new(input)
-    end
-
-    def shift
-      @csv.shift
-    end
-
-    def each
-      while ary = self.shift
-        yield ary
-      end
-      nil
-    end
   end
 
   def Tb.csv_stream_output(out)
