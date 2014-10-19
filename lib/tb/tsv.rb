@@ -42,7 +42,7 @@ class Tb
     }
     aa = yield aa if block_given?
     if header_fields.empty?
-      reader = Tb::Reader.new {|body| body.call(aa) }
+      reader = Tb::HeaderReader.new(lambda { aa.shift })
       reader.to_tb
     else
       header = header_fields
