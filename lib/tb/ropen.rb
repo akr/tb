@@ -1,6 +1,6 @@
-# lib/tb/ropen.rb - Tb::Reader.open
+# lib/tb/ropen.rb - Tb.open_reader
 #
-# Copyright (C) 2011-2013 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2011-2014 Tanaka Akira  <akr@fsij.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -95,4 +95,91 @@ def Tb.open_reader(filename, opts={})
   else
     reader
   end
+end
+
+def Tb.open_reader2(filename, numeric)
+  case filename
+  when /\Acsv:/
+    filename = $'
+    reader_maker = lambda {|io| numeric ? Tb::NumericCSVReader.new(io) : Tb::HeaderCSVReader.new(io) }
+  when /\Atsv:/
+    filename = $'
+    reader_maker = lambda {|io| numeric ? Tb::NumericTSVReader.new(io) : Tb::HeaderTSVReader.new(io) }
+  when /\Altsv:/
+    filename = $'
+    reader_maker = lambda {|io| Tb::LTSVReader2.new(io) }
+  when /\Ap[pgbn]m:/
+    filename = $'
+    reader_maker = lambda {|io| Tb::PNMReader2.new(io) }
+  when /\Ajson:/
+    filename = $'
+    reader_maker = lambda {|io| Tb::JSONReader2.new(io) }
+  when /\Ajsonl:/
+    filename = $'
+    reader_maker = lambda {|io| Tb::JSONLReader.new(io) }
+  when /\.csv\z/
+    reader_maker = lambda {|io| numeric ? Tb::NumericCSVReader.new(io) : Tb::HeaderCSVReader.new(io) }
+  when /\.tsv\z/
+    reader_maker = lambda {|io| numeric ? Tb::NumericTSVReader.new(io) : Tb::HeaderTSVReader.new(io) }
+  when /\.ltsv\z/
+    reader_maker = lambda {|io| Tb::LTSVReader2.new(io) }
+  when /\.p[pgbn]m\z/
+    reader_maker = lambda {|io| Tb::PNMReader2.new(io) }
+  when /\.json\z/
+    reader_maker = lambda {|io| Tb::JSONReader2.new(io) }
+  when /\.jsonl\z/
+    reader_maker = lambda {|io| Tb::JSONLReader.new(io) }
+  else
+    reader_maker = lambda {|io| numeric ? Tb::NumericCSVReader.new(io) : Tb::HeaderCSVReader.new(io) }
+  end
+  if !filename.respond_to?(:to_str) && !filename.respond_to?(:to_path)
+    raise ArgumentError, "unexpected filename: #{filename.inspect}"
+  end
+  if filename == '-'
+    reader = reader_maker.call($stdin)
+  else
+    reader = reader_maker.call(File.open(filename))
+  end
+  if block_given?
+    yield reader
+  else
+    reader
+  end
+end
+
+def Tb.open_writer(filename, numeric)
+  if /\A([a-z0-9]{2,}):/ =~ filename
+    fmt = $1
+    filename = $'
+  else
+    fmt = nil
+  end
+  if !fmt
+    case filename
+    when /\.csv\z/ then fmt = 'csv'
+    when /\.ltsv\z/ then fmt = 'ltsv'
+    when /\.json\z/ then fmt = 'json'
+    when /\.jsonl\z/ then fmt = 'jsonl'
+    end
+  end
+  if fmt
+    case fmt
+    when 'csv'
+      writer_maker = lambda {|out| numeric ? Tb::NumericCSVWriter.new(out) : Tb::HeaderCSVWriter.new(out) }
+    when 'ltsv'
+      writer_maker = lambda {|out| Tb::LTSVWriter.new(out) }
+    when 'json'
+      writer_maker = lambda {|out| Tb::JSONWriter.new(out) }
+    when 'jsonl'
+      writer_maker = lambda {|out| Tb::JSONLWriter.new(out) }
+    else
+      err("unexpected format: #{fmt.inspect}")
+    end
+  end
+  writer_maker ||= lambda {|out| numeric ? Tb::NumericCSVWriter.new(out) : Tb::HeaderCSVWriter.new(out) }
+  with_output(filename) {|out|
+    writer = writer_maker.call(out)
+    yield writer
+    writer.finish
+  }
 end
