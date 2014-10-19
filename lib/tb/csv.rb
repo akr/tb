@@ -37,7 +37,7 @@ class Tb
 
   def Tb.parse_csv(csv, *header_fields)
     aa = []
-    csv_stream_input(csv) {|ary|
+    Tb.csv_stream_input(csv) {|ary|
       aa << ary
     }
     aa = yield aa if block_given?
