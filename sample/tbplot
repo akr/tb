@@ -227,7 +227,7 @@ def input_table(table_filename)
   tmps = {}
   checkers = {}
 
-  r = Tb.open_reader(table_filename).to_fileenumerator
+  r = Tb.open_reader2(table_filename).to_fileenumerator
 
   r.use {
     r.with_header {|header|
