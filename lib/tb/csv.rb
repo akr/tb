@@ -64,12 +64,6 @@ class Tb
     nil
   end
 
-  def Tb.csv_read_aa(csv)
-    aa = []
-    Tb.csv_stream_input(csv) {|ary| aa << ary }
-    aa
-  end
-
   def Tb.csv_stream_output(out)
     gen = Object.new
     gen.instance_variable_set(:@out, out)
