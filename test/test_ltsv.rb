@@ -11,7 +11,7 @@ class TestTbLTSV < Test::Unit::TestCase
   end
 
   def test_parse
-    r = Tb::LTSVReader2.new(StringIO.new("a:1\tb:2\na:3\tb:4\n"))
+    r = Tb::LTSVReader.new(StringIO.new("a:1\tb:2\na:3\tb:4\n"))
     result = []
     r.with_header {|header|
       result << header

@@ -38,7 +38,7 @@ def Tb.open_reader2(filename, numeric=false)
     reader_maker = lambda {|io| numeric ? Tb::NumericTSVReader.new(io) : Tb::HeaderTSVReader.new(io) }
   when /\Altsv:/
     filename = $'
-    reader_maker = lambda {|io| Tb::LTSVReader2.new(io) }
+    reader_maker = lambda {|io| Tb::LTSVReader.new(io) }
   when /\Ap[pgbn]m:/
     filename = $'
     reader_maker = lambda {|io| Tb::PNMReader2.new(io) }
@@ -53,7 +53,7 @@ def Tb.open_reader2(filename, numeric=false)
   when /\.tsv\z/
     reader_maker = lambda {|io| numeric ? Tb::NumericTSVReader.new(io) : Tb::HeaderTSVReader.new(io) }
   when /\.ltsv\z/
-    reader_maker = lambda {|io| Tb::LTSVReader2.new(io) }
+    reader_maker = lambda {|io| Tb::LTSVReader.new(io) }
   when /\.p[pgbn]m\z/
     reader_maker = lambda {|io| Tb::PNMReader2.new(io) }
   when /\.json\z/

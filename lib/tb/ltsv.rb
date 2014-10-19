@@ -55,7 +55,7 @@ class Tb
   end
 
   def Tb.ltsv_stream_input(ltsv)
-    ltsvreader = LTSVReader2.new(StringIO.new(ltsv))
+    ltsvreader = LTSVReader.new(StringIO.new(ltsv))
     while assoc = ltsvreader.get_hash
       yield assoc
     end
@@ -185,7 +185,7 @@ class Tb
     }.join("\t")
   end
 
-  class LTSVReader2 < Tb::HashReader
+  class LTSVReader < Tb::HashReader
     def initialize(io)
       super lambda {
         line = io.gets
