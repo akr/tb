@@ -55,8 +55,8 @@ class Tb
   end
 
   def Tb.ltsv_stream_input(ltsv)
-    ltsvreader = LTSVReader.new(ltsv)
-    while assoc = ltsvreader.shift
+    ltsvreader = LTSVReader2.new(StringIO.new(ltsv))
+    while assoc = ltsvreader.get_hash
       yield assoc
     end
     nil
@@ -135,35 +135,6 @@ class Tb
       }
     else
       str
-    end
-  end
-
-  class LTSVReader
-    include Tb::Enumerable
-
-    def initialize(input)
-      if input.respond_to? :to_str
-        @input = StringIO.new(input)
-      else
-        @input = input
-      end
-    end
-
-    def shift
-      line = @input.gets
-      return nil if !line
-      Tb.ltsv_split_line(line)
-    end
-
-    def header_and_each(header_proc)
-      header_proc.call(nil) if header_proc
-      while assoc = self.shift
-        yield Hash[assoc]
-      end
-    end
-
-    def each(&block)
-      header_and_each(nil, &block)
     end
   end
 
