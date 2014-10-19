@@ -71,7 +71,6 @@ class Tb
   end
 
   def Tb.csv_stream_output(out)
-    require 'csv'
     gen = Object.new
     gen.instance_variable_set(:@out, out)
     def gen.<<(ary)
@@ -81,7 +80,6 @@ class Tb
   end
 
   def Tb.csv_encode_row(ary)
-    require 'csv'
     ary.to_csv
   end
 
@@ -93,7 +91,6 @@ class Tb
     if fields.nil?
       fields = list_fields
     end
-    require 'csv'
     recordids = list_recordids
     if block_given?
       recordids = yield(recordids)
