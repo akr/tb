@@ -1,6 +1,6 @@
 # lib/tb.rb - entry file for table library
 #
-# Copyright (C) 2010-2013 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2010-2014 Tanaka Akira  <akr@fsij.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -43,11 +43,9 @@ require 'tb/record'
 
 require 'tb/headerreader'
 require 'tb/headerwriter'
-require 'tb/headercsv'
 
 require 'tb/numericreader'
 require 'tb/numericwriter'
-require 'tb/numericcsv'
 
 require 'tb/hashreader'
 require 'tb/hashwriter'

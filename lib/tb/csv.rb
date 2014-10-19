@@ -1,6 +1,6 @@
 # lib/tb/csv.rb - CSV related fetures for table library
 #
-# Copyright (C) 2010-2013 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2010-2014 Tanaka Akira  <akr@fsij.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -121,4 +121,33 @@ class Tb
     }
     out
   end
+
+  class HeaderCSVReader < HeaderReader
+    def initialize(io)
+      aryreader = CSV.new(io)
+      super lambda { aryreader.shift }
+    end
+  end
+
+  class HeaderCSVWriter < HeaderWriter
+    # io is an object which has "<<" method.
+    def initialize(io)
+      super lambda {|ary| io << ary.to_csv}
+    end
+  end
+
+  class NumericCSVReader < NumericReader
+    def initialize(io)
+      aryreader = CSV.new(io)
+      super lambda { aryreader.shift }
+    end
+  end
+
+  class NumericCSVWriter < NumericWriter
+    # io is an object which has "<<" method.
+    def initialize(io)
+      super lambda {|ary| io << ary.to_csv }
+    end
+  end
+
 end
