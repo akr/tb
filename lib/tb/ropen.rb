@@ -97,7 +97,7 @@ def Tb.open_reader(filename, opts={})
   end
 end
 
-def Tb.open_reader2(filename, numeric)
+def Tb.open_reader2(filename, numeric=false)
   case filename
   when /\Acsv:/
     filename = $'
