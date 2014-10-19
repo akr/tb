@@ -49,13 +49,14 @@ require 'tb/numericwriter'
 
 require 'tb/hashreader'
 require 'tb/hashwriter'
-require 'tb/jsonl'
 
 require 'tb/csv'
 require 'tb/tsv'
 require 'tb/ltsv'
 require 'tb/pnm'
 require 'tb/json'
+require 'tb/jsonl'
+
 require 'tb/ropen'
 require 'tb/catreader'
 require 'tb/fieldset'
