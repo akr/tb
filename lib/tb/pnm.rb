@@ -181,6 +181,15 @@ class Tb
     end
   end
 
+  class PNMReader2 < HeaderReader
+    def initialize(pnm_io)
+      pnm_io.binmode
+      content = pnm_io.read
+      r = PNMReader.new(content)
+      super lambda { r.shift }
+    end
+  end
+
   # :call-seq:
   #   generate_pnm(out='')
   #
