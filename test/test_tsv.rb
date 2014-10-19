@@ -2,6 +2,7 @@ require 'tb'
 require 'test/unit'
 
 class TestTbTSV < Test::Unit::TestCase
+=begin
   def test_parse
     tsv = "a\tb\n1\t2\n"
     t = Tb.parse_tsv(tsv)
@@ -32,6 +33,7 @@ class TestTbTSV < Test::Unit::TestCase
       [{"_recordid"=>0, "a"=>"1", "b"=>"2"}],
       records)
   end
+=end
 
   def test_generate_tsv
     tbl = Tb.new %w[a b], %w[foo bar]

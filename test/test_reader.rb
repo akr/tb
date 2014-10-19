@@ -20,6 +20,7 @@ class TestTbReader < Test::Unit::TestCase
     }
   end
 
+=begin
   def test_load_tsv
     Dir.mktmpdir {|d|
       open(i="#{d}/i.tsv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
@@ -36,6 +37,7 @@ class TestTbReader < Test::Unit::TestCase
         records)
     }
   end
+=end
 
   def test_parse_csv
     csv = <<-'End'.gsub(/^[ \t]+/, '')
@@ -53,6 +55,7 @@ class TestTbReader < Test::Unit::TestCase
       records)
   end
 
+=begin
   def test_parse_tsv
     csv = <<-"End".gsub(/^[ \t]+/, '')
     1\t2
@@ -68,6 +71,7 @@ class TestTbReader < Test::Unit::TestCase
        {"a"=>"3", "b"=>"4"}],
       records)
   end
+=end
 
   def test_open
     Dir.mktmpdir {|d|

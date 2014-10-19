@@ -31,45 +31,6 @@
 require 'stringio'
 
 class Tb
-  def Tb.load_tsv(filename, *header_fields, &block)
-    Tb.parse_tsv(File.read(filename), *header_fields, &block)
-  end
-
-  def Tb.parse_tsv(tsv, *header_fields)
-    aa = []
-    tsv_stream_input(tsv) {|ary|
-      aa << ary
-    }
-    aa = yield aa if block_given?
-    if header_fields.empty?
-      reader = Tb::HeaderReader.new(lambda { aa.shift })
-      reader.to_tb
-    else
-      header = header_fields
-      arys = aa
-      t = Tb.new(header)
-      arys.each {|ary|
-        ary << nil while ary.length < header.length
-        t.insert_values header, ary
-      }
-      t
-    end
-  end
-
-  def Tb.tsv_stream_input(tsv)
-    if tsv.respond_to? :to_str
-      input = StringIO.new(tsv)
-    else
-      input = tsv
-    end
-    while line = input.gets
-      line = line.chomp("\n")
-      line = line.chomp("\r")
-      yield line.split(/\t/, -1)
-    end
-    nil
-  end
-
   def Tb.tsv_stream_output(out)
     gen = Object.new
     gen.instance_variable_set(:@out, out)
@@ -105,7 +66,6 @@ class Tb
   end
 
   class HeaderTSVReader < HeaderReader
-
     def initialize(io)
       super lambda {
         line = io.gets
