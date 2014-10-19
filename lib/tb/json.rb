@@ -29,7 +29,7 @@
 require 'json'
 
 class Tb
-  class JSONReader2 < Tb::HashReader
+  class JSONReader < Tb::HashReader
     def initialize(io)
       ary = JSON.parse(io.read)
       super lambda { ary.shift }

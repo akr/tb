@@ -44,7 +44,7 @@ def Tb.open_reader2(filename, numeric=false)
     reader_maker = lambda {|io| Tb::PNMReader2.new(io) }
   when /\Ajson:/
     filename = $'
-    reader_maker = lambda {|io| Tb::JSONReader2.new(io) }
+    reader_maker = lambda {|io| Tb::JSONReader.new(io) }
   when /\Ajsonl:/
     filename = $'
     reader_maker = lambda {|io| Tb::JSONLReader.new(io) }
@@ -57,7 +57,7 @@ def Tb.open_reader2(filename, numeric=false)
   when /\.p[pgbn]m\z/
     reader_maker = lambda {|io| Tb::PNMReader2.new(io) }
   when /\.json\z/
-    reader_maker = lambda {|io| Tb::JSONReader2.new(io) }
+    reader_maker = lambda {|io| Tb::JSONReader.new(io) }
   when /\.jsonl\z/
     reader_maker = lambda {|io| Tb::JSONLReader.new(io) }
   else
