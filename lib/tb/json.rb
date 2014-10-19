@@ -29,25 +29,6 @@
 require 'json'
 
 class Tb
-  class JSONReader
-    include Tb::Enumerable
-
-    def initialize(string)
-      @ary = JSON.parse(string)
-    end
-
-    def header_and_each(header_proc)
-      header_proc.call(nil) if header_proc
-      @ary.each {|obj|
-        yield obj
-      }
-    end
-
-    def each(&block)
-      header_and_each(nil, &block)
-    end
-  end
-
   class JSONReader2 < Tb::HashReader
     def initialize(io)
       ary = JSON.parse(io.read)
