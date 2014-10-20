@@ -31,10 +31,10 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     system("git add foo")
     system("git commit -q -m msg foo")
     Tb::Cmd.main_git(['-o', o="o.csv"])
-    result = File.read(o)
-    tb = Tb.parse_csv(result)
-    assert_equal(1, tb.size)
-    assert_match(/,A,foo\n/, tb.get_record(0)["files"])
+    aa = CSV.read(o)
+    assert_equal(2, aa.length)
+    header, row = aa
+    assert_match(/,A,foo\n/, row[header.index "files"])
   end
 
   def test_escaped_filename
@@ -44,13 +44,14 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     system("git", "add", filename)
     system("git", "commit", "-q", "-m", "msg", filename)
     Tb::Cmd.main_git(['-o', o="o.csv"])
-    result = File.read(o)
-    tb = Tb.parse_csv(result)
-    assert_equal(1, tb.size)
-    assert_match(/,A,/, tb.get_record(0)["files"])
-    ftb = Tb.parse_csv(tb.get_record(0)["files"])
-    assert_equal(1, ftb.size)
-    assert_equal(filename, ftb.get_record(0)["filename"])
+    aa = CSV.read(o)
+    assert_equal(2, aa.length)
+    header, row = aa
+    assert_match(/,A,/, row[header.index "files"])
+    faa = CSV.parse(row[header.index "files"])
+    assert_equal(2, faa.length)
+    fheader, frow = faa
+    assert_equal(filename, frow[fheader.index "filename"])
   end
 
   def test_debug_git_output_input
@@ -59,18 +60,18 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     system("git add foo")
     system("git commit -q -m msg foo")
     Tb::Cmd.main_git(['-o', o="o.csv", '--debug-git-output', g='gitlog'])
-    result = File.read(o)
-    tb = Tb.parse_csv(result)
-    assert_equal(1, tb.size)
-    assert_match(/,A,foo\n/, tb.get_record(0)["files"])
+    aa = CSV.read(o)
+    assert_equal(2, aa.length)
+    header, row = aa
+    assert_match(/,A,foo\n/, row[header.index "files"])
     gresult = File.read(g)
     assert(!gresult.empty?)
     FileUtils.rmtree('.git')
     Tb::Cmd.main_git(['-o', o="o.csv", '--debug-git-input', g])
-    result = File.read(o)
-    tb = Tb.parse_csv(result)
-    assert_equal(1, tb.size)
-    assert_match(/,A,foo\n/, tb.get_record(0)["files"])
+    aa = CSV.read(o)
+    assert_equal(2, aa.length)
+    header, row = aa
+    assert_match(/,A,foo\n/, row[header.index "files"])
   end
 
   def test_warn1
@@ -79,10 +80,10 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     system("git add foo")
     system("git commit -q -m msg foo")
     Tb::Cmd.main_git(['-o', o="o.csv", '--debug-git-output', g='gitlog'])
-    result = File.read(o)
-    tb = Tb.parse_csv(result)
-    assert_equal(1, tb.size)
-    assert_match(/,A,foo\n/, tb.get_record(0)["files"])
+    aa = CSV.read(o)
+    assert_equal(2, aa.length)
+    header, row = aa
+    assert_match(/,A,foo\n/, row[header.index "files"])
     gresult = File.binread(g)
     FileUtils.rmtree('.git')
     ###
@@ -94,10 +95,10 @@ class TestTbCmdGitLog < Test::Unit::TestCase
         Tb::Cmd.main_git(['-o', o2, '--debug-git-input', g])
       }
     }
-    result = File.read(o2)
-    tb = Tb.parse_csv(result)
-    assert_equal(1, tb.size)
-    assert_not_match(/,A,foo\n/, tb.get_record(0)["files"])
+    aa = CSV.read(o2)
+    assert_equal(2, aa.length)
+    header, row = aa
+    assert_not_match(/,A,foo\n/, row[header.index "files"])
     log = File.read('log')
     assert(!log.empty?)
   end
@@ -108,10 +109,10 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     system("git add foo")
     system("git commit -q -m msg foo")
     Tb::Cmd.main_git(['-o', o="o.csv", '--debug-git-output', g='gitlog'])
-    result = File.read(o)
-    tb = Tb.parse_csv(result)
-    assert_equal(1, tb.size)
-    assert_match(/,A,foo\n/, tb.get_record(0)["files"])
+    aa = CSV.read(o)
+    assert_equal(2, aa.length)
+    header, row = aa
+    assert_match(/,A,foo\n/, row[header.index "files"])
     gresult = File.binread(g)
     FileUtils.rmtree('.git')
     ###
@@ -123,10 +124,10 @@ class TestTbCmdGitLog < Test::Unit::TestCase
         Tb::Cmd.main_git(['-o', o2, '--debug-git-input', g])
       }
     }
-    result = File.read(o2)
-    tb = Tb.parse_csv(result)
-    assert_equal(1, tb.size)
-    assert_match(/,A,foo\n/, tb.get_record(0)["files"])
+    aa = CSV.read(o2)
+    assert_equal(2, aa.length)
+    header, row = aa
+    assert_match(/,A,foo\n/, row[header.index "files"])
     log = File.read('log')
     assert(!log.empty?)
   end
@@ -137,10 +138,10 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     system("git add foo")
     system("git commit -q -m msg foo")
     Tb::Cmd.main_git(['-o', o="o.csv", '--debug-git-output', g='gitlog'])
-    result = File.read(o)
-    tb = Tb.parse_csv(result)
-    assert_equal(1, tb.size)
-    assert_match(/,A,foo\n/, tb.get_record(0)["files"])
+    aa = CSV.read(o)
+    assert_equal(2, aa.length)
+    header, row = aa
+    assert_match(/,A,foo\n/, row[header.index "files"])
     gresult = File.binread(g)
     FileUtils.rmtree('.git')
     ###
@@ -152,9 +153,8 @@ class TestTbCmdGitLog < Test::Unit::TestCase
         Tb::Cmd.main_git(['-o', o2, '--debug-git-input', g])
       }
     }
-    result = File.read(o2)
-    tb = Tb.parse_csv(result)
-    assert_equal(0, tb.size)
+    aa = CSV.read(o2)
+    assert_equal(1, aa.length)
     log = File.read('log')
     assert(!log.empty?)
   end
@@ -165,10 +165,10 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     system("git add foo")
     system("git commit -q -m msg foo")
     Tb::Cmd.main_git(['-o', o="o.csv"])
-    result = File.read(o)
-    tb = Tb.parse_csv(result)
-    assert_equal(1, tb.size)
-    assert_match(/,,,A,foo\n/, tb.get_record(0)["files"])
+    aa = CSV.read(o)
+    assert_equal(2, aa.length)
+    header, row = aa
+    assert_match(/,,,A,foo\n/, row[header.index "files"])
   end
 
   def test_subdir
@@ -181,10 +181,10 @@ class TestTbCmdGitLog < Test::Unit::TestCase
     system("git add bar")
     system("git commit -q -m msg bar")
     Tb::Cmd.main_git(['-o', o="o.csv", "bar"])
-    result = File.read(o)
-    tb = Tb.parse_csv(result)
-    assert_equal(1, tb.size)
-    assert_not_match(/foo\n/, tb.get_record(0)["files"])
+    aa = CSV.read(o)
+    assert_equal(2, aa.length)
+    header, row = aa
+    assert_not_match(/foo\n/, row[header.index "files"])
   end
 
 end
