@@ -3,6 +3,7 @@ require 'test/unit'
 require 'tmpdir'
 
 class TestTbReader < Test::Unit::TestCase
+=begin
   def test_load_csv
     Dir.mktmpdir {|d|
       open(i="#{d}/i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
@@ -20,7 +21,6 @@ class TestTbReader < Test::Unit::TestCase
     }
   end
 
-=begin
   def test_load_tsv
     Dir.mktmpdir {|d|
       open(i="#{d}/i.tsv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }

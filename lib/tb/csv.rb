@@ -31,10 +31,6 @@
 require 'csv'
 
 class Tb
-  def Tb.load_csv(filename, *header_fields, &block)
-    Tb.parse_csv(File.read(filename), *header_fields, &block)
-  end
-
   def Tb.parse_csv(csv, *header_fields)
     aa = []
     Tb.csv_stream_input(csv) {|ary|
