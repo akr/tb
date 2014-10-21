@@ -31,14 +31,6 @@
 require 'csv'
 
 class Tb
-  def Tb.csv_stream_input(input)
-    csv = CSV.new(input)
-    while ary = csv.shift
-      yield ary
-    end
-    nil
-  end
-
   def Tb.csv_stream_output(out)
     gen = Object.new
     gen.instance_variable_set(:@out, out)
