@@ -203,49 +203,6 @@ module Tb::Enumerable
     writer.finish
   end
 
-  def write_to_csv0(io, with_header=true)
-    stream = nil
-    header = []
-    fgen = fnew = nil
-    self.with_cumulative_header {|header0|
-      if !with_header
-        stream = true
-      elsif header0
-        stream = true
-        io.puts Tb.csv_encode_row(header0)
-      else
-        stream = false
-        fgen, fnew = Tb::FileEnumerator.gen_new
-      end
-    }.each {|pairs, header1|
-      pairs = Hash[pairs] unless pairs.respond_to? :has_key?
-      header = header1
-      if stream
-        fs = header.dup
-        while !fs.empty? && !pairs.has_key?(fs.last)
-          fs.pop
-        end
-        ary = fs.map {|f| pairs[f] }
-        io.puts Tb.csv_encode_row(ary)
-      else
-        fgen.call Hash[pairs]
-      end
-    }
-    if !stream
-      if with_header
-        io.puts Tb.csv_encode_row(header)
-      end
-      fnew.call.each {|pairs|
-        fs = header.dup
-        while !fs.empty? && !pairs.has_key?(fs.last)
-          fs.pop
-        end
-        ary = fs.map {|f| pairs[f] }
-        io.puts Tb.csv_encode_row(ary)
-      }
-    end
-  end
-
   def write_to_csv(io, with_header=true)
     if with_header
       write_with(Tb::HeaderCSVWriter.new(io))
