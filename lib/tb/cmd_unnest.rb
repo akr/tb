@@ -64,13 +64,16 @@ def (Tb::Cmd).main_unnest(argv)
           elsif v.nil?
             pairs2[f] = v
           else
-            nested_tbl = Tb.parse_csv(v)
-            nested_tbl.list_fields.each {|f2|
+            aa = CSV.parse(v)
+            reader = Tb::HeaderReader.new(lambda { aa.shift })
+            nested_tbl_rows = reader.to_a
+            nested_tbl_header = reader.get_named_header
+            nested_tbl_header.each {|f2|
               unless nested_fields.has_key? f2
                 nested_fields[f2] = nested_fields.size
               end
             }
-            pairs2[f] = nested_tbl
+            pairs2[f] = [nested_tbl_header, nested_tbl_rows]
           end
         }
         y2.yield pairs2
@@ -93,13 +96,13 @@ def (Tb::Cmd).main_unnest(argv)
     }.each {|pairs|
       pairs2 = {}
       pairs.each {|f, v| pairs2[f] = v if f != target_field }
-      ntbl = pairs[target_field]
-      if ntbl.nil? || ntbl.empty?
+      ntbl_header, ntbl_rows = pairs[target_field]
+      if ntbl_header.nil? || ntbl_rows.empty?
         if Tb::Cmd.opt_unnest_outer
           y.yield pairs2
         end
       else
-        ntbl.each {|npairs|
+        ntbl_rows.each {|npairs|
           pairs3 = pairs2.dup
           npairs.each {|nf, nv|
             if Tb::Cmd.opt_unnest_prefix
