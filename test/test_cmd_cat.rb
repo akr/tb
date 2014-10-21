@@ -177,6 +177,19 @@ class TestTbCmdCat < Test::Unit::TestCase
     End
   end
 
+  def test_ltsv_output
+    File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      1,2,3
+      4,5,6
+    End
+    Tb::Cmd.main_cat(['-o', o="o.ltsv", i1])
+    assert_equal(<<-"End".gsub(/^ */, '').gsub(/ /, "\t"), File.read(o))
+       a:1 b:2 c:3
+       a:4 b:5 c:6
+    End
+  end
+
   def test_invalid_output_format
     File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c

@@ -211,11 +211,8 @@ module Tb::Enumerable
     end
   end
 
-  def write_to_ltsv(out)
-    self.each {|pairs|
-      out.print Tb.ltsv_assoc_join(pairs)
-      out.print "\n"
-    }
+  def write_to_ltsv(io)
+    write_with(Tb::LTSVWriter.new(io))
   end
 
   def write_to_json(io)
