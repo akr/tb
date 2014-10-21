@@ -74,7 +74,11 @@ def (Tb::Cmd).main_consecutive(argv)
             ps = buf[i]
             next if !ps.has_key?(f)
             v = ps[f]
-            pairs2["#{f}_#{i+1}"] = v
+            if Tb::Cmd.opt_N
+              pairs2[((f.to_i-1) * Tb::Cmd.opt_consecutive_n + i + 1).to_s] = v
+            else
+              pairs2["#{f}_#{i+1}"] = v
+            end
           }
         }
         empty = false

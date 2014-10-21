@@ -189,7 +189,21 @@ module Tb::Enumerable
     tb
   end
 
-  def write_to_csv(io, with_header=true)
+  def write_with(writer)
+    header_proc = nil
+    if writer.header_required?
+      header_proc = lambda {|header|
+        writer.header_generator = lambda { header }
+      }
+    end
+    body_proc = lambda  {|pairs|
+      writer.put_hash pairs
+    }
+    header_and_each(header_proc, &body_proc)
+    writer.finish
+  end
+
+  def write_to_csv0(io, with_header=true)
     stream = nil
     header = []
     fgen = fnew = nil
@@ -230,6 +244,18 @@ module Tb::Enumerable
         io.puts Tb.csv_encode_row(ary)
       }
     end
+  end
+
+  def write_to_csv(io, with_header=true)
+    if with_header
+      write_with(Tb::HeaderCSVWriter.new(io))
+    else
+      write_with(Tb::NumericCSVWriter.new(io))
+    end
+  end
+
+  def write_to_csv_headerless(io)
+    write_with(Tb::HeaderCSVWriter.new(io, false))
   end
 
   def write_to_ltsv(out)

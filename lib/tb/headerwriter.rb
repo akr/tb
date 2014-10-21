@@ -32,12 +32,13 @@ require 'tempfile'
 
 class Tb
   class HeaderWriter
-    def initialize(put_array)
+    def initialize(put_array, with_header=true)
       @put_array = put_array
+      @with_header = with_header
     end
 
     def header_required?
-      true
+      @with_header
     end
 
     def header_generator=(gen)
@@ -45,10 +46,19 @@ class Tb
     end
 
     def generate_header_if_possible
-      return if defined? @header_use_buffer
-      if defined? @header_generator
+      if !@with_header
         @header_use_buffer = false
-        @header = @header_generator.call
+        @header = []
+        return
+      end
+      return if defined? @header_use_buffer
+      header = nil
+      if defined? @header_generator
+        header = @header_generator.call
+      end
+      if header
+        @header_use_buffer = false
+        @header = header
         @put_array.call @header
       else
         @header_use_buffer = true
@@ -69,7 +79,7 @@ class Tb
 
     def put_hash_buffer(hash)
       Marshal.dump(hash, @header_buffer)
-      (hash.keys - @header).each {|f|
+      (hash.map {|k, v| k } - @header).each {|f|
         @header << f
       }
     end
@@ -82,7 +92,7 @@ class Tb
       end
       if @header_use_buffer
         @header_buffer.rewind
-        @put_array.call @header
+        @put_array.call @header if @with_header
         begin
           while true
             hash = Marshal.load(@header_buffer)
@@ -97,10 +107,12 @@ class Tb
     def put_hash_immediate(hash)
       ary = []
       @header.each_with_index {|f, i|
-        ary[i] = hash[f] if hash.has_key? f
+        if pair = hash.find {|k, v| k == f }
+          ary[i] = pair.last
+        end
       }
-      (hash.keys - @header).each {|f|
-        warn "unexpected field: #{f.inspect}"
+      (hash.map {|k, v| k } - @header).each {|f|
+        warn "unexpected field: #{f.inspect}" if /\A[1-9][0-9]*\z/ !~ f
         i = @header.length
         @header << f
         ary[i] = hash[f]

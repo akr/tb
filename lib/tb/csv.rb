@@ -74,8 +74,8 @@ class Tb
 
   class HeaderCSVWriter < HeaderWriter
     # io is an object which has "<<" method.
-    def initialize(io)
-      super lambda {|ary| io << ary.to_csv}
+    def initialize(io, with_header=true)
+      super lambda {|ary| io << ary.to_csv}, with_header
     end
   end
 

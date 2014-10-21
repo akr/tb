@@ -89,9 +89,9 @@ class TestTbEnum < Test::Unit::TestCase
 
   def test_write_to_csv_without_header
     obj = [
-      [['a', 0]],
-      [['b', 1]],
-      [['c', 2]],
+      [['1', "x"]],
+      [['2', "y"]],
+      [['3', "z"]],
     ]
     def obj.header_and_each(header_proc, &block)
       header_proc.call(nil) if header_proc
@@ -103,9 +103,9 @@ class TestTbEnum < Test::Unit::TestCase
         obj.write_to_csv(f, false)
       }
       assert_equal(<<-'End'.gsub(/^\s*/, ''), File.read("#{d}/foo.csv"))
-        0
-        ,1
-        ,,2
+        x
+        ,y
+        ,,z
       End
     }
   end

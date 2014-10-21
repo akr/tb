@@ -46,6 +46,8 @@ class TestTbCmdConsecutive < Test::Unit::TestCase
   end
 
   def test_extend
+    old_verbose = $VERBOSE
+    $VERBOSE = nil
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b
       1,2,3
@@ -58,6 +60,8 @@ class TestTbCmdConsecutive < Test::Unit::TestCase
       1,4,2,5,3,6
       4,7,5,8,6,9
     End
+  ensure
+    $VERBOSE = old_verbose
   end
 
   def test_n3

@@ -79,6 +79,9 @@ def (Tb::Cmd).main_crop(argv)
             f = f.to_i
             f < range_col1 || range_col2 < f
           }
+          pairs2 = pairs2.map {|f, v|
+            [(f.to_i - range_col1 + 1).to_s, v]
+          }
           y.yield pairs2
         end
         rownum += 1
