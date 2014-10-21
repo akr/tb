@@ -84,7 +84,7 @@ class Tb
     # io is an object which has "<<" method.
     def initialize(io)
       super lambda {|ary|
-        io << Tb.tsv_fields_join(ary)
+        io << (Tb.tsv_fields_join(ary) + "\n")
       }
     end
   end
