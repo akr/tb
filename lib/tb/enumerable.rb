@@ -211,10 +211,6 @@ module Tb::Enumerable
     end
   end
 
-  def write_to_csv_headerless(io)
-    write_with(Tb::HeaderCSVWriter.new(io, false))
-  end
-
   def write_to_ltsv(out)
     self.each {|pairs|
       out.print Tb.ltsv_assoc_join(pairs)

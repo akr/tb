@@ -32,13 +32,12 @@ require 'tempfile'
 
 class Tb
   class HeaderWriter
-    def initialize(put_array, with_header=true)
+    def initialize(put_array)
       @put_array = put_array
-      @with_header = with_header
     end
 
     def header_required?
-      @with_header
+      true
     end
 
     def header_generator=(gen)
@@ -46,11 +45,6 @@ class Tb
     end
 
     def generate_header_if_possible
-      if !@with_header
-        @header_use_buffer = false
-        @header = []
-        return
-      end
       return if defined? @header_use_buffer
       header = nil
       if defined? @header_generator
@@ -92,7 +86,7 @@ class Tb
       end
       if @header_use_buffer
         @header_buffer.rewind
-        @put_array.call @header if @with_header
+        @put_array.call @header
         begin
           while true
             hash = Marshal.load(@header_buffer)
