@@ -2,6 +2,7 @@ require 'tb'
 require 'test/unit'
 
 class TestTbCSV < Test::Unit::TestCase
+=begin
   def test_parse
     csv = <<-'End'.gsub(/^\s+/, '')
     a,b
@@ -54,6 +55,7 @@ class TestTbCSV < Test::Unit::TestCase
       [{"_recordid"=>0, "a"=>"1", "b"=>"2"}],
       records)
   end
+=end
 
   def test_generate
     t = Tb.new %w[a b], [1, 2], [3, 4]

@@ -31,27 +31,6 @@
 require 'csv'
 
 class Tb
-  def Tb.parse_csv(csv, *header_fields)
-    aa = []
-    Tb.csv_stream_input(csv) {|ary|
-      aa << ary
-    }
-    aa = yield aa if block_given?
-    if header_fields.empty?
-      reader = Tb::HeaderReader.new(lambda { aa.shift })
-      reader.to_tb
-    else
-      header = header_fields
-      arys = aa
-      t = Tb.new(header)
-      arys.each {|ary|
-        ary << nil while ary.length < header.length
-        t.insert_values header, ary
-      }
-      t
-    end
-  end
-
   def Tb.csv_stream_input(input)
     csv = CSV.new(input)
     while ary = csv.shift

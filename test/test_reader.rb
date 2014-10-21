@@ -37,7 +37,6 @@ class TestTbReader < Test::Unit::TestCase
         records)
     }
   end
-=end
 
   def test_parse_csv
     csv = <<-'End'.gsub(/^[ \t]+/, '')
@@ -55,7 +54,6 @@ class TestTbReader < Test::Unit::TestCase
       records)
   end
 
-=begin
   def test_parse_tsv
     csv = <<-"End".gsub(/^[ \t]+/, '')
     1\t2
@@ -143,6 +141,7 @@ class TestTbReader < Test::Unit::TestCase
     }
   end
 
+=begin
   def test_header_ignore_empty
     csv = "\n" + <<-'End'.gsub(/^[ \t]+/, '')
     a,b
@@ -169,5 +168,6 @@ class TestTbReader < Test::Unit::TestCase
     }
     assert_equal([], records)
   end
+=end
 
 end
