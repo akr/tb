@@ -5,9 +5,20 @@ require 'tmpdir'
 require 'test/unit'
 
 class TestTbPNM < Test::Unit::TestCase
+  def parse_pnm(pnm)
+    Tb::PNMReader.new(StringIO.new(pnm)).to_a
+  end
+
+  def generate_pnm(ary)
+    writer = Tb::PNMWriter.new(out = '')
+    ary.each {|h| writer.put_hash h }
+    writer.finish
+    out
+  end
+
   def test_parse_pbm_ascii
     pbm = "P1\n2 3\n101101\n"
-    t = Tb.parse_pnm(pbm)
+    t = parse_pnm(pbm)
     assert_equal(
       [
         {"type"=>"meta", "component"=>"pnm_type", "value"=>"P1"},
@@ -20,13 +31,13 @@ class TestTbPNM < Test::Unit::TestCase
         {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
         {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
-      ], t.map {|rec| rec.to_h })
-    assert_equal("P1\n2 3\n10\n11\n01\n", t.generate_pnm)
+      ], t)
+    assert_equal("P1\n2 3\n10\n11\n01\n", generate_pnm(t))
   end
 
   def test_parse_pbm_binary
     pbm = "P4\n2 3\n\x80\xc0\x40"
-    t = Tb.parse_pnm(pbm)
+    t = parse_pnm(pbm)
     assert_equal(
       [
         {"type"=>"meta", "component"=>"pnm_type", "value"=>"P4"},
@@ -39,13 +50,13 @@ class TestTbPNM < Test::Unit::TestCase
         {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
         {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
-      ], t.map {|rec| rec.to_h })
-    assert_equal(pbm, t.generate_pnm)
+      ], t)
+    assert_equal(pbm, generate_pnm(t))
   end
 
   def test_parse_pgm_ascii
     pgm = "P2\n2 3\n255\n0 1\n100 101\n254 255\n"
-    t = Tb.parse_pnm(pgm)
+    t = parse_pnm(pgm)
     assert_equal(
       [
         {"type"=>"meta", "component"=>"pnm_type", "value"=>"P2"},
@@ -58,13 +69,13 @@ class TestTbPNM < Test::Unit::TestCase
         {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"V", "value"=>101.0/255},
         {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"V", "value"=>254.0/255},
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"V", "value"=>255.0/255}
-      ], t.map {|rec| rec.to_h })
-    assert_equal(pgm, t.generate_pnm)
+      ], t)
+    assert_equal(pgm, generate_pnm(t))
   end
 
   def test_parse_pgm_binary
     pgm = "P5\n2 3\n255\n\x00\x01\x64\x65\xfe\xff"
-    t = Tb.parse_pnm(pgm)
+    t = parse_pnm(pgm)
     assert_equal(
       [
         {"type"=>"meta", "component"=>"pnm_type", "value"=>"P5"},
@@ -77,13 +88,13 @@ class TestTbPNM < Test::Unit::TestCase
         {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"V", "value"=>101.0/255},
         {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"V", "value"=>254.0/255},
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"V", "value"=>255.0/255}
-      ], t.map {|rec| rec.to_h })
-    assert_equal(pgm, t.generate_pnm)
+      ], t)
+    assert_equal(pgm, generate_pnm(t))
   end
 
   def test_parse_ppm_ascii
     ppm = "P3\n2 3\n255\n0 1 2 3 4 5\n100 101 102 103 104 105\n250 251 252 253 254 255\n"
-    t = Tb.parse_pnm(ppm)
+    t = parse_pnm(ppm)
     assert_equal(
       [
         {"type"=>"meta", "component"=>"pnm_type", "value"=>"P3"},
@@ -108,13 +119,13 @@ class TestTbPNM < Test::Unit::TestCase
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"R", "value"=>253.0/255},
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"G", "value"=>254.0/255},
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"B", "value"=>255.0/255}
-      ], t.map {|rec| rec.to_h })
-    assert_equal(ppm, t.generate_pnm)
+      ], t)
+    assert_equal(ppm, generate_pnm(t))
   end
 
   def test_parse_ppm_binary
     ppm = "P6\n2 3\n255\n\x00\x01\x02\x03\x04\x05\x64\x65\x66\x67\x68\x69\xfa\xfb\xfc\xfd\xfe\xff"
-    t = Tb.parse_pnm(ppm)
+    t = parse_pnm(ppm)
     assert_equal(
       [
         {"type"=>"meta", "component"=>"pnm_type", "value"=>"P6"},
@@ -139,13 +150,13 @@ class TestTbPNM < Test::Unit::TestCase
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"R", "value"=>253.0/255},
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"G", "value"=>254.0/255},
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"B", "value"=>255.0/255}
-      ], t.map {|rec| rec.to_h })
-    assert_equal(ppm, t.generate_pnm)
+      ], t)
+    assert_equal(ppm, generate_pnm(t))
   end
 
   def test_parse_ppm_binary2
     ppm = "P6\n2 3\n65535\n\x00\x00\x00\x01\x00\x02\x00\x03\x00\x04\x00\x05\x00\x64\x00\x65\x00\x66\x00\x67\x00\x68\x00\x69\x00\xfa\x00\xfb\x00\xfc\x00\xfd\x00\xfe\x00\xff"
-    t = Tb.parse_pnm(ppm)
+    t = parse_pnm(ppm)
     assert_equal(
       [
         {"type"=>"meta", "component"=>"pnm_type", "value"=>"P6"},
@@ -170,13 +181,13 @@ class TestTbPNM < Test::Unit::TestCase
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"R", "value"=>253.0/65535},
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"G", "value"=>254.0/65535},
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"B", "value"=>255.0/65535}
-      ], t.map {|rec| rec.to_h })
-    assert_equal(ppm, t.generate_pnm)
+      ], t)
+    assert_equal(ppm, generate_pnm(t))
   end
 
   def test_parse_pbm_comment
     pbm = "P1\n\#foo\n2 3\n101101\n"
-    t = Tb.parse_pnm(pbm)
+    t = parse_pnm(pbm)
     assert_equal(
       [
         {"type"=>"meta", "component"=>"pnm_type", "value"=>"P1"},
@@ -190,116 +201,103 @@ class TestTbPNM < Test::Unit::TestCase
         {"type"=>"pixel", "x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
         {"type"=>"pixel", "x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
         {"type"=>"pixel", "x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
-      ], t.map {|rec| rec.to_h })
-    assert_equal("P1\n\#foo\n2 3\n10\n11\n01\n", t.generate_pnm)
+      ], t)
+    assert_equal("P1\n\#foo\n2 3\n10\n11\n01\n", generate_pnm(t))
   end
 
   def test_parse_pbm_ascii_wide
     pbm = "P1\n71 3\n" + "0" * (71 * 3)
-    t = Tb.parse_pnm(pbm)
-    assert_equal("P1\n71 3\n" + ("0"*70+"\n0\n")*3, t.generate_pnm)
+    t = parse_pnm(pbm)
+    assert_equal("P1\n71 3\n" + ("0"*70+"\n0\n")*3, generate_pnm(t))
   end
 
   def test_parse_pgm_ascii_wide
     pgm = "P2\n40 3\n255\n" + "0 " * (40*3)
-    t = Tb.parse_pnm(pgm)
-    assert_equal("P2\n40 3\n255\n" + ("0 "*34 + "0\n" + "0 "*4 + "0\n")*3, t.generate_pnm)
+    t = parse_pnm(pgm)
+    assert_equal("P2\n40 3\n255\n" + ("0 "*34 + "0\n" + "0 "*4 + "0\n")*3, generate_pnm(t))
   end
 
   def test_parse_invalid
     invalid = "foo"
-    assert_raise(ArgumentError) { Tb.parse_pnm(invalid) }
+    assert_raise(ArgumentError) { parse_pnm(invalid) }
   end
 
   def test_parse_too_short
     too_short = "P1\n2 3\n10110\n"
-    assert_raise(ArgumentError) { Tb.parse_pnm(too_short) }
+    assert_raise(ArgumentError) { parse_pnm(too_short) }
   end
 
   def test_generate_invalid_fields
-    t = Tb.new %w[foo], [1]
-    assert_raise(ArgumentError) { t.generate_pnm }
+    t = [{ "foo" => 1 }]
+    assert_raise(ArgumentError) { generate_pnm(t) }
   end
 
   def test_generate_inconsistent_color_component
-    t = Tb.new %w[x y component value], [nil, nil, 'V', 1.0], [nil, nil, 'R', 1.0]
-    assert_raise(ArgumentError) { t.generate_pnm }
+    t = [{'component' => 'V', 'value' => 1.0}, {'component' => 'R'}]
+    assert_raise(ArgumentError) { generate_pnm(t) }
   end
 
   def test_generate_complement
-    t = Tb.new %w[x y component value]
-    [
+    t = [
       {"x"=>0, "y"=>0, "component"=>"V", "value"=>0.0},
       {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
       {"x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
       {"x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
       {"x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
       {"x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
-    ].each {|h| t.insert h }
-    assert_equal("P4\n2 3\n\x80\xc0\x40", t.generate_pnm)
+    ]
+    assert_equal("P4\n2 3\n\x80\xc0\x40", generate_pnm(t))
   end
 
   def test_generate_complement2
-    t = Tb.new %w[x y component value]
-    [
+    t = [
       {"x"=>0, "y"=>0, "component"=>"V", "value"=>1.0/65535},
       {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
       {"x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
       {"x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
       {"x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
       {"x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
-    ].each {|h| t.insert h }
-    assert_equal("P5\n2 3\n65535\n\x00\x01\xff\xff\x00\x00\x00\x00\xff\xff\x00\x00", t.generate_pnm)
+    ]
+    assert_equal("P5\n2 3\n65535\n\x00\x01\xff\xff\x00\x00\x00\x00\xff\xff\x00\x00", generate_pnm(t))
   end
 
   def test_generate_complement1
-    t = Tb.new %w[x y component value]
-    [
+    t = [
       {"x"=>0, "y"=>0, "component"=>"V", "value"=>1.0/255},
       {"x"=>1, "y"=>0, "component"=>"V", "value"=>1.0},
       {"x"=>0, "y"=>1, "component"=>"V", "value"=>0.0},
       {"x"=>1, "y"=>1, "component"=>"V", "value"=>0.0},
       {"x"=>0, "y"=>2, "component"=>"V", "value"=>1.0},
       {"x"=>1, "y"=>2, "component"=>"V", "value"=>0.0}
-    ].each {|h| t.insert h }
-    assert_equal("P5\n2 3\n255\n\x01\xff\x00\x00\xff\x00", t.generate_pnm)
+    ]
+    assert_equal("P5\n2 3\n255\n\x01\xff\x00\x00\xff\x00", generate_pnm(t))
   end
 
   def test_generate_complement_ppm
-    t = Tb.new %w[x y component value]
-    [
+    t = [
       {"x"=>0, "y"=>0, "component"=>"R", "value"=>0.0},
       {"x"=>0, "y"=>0, "component"=>"G", "value"=>1.0},
       {"x"=>0, "y"=>0, "component"=>"B", "value"=>1.0},
-    ].each {|h| t.insert h }
-    assert_equal("P6\n1 1\n255\n\x00\xff\xff", t.generate_pnm)
+    ]
+    assert_equal("P6\n1 1\n255\n\x00\xff\xff", generate_pnm(t))
   end
 
   def test_generate_overrange
-    t = Tb.new %w[x y component value]
-    [
+    t = [
       {"x"=>0, "y"=>0, "component"=>"V", "value"=>-0.5},
       {"x"=>0, "y"=>1, "component"=>"V", "value"=>1.5},
-    ].each {|h| t.insert h }
-    assert_equal("P5\n1 2\n255\n\x00\xff", t.generate_pnm)
+    ]
+    assert_equal("P5\n1 2\n255\n\x00\xff", generate_pnm(t))
   end
 
   def test_invalid_pnm_type
-    t = Tb.new %w[x y component value], [nil, nil, 'pnm_type', "foo"]
-    assert_raise(ArgumentError) { t.generate_pnm }
+    t = [{'component' => 'pnm_type', 'value' => "foo"}]
+    assert_raise(ArgumentError) { generate_pnm(t) }
   end
 
   def test_invalid_comment
-    t = Tb.new %w[x y component value], [nil, nil, 'comment', "\n"]
-    assert_raise(ArgumentError) { t.generate_pnm }
-  end
-
-  def test_load_pnm
-    Dir.mktmpdir {|d|
-      File.open(fn="#{d}/foo.pbm", "w") {|f| f << "P4\n1 1\n\0" }
-      t = Tb.load_pnm(fn)
-      assert_equal({"type"=>"meta", "component"=>"pnm_type", "value"=>"P4"}, t.get_record(0).to_h)
-    }
+    t = [{'component' => 'comment', 'value' => "\n"}]
+    assert_raise(ArgumentError) { generate_pnm(t) }
   end
 
   def test_pnmreader_to_a

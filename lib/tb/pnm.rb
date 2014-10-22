@@ -30,29 +30,6 @@
 
 class Tb
   # :call-seq:
-  #   Tb.load_pnm(pnm_filename) -> tb
-  #
-  def Tb.load_pnm(pnm_filename)
-    pnm_content = File.open(pnm_filename, "rb") {|f| f.read }
-    Tb.parse_pnm(pnm_content)
-  end
-
-  # :call-seq:
-  #   Tb.parse_pnm(pnm_content) -> tb
-  #
-  def Tb.parse_pnm(pnm_content)
-    pnm_content.force_encoding("ASCII-8BIT") if pnm_content.respond_to? :force_encoding
-    pnm_io = StringIO.new(pnm_content)
-    reader = PNMReader.new(pnm_io)
-    header = reader.get_named_header
-    t = Tb.new(header)
-    reader.each {|pairs|
-      t.insert pairs
-    }
-    t
-  end
-
-  # :call-seq:
   #   Tb.pnm_stream_input(pnm_io) {|ary| ... }
   #
   def Tb.pnm_stream_input(pnm_io)
