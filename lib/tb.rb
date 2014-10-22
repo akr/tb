@@ -38,8 +38,6 @@ require 'tb/enumerable'
 require 'tb/enumerator'
 require 'tb/func'
 require 'tb/zipper'
-require 'tb/basic'
-require 'tb/record'
 
 require 'tb/headerreader'
 require 'tb/headerwriter'
