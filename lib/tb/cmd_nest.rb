@@ -71,11 +71,10 @@ def (Tb::Cmd).main_nest(argv)
       nested << pairs.reject {|f, v| !oldfields_hash[f] }
     }
     after_group = lambda {|(_, last_pairs)|
-      Tb.csv_stream_output(nested_csv="") {|ngen|
-        ngen << oldfields
-        nested.each {|npairs|
-          ngen << oldfields.map {|of| npairs[of] }
-        }
+      nested_csv = ""
+      nested_csv << oldfields.to_csv
+      nested.each {|npairs|
+        nested_csv << oldfields.map {|of| npairs[of] }.to_csv
       }
       assoc = last_pairs.reject {|f, v| oldfields_hash[f] }.to_a
       assoc << [newfield, nested_csv]

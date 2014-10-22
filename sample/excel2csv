@@ -205,7 +205,7 @@ end
 def generate_csv_row(csvgen, row)
   row = row.dup
   row.pop while !row.empty? && row.last.nil?
-  csvgen << row
+  csvgen.call(row)
 end
 
 def convert_sheet(filename, sheet, csvgen)
@@ -243,30 +243,29 @@ excel = WIN32OLE.new('Excel.Application')
 WIN32OLE.const_load(excel,Excel)
 begin
   excel.displayAlerts = false
-  Tb.csv_stream_output($stdout) {|csvgen|
-    ARGV.each {|excel_filename|
-      if File.directory? excel_filename
-        filenames = []
-        Find.find(excel_filename) {|path| filenames << path if /\.xls\z/ =~ path }
-      else
-        filenames = [excel_filename]
-      end
-      filenames.each {|ifn0|
-        ifn = getAbsolutePath(ifn0)
-        wb = excel.Workbooks.Open(ifn)
-        begin
-          if $opt_all_sheets
-            wb.Worksheets.each {|sheet|
-              sheetname = sheet.Name
-              convert_sheet(ifn0, sheet, csvgen)
-            }
-          else
-            convert_sheet(ifn0, wb.Worksheets(1), csvgen)
-          end
-        ensure
-          wb.Close
+  csvgen = lambda {|row| $stdout << row.to_csv }
+  ARGV.each {|excel_filename|
+    if File.directory? excel_filename
+      filenames = []
+      Find.find(excel_filename) {|path| filenames << path if /\.xls\z/ =~ path }
+    else
+      filenames = [excel_filename]
+    end
+    filenames.each {|ifn0|
+      ifn = getAbsolutePath(ifn0)
+      wb = excel.Workbooks.Open(ifn)
+      begin
+        if $opt_all_sheets
+          wb.Worksheets.each {|sheet|
+            sheetname = sheet.Name
+            convert_sheet(ifn0, sheet, csvgen)
+          }
+        else
+          convert_sheet(ifn0, wb.Worksheets(1), csvgen)
         end
-      }
+      ensure
+        wb.Close
+      end
     }
   }
 ensure

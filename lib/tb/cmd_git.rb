@@ -150,12 +150,11 @@ def (Tb::Cmd).git_parse_commit(commit_info, files)
       warn "unexpected git output (raw/numstat): #{file_line.inspect}"
     end
   }
-  Tb.csv_stream_output(files_csv="") {|gen|
-    gen << %w[mode1 mode2 hash1 hash2 add del status filename]
-    files_raw.each {|filename, (mode1, mode2, hash1, hash2, status)|
-      add, del = files_numstat[filename]
-      gen << [mode1, mode2, hash1, hash2, add, del, status, filename]
-    }
+  files_csv = ""
+  files_csv << %w[mode1 mode2 hash1 hash2 add del status filename].to_csv
+  files_raw.each {|filename, (mode1, mode2, hash1, hash2, status)|
+    add, del = files_numstat[filename]
+    files_csv << [mode1, mode2, hash1, hash2, add, del, status, filename].to_csv
   }
   h = {}
   commit_info.each {|s|

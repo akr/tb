@@ -354,7 +354,7 @@ def convert_sheet(filename, book, i, csvgen)
     sheetname += ":sheetname" if $opt_type
     sheet_header << sheetname
   end
-  csvgen << (sheet_header + convert_horizontal_borders(sheet, merged, rownums.first-1, min_firstcol)) if $opt_border
+  csvgen.call (sheet_header + convert_horizontal_borders(sheet, merged, rownums.first-1, min_firstcol)) if $opt_border
   rownums.each {|y|
     record = []
     row = sheet.getRow(y)
@@ -370,8 +370,8 @@ def convert_sheet(filename, book, i, csvgen)
         }
       end
     end
-    csvgen << (sheet_header + record)
-    csvgen << (sheet_header + convert_horizontal_borders(sheet, merged, y, min_firstcol)) if $opt_border
+    csvgen.call (sheet_header + record)
+    csvgen.call (sheet_header + convert_horizontal_borders(sheet, merged, y, min_firstcol)) if $opt_border
   }
 end
 
@@ -386,16 +386,15 @@ def convert_book(filename, input, csvgen)
   end
 end
 
-Tb.csv_stream_output($stdout) {|csvgen|
-  argv = ARGV.empty? ? ['-'] : ARGV
-  argv.each {|filename|
-    if filename == '-'
-      input = java.lang.System.in
-    else
-      input = java.io.FileInputStream.new(filename)
-    end
-    convert_book(filename, input, csvgen)
-  }
+csvgen = lambdas {|row| $stdout << row.to_csv }
+argv = ARGV.empty? ? ['-'] : ARGV
+argv.each {|filename|
+  if filename == '-'
+    input = java.lang.System.in
+  else
+    input = java.io.FileInputStream.new(filename)
+  end
+  convert_book(filename, input, csvgen)
 }
 
 exit true

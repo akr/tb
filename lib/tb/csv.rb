@@ -31,38 +31,8 @@
 require 'csv'
 
 class Tb
-  def Tb.csv_stream_output(out)
-    gen = Object.new
-    gen.instance_variable_set(:@out, out)
-    def gen.<<(ary)
-      @out << ary.to_csv
-    end
-    yield gen
-  end
-
   def Tb.csv_encode_row(ary)
     ary.to_csv
-  end
-
-  # :call-seq:
-  #   generate_csv(out='', fields=nil) {|recordids| modified_recordids }
-  #   generate_csv(out='', fields=nil)
-  #
-  def generate_csv(out='', fields=nil, &block)
-    if fields.nil?
-      fields = list_fields
-    end
-    recordids = list_recordids
-    if block_given?
-      recordids = yield(recordids)
-    end
-    Tb.csv_stream_output(out) {|gen|
-      gen << fields
-      recordids.each {|recordid|
-        gen << get_values(recordid, *fields)
-      }
-    }
-    out
   end
 
   class HeaderCSVReader < HeaderReader
