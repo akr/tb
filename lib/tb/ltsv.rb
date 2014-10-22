@@ -31,33 +31,6 @@
 require 'stringio'
 
 class Tb
-  def Tb.parse_ltsv(ltsv)
-    assoc_list = []
-    ltsv_stream_input(ltsv) {|assoc|
-      assoc_list << assoc
-    }
-    fields_hash = {}
-    assoc_list.each {|assoc|
-      assoc.each {|key, val|
-        fields_hash[key] ||= fields_hash.size
-      }
-    }
-    header = fields_hash.keys
-    t = Tb.new(header)
-    assoc_list.each {|assoc|
-      t.insert Hash[assoc]
-    }
-    t
-  end
-
-  def Tb.ltsv_stream_input(ltsv)
-    ltsvreader = LTSVReader.new(StringIO.new(ltsv))
-    while assoc = ltsvreader.get_hash
-      yield assoc
-    end
-    nil
-  end
-
   def Tb.ltsv_escape_key(str)
     if /[\0-\x1f":\\\x7f]/ =~ str
       '"' +
