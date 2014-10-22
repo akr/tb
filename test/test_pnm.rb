@@ -304,10 +304,11 @@ class TestTbPNM < Test::Unit::TestCase
 
   def test_pnmreader_to_a
     pbm = "P1\n2 3\n101101\n"
-    r = Tb::PNMReader.new(pbm)
+    r = Tb::PNMReader2.new(StringIO.new(pbm))
+    header = r.get_named_header
+    assert_equal(["type", "x", "y", "component", "value"], header)
     assert_equal(
-      [["type", "x", "y", "component", "value"],
-       ["meta", nil, nil, "pnm_type", "P1"],
+      [["meta", nil, nil, "pnm_type", "P1"],
        ["meta", nil, nil, "width", 2],
        ["meta", nil, nil, "height", 3],
        ["meta", nil, nil, "max", 1],
@@ -317,7 +318,7 @@ class TestTbPNM < Test::Unit::TestCase
        ["pixel", 1, 1, "V", 0.0],
        ["pixel", 0, 2, "V", 1.0],
        ["pixel", 1, 2, "V", 0.0]],
-       r.to_a)
+       r.to_a.map {|h| h.values_at(*header) })
   end
 
   def test_reader_open

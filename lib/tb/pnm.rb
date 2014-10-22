@@ -41,11 +41,13 @@ class Tb
   #   Tb.parse_pnm(pnm_content) -> tb
   #
   def Tb.parse_pnm(pnm_content)
-    reader = PNMReader.new(pnm_content)
-    header = reader.shift
+    pnm_content.force_encoding("ASCII-8BIT") if pnm_content.respond_to? :force_encoding
+    pnm_io = StringIO.new(pnm_content)
+    reader = PNMReader2.new(pnm_io)
+    header = reader.get_named_header
     t = Tb.new(header)
-    reader.each {|ary|
-      t.insert_values header, ary
+    reader.each {|pairs|
+      t.insert pairs
     }
     t
   end
@@ -54,17 +56,29 @@ class Tb
   #   Tb.pnm_stream_input(pnm_io) {|ary| ... }
   #
   def Tb.pnm_stream_input(pnm_io)
-    pnm_io.binmode
-    content = pnm_io.read
-    PNMReader.new(content)
+    PNMReader2.new(content)
   end
 
   # practical only for (very) small images.
-  class PNMReader
+  class PNMReader2 < HeaderReader
+    def initialize(pnm_io)
+      pnm_io.binmode
+      content = pnm_io.read
+      initialize0(content)
+      super lambda { self.shift }
+    end
+
     WSP = /(?:[ \t\r\n]|\#[^\r\n]*[\r\n])+/
 
-    def initialize(pnm_content)
-      pnm_content.force_encoding("ASCII-8BIT") if pnm_content.respond_to? :force_encoding
+    def initialize0(pnm_content)
+      if pnm_content.respond_to? :to_str
+        pnm_content.force_encoding("ASCII-8BIT") if pnm_content.respond_to? :force_encoding
+      else
+        # IO
+        pnm_content.binmode
+        pnm_content = pnm_content.read
+      end
+
       if /\A(P[63])(#{WSP})(\d+)(#{WSP})(\d+)(#{WSP})(\d+)[ \t\r\n]/on =~ pnm_content
         magic, wsp1, w, wsp2, h, wsp3, max, raster = $1, $2, $3.to_i, $4, $5.to_i, $6, $7.to_i, $'
         pixel_component = %w[R G B]
@@ -165,28 +179,6 @@ class Tb
 
     def shift
       @ary.shift
-    end
-
-    def each
-      while ary = self.shift
-        yield ary
-      end
-      nil
-    end
-
-    def to_a
-      result= []
-      each {|ary| result << ary }
-      result
-    end
-  end
-
-  class PNMReader2 < HeaderReader
-    def initialize(pnm_io)
-      pnm_io.binmode
-      content = pnm_io.read
-      r = PNMReader.new(content)
-      super lambda { r.shift }
     end
   end
 
