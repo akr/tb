@@ -60,12 +60,32 @@ class Tb
   end
 
   # practical only for (very) small images.
-  class PNMReader < HeaderReader
+  class PNMReader < HashReader
     def initialize(pnm_io)
       pnm_io.binmode
       content = pnm_io.read
       initialize0(content)
-      super lambda { self.shift }
+      header = @ary.shift
+      super lambda {
+        a = @ary.shift
+        if a
+          h = {}
+          a.each_with_index {|v, i|
+            h[header[i]] = v if !v.nil?
+          }
+          h
+        else
+          nil
+        end
+      }
+    end
+
+    def header_known?
+      true
+    end
+
+    def get_named_header
+      ['type', 'x', 'y', 'component', 'value']
     end
 
     WSP = /(?:[ \t\r\n]|\#[^\r\n]*[\r\n])+/
@@ -175,10 +195,6 @@ class Tb
         end
       end
       iter
-    end
-
-    def shift
-      @ary.shift
     end
   end
 
