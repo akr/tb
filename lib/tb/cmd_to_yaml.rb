@@ -41,8 +41,8 @@ def (Tb::Cmd).main_to_yaml(argv)
   op_to_yaml.parse!(argv)
   exit_if_help('to-yaml')
   argv = ['-'] if argv.empty?
-  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N).to_tb
-  ary = tbl.map {|rec| rec.to_h }
+  reader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
+  ary = reader.map {|rec| rec.to_h }
   with_output {|out|
     YAML.dump(ary, out)
     out.puts
