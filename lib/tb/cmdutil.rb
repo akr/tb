@@ -138,20 +138,6 @@ def tablereader_open(filename, &b)
   Tb.open_reader2(filename, Tb::Cmd.opt_N, &b)
 end
 
-def tbl_generate_ltsv(tbl, out)
-  if Tb::Cmd.opt_N
-    header = tbl.list_fields
-    Tb.ltsv_stream_output(out) {|gen|
-      tbl.each {|rec|
-        assoc = header.map {|f| [f, rec[f]] }
-        gen << assoc
-      }
-    }
-  else
-    tbl.generate_ltsv(out)
-  end
-end
-
 def with_output(filename=Tb::Cmd.opt_output)
   if filename && filename != '-'
     tmp = filename + ".part"
