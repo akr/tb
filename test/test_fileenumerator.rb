@@ -204,7 +204,11 @@ class TestTbFileEnumerator < Test::Unit::TestCase
   end
 
   def test_to_fileheaderenumerator_reader
-    tb = Tb.new %w[a b], [1, 2], [3, 4]
+    tb = Tb::Enumerator.new {|y|
+      y.set_header(%w[a b])
+      y.yield({'a' => 1, 'b' => 2})
+      y.yield({'a' => 3, 'b' => 4})
+    }
     fe = tb.to_fileenumerator
     iter = fe.each
     assert_respond_to(iter, :next)
@@ -222,7 +226,11 @@ class TestTbFileEnumerator < Test::Unit::TestCase
   end
 
   def test_to_fileheaderenumerator_with_header_reader
-    tb = Tb.new %w[a b], [1, 2], [3, 4]
+    tb = Tb::Enumerator.new {|y|
+      y.set_header(%w[a b])
+      y.yield({'a' => 1, 'b' => 2})
+      y.yield({'a' => 3, 'b' => 4})
+    }
     header = nil
     fe = tb.with_header {|h0|
       header = h0
@@ -244,7 +252,11 @@ class TestTbFileEnumerator < Test::Unit::TestCase
   end
 
   def test_fileheaderenumerator_open_reader
-    tb = Tb.new %w[a b], [1, 2], [3, 4]
+    tb = Tb::Enumerator.new {|y|
+      y.set_header(%w[a b])
+      y.yield({'a' => 1, 'b' => 2})
+      y.yield({'a' => 3, 'b' => 4})
+    }
     fe = tb.to_fileenumerator
     iter0 = nil
     fe.open_reader {|iter|
