@@ -40,34 +40,35 @@ def (Tb::Cmd).main_shape(argv)
   op_shape.parse!(argv)
   exit_if_help('shape')
   filenames = argv.empty? ? ['-'] : argv
-  result = Tb.new(%w[header_fields min_fields max_fields records filename])
-  filenames.each {|filename|
-    tablereader_open(filename) {|tblreader|
-      min_num_fields = nil
-      max_num_fields = nil
-      num_records = 0
-      num_header_fields = nil
-      tblreader.with_header {|header|
-        num_header_fields = header.length
-      }.each {|pairs|
-        ary = pairs.values
-        num_records += 1
-        n = ary.length
-        if min_num_fields.nil?
-          min_num_fields = max_num_fields = n
-        else
-          min_num_fields = n if n < min_num_fields
-          max_num_fields = n if max_num_fields < n
-        end
+  ter = Tb::Enumerator.new {|y|
+    filenames.each {|filename|
+      tablereader_open(filename) {|tblreader|
+        min_num_fields = nil
+        max_num_fields = nil
+        num_records = 0
+        num_header_fields = nil
+        tblreader.with_header {|header|
+          num_header_fields = header.length
+        }.each {|pairs|
+          ary = pairs.values
+          num_records += 1
+          n = ary.length
+          if min_num_fields.nil?
+            min_num_fields = max_num_fields = n
+          else
+            min_num_fields = n if n < min_num_fields
+            max_num_fields = n if max_num_fields < n
+          end
+        }
+        y.yield({'header_fields'=>num_header_fields,
+                 'min_fields'=>min_num_fields,
+                 'max_fields'=>max_num_fields,
+                 'records'=>num_records,
+                 'filename'=>filename})
       }
-      result.insert({'header_fields'=>num_header_fields,
-                     'min_fields'=>min_num_fields,
-                     'max_fields'=>max_num_fields,
-                     'records'=>num_records,
-                     'filename'=>filename})
     }
   }
   Tb::Cmd.opt_N = false
-  output_tbenum(result)
+  output_tbenum(ter)
 end
 
