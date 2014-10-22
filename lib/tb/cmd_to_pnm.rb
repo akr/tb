@@ -40,9 +40,9 @@ def (Tb::Cmd).main_to_pnm(argv)
   op_to_pnm.parse!(argv)
   exit_if_help('to-pnm')
   argv = ['-'] if argv.empty?
-  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N).to_tb
+  reader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   with_output {|out|
-    tbl.generate_pnm(out)
+    reader.write_to_pnm(out)
   }
 end
 

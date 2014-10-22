@@ -227,6 +227,10 @@ module Tb::Enumerable
     write_with(Tb::JSONWriter.new(io))
   end
 
+  def write_to_pnm(io)
+    write_with(Tb::PNMWriter.new(io))
+  end
+
   def extsort_by(opts={}, &cmpvalue_from)
     Tb::Enumerator.new {|ty|
       header = []
