@@ -184,176 +184,205 @@ class Tb
 
   # :call-seq:
   #   generate_pnm(out='')
-  #
   def generate_pnm(out='')
-    undefined_field = ['x', 'y', 'component', 'value'] - self.list_fields
-    if !undefined_field.empty?
-      raise ArgumentError, "field not defined: #{undefined_field.inspect[1...-1]}"
-    end
-    pnm_type = nil
-    width = height = nil
-    comments = []
-    max_value = nil
-    max_x = max_y = 0
-    values = { 0.0 => true, 1.0 => true }
-    components = {}
+    writer = PNMWriter.new(out)
     self.each {|rec|
-      case rec['component']
-      when 'pnm_type'
-        pnm_type = rec['value']
-      when 'width'
-        width = rec['value'].to_i
-      when 'height'
-        height = rec['value'].to_i
-      when 'max'
-        max_value = rec['value'].to_i
-      when 'comment'
-        comments << rec['value']
-      when 'R', 'G', 'B', 'V'
-        components[rec['component']] = true
-        x = rec['x'].to_i
-        y = rec['y'].to_i
-        max_x = x if max_x < x
-        max_y = y if max_y < y
-        values[rec['value'].to_f] = true
-      end
+      writer.put_hash rec
+    }
+    writer.finish
+  end
 
-    }
-    if !(components.keys - %w[V]).empty? &&
-       !(components.keys - %w[R G B]).empty?
-      raise ArgumentError, "inconsistent color component: #{components.keys.sort.inspect[1...-1]}"
+  class PNMWriter
+    def initialize(io)
+      @io = io
+      @ary = []
+      @fields = {}
     end
-    case pnm_type
-    when 'P1', 'P4' then raise ArgumentError, "unexpected compoenent for PBM: #{components.keys.sort.inspect[1...-1]}" if !(components.keys - %w[V]).empty?
-    when 'P2', 'P5' then raise ArgumentError, "unexpected compoenent for PGM: #{components.keys.sort.inspect[1...-1]}" if !(components.keys - %w[V]).empty?
-    when 'P3', 'P6' then raise ArgumentError, "unexpected compoenent for PPM: #{components.keys.sort.inspect[1...-1]}" if !(components.keys - %w[R G B]).empty?
+
+    def header_required?
+      false
     end
-    comments.each {|c|
-      if /[\r\n]/ =~ c
-        raise ArgumentError, "comment cannot contain a newline: #{c.inspect}"
-      end
-    }
-    if !width
-      width = max_x + 1
+
+    def header_generator=(gen)
     end
-    if !height
-      height = max_y + 1
-    end
-    if !max_value
-      min_interval = 1.0
-      values.keys.sort.each_cons(2) {|v1, v2|
-        d = v2-v1
-        min_interval = d if d < min_interval
+
+    def put_hash(pairs)
+      @ary << pairs
+      pairs.each {|k, v|
+        @fields[k] = true
       }
-      if min_interval < 0.0039 # 1/255 = 0.00392156862745098...
-        max_value = 0xffff
-      elsif min_interval < 1.0 || !(components.keys & %w[R G B]).empty?
-        max_value = 0xff
-      else
-        max_value = 1
-      end
     end
-    if pnm_type
-      if !pnm_type.kind_of?(String) || /\AP[123456]\z/ !~ pnm_type
-        raise ArgumentError, "unexpected PNM type: #{pnm_type.inspect}"
+
+    def finish
+      undefined_field = ['x', 'y', 'component', 'value'] - @fields.keys
+      if !undefined_field.empty?
+        raise ArgumentError, "field not defined: #{undefined_field.inspect[1...-1]}"
       end
-    else
-      if (components.keys - ['V']).empty?
-        if max_value == 1
-          pnm_type = 'P4' # PBM
-        else
-          pnm_type = 'P5' # PGM
+      pnm_type = nil
+      width = height = nil
+      comments = []
+      max_value = nil
+      max_x = max_y = 0
+      values = { 0.0 => true, 1.0 => true }
+      components = {}
+      @ary.each {|rec|
+        case rec['component']
+        when 'pnm_type'
+          pnm_type = rec['value']
+        when 'width'
+          width = rec['value'].to_i
+        when 'height'
+          height = rec['value'].to_i
+        when 'max'
+          max_value = rec['value'].to_i
+        when 'comment'
+          comments << rec['value']
+        when 'R', 'G', 'B', 'V'
+          components[rec['component']] = true
+          x = rec['x'].to_i
+          y = rec['y'].to_i
+          max_x = x if max_x < x
+          max_y = y if max_y < y
+          values[rec['value'].to_f] = true
         end
-      else
-        pnm_type = 'P6' # PPM
-      end
-    end
-    header = "#{pnm_type}\n"
-    comments.each {|c| header << '#' << c << "\n" }
-    header << "#{width} #{height}\n"
-    header << "#{max_value}\n" if /P[2536]/ =~ pnm_type
-    if /P[14]/ =~ pnm_type # PBM
-      max_value = 1
-    end
-    bytes_per_component = bytes_per_line = component_fmt = component_template = nil
-    case pnm_type
-    when 'P1' then bytes_per_component = 1; raster = '1' * (width * height)
-    when 'P4' then bytes_per_line = (width + 7) / 8; raster = ["1"*width].pack("B*") * height
-    when 'P2' then bytes_per_component = max_value.to_s.length+1; component_fmt = "%#{bytes_per_component}d"; raster = (component_fmt % 0) * (width * height)
-    when 'P5' then bytes_per_component, component_template = max_value < 0x100 ? [1, 'C'] : [2, 'n']; raster = "\0" * (bytes_per_component * width * height)
-    when 'P3' then bytes_per_component = max_value.to_s.length+1; component_fmt = "%#{bytes_per_component}d"; raster = (component_fmt % 0) * (3 * width * height)
-    when 'P6' then bytes_per_component, component_template = max_value < 0x100 ? [1, 'C'] : [2, 'n']; raster = "\0" * (bytes_per_component * 3 * width * height)
-    else
-      raise
-    end
-    raster.force_encoding("ASCII-8BIT") if raster.respond_to? :force_encoding
-    self.each {|rec|
-      c = rec['component']
-      next if /\A[RGBV]\z/ !~ c
-      x = rec['x'].to_i
-      y = rec['y'].to_i
-      next if x < 0 || width <= x
-      next if y < 0 || height <= y
-      v = rec['value'].to_f
-      if v < 0
-        v = 0
-      elsif 1 < v
-        v = 1
+      }
+      if !(components.keys - %w[V]).empty? &&
+         !(components.keys - %w[R G B]).empty?
+        raise ArgumentError, "inconsistent color component: #{components.keys.sort.inspect[1...-1]}"
       end
       case pnm_type
-      when 'P1'
-        v = v < 0.5 ? '1' : '0'
-        raster[y * width + x] = v
-      when 'P4'
-        xhi, xlo = x.divmod(8)
-        i = y * bytes_per_line + xhi
-        byte = raster[i].ord
-        if v < 0.5
-          byte |= 0x80 >> xlo
+      when 'P1', 'P4' then raise ArgumentError, "unexpected compoenent for PBM: #{components.keys.sort.inspect[1...-1]}" if !(components.keys - %w[V]).empty?
+      when 'P2', 'P5' then raise ArgumentError, "unexpected compoenent for PGM: #{components.keys.sort.inspect[1...-1]}" if !(components.keys - %w[V]).empty?
+      when 'P3', 'P6' then raise ArgumentError, "unexpected compoenent for PPM: #{components.keys.sort.inspect[1...-1]}" if !(components.keys - %w[R G B]).empty?
+      end
+      comments.each {|c|
+        if /[\r\n]/ =~ c
+          raise ArgumentError, "comment cannot contain a newline: #{c.inspect}"
+        end
+      }
+      if !width
+        width = max_x + 1
+      end
+      if !height
+        height = max_y + 1
+      end
+      if !max_value
+        min_interval = 1.0
+        values.keys.sort.each_cons(2) {|v1, v2|
+          d = v2-v1
+          min_interval = d if d < min_interval
+        }
+        if min_interval < 0.0039 # 1/255 = 0.00392156862745098...
+          max_value = 0xffff
+        elsif min_interval < 1.0 || !(components.keys & %w[R G B]).empty?
+          max_value = 0xff
         else
-          byte &= 0xff7f >> xlo
+          max_value = 1
         end
-        raster[i] = [byte].pack("C")
-      when 'P2'
-        v = (v * max_value).round
-        raster[(y * width + x) * bytes_per_component, bytes_per_component] = component_fmt % v
-      when 'P5'
-        v = (v * max_value).round
-        raster[(y * width + x) * bytes_per_component, bytes_per_component] = [v].pack(component_template)
-      when 'P3'
-        v = (v * max_value).round
-        i = (y * width + x) * 3
-        if c == 'G' then i += 1
-        elsif c == 'B' then i += 2
+      end
+      if pnm_type
+        if !pnm_type.kind_of?(String) || /\AP[123456]\z/ !~ pnm_type
+          raise ArgumentError, "unexpected PNM type: #{pnm_type.inspect}"
         end
-        raster[i * bytes_per_component, bytes_per_component] = component_fmt % v
-      when 'P6'
-        v = (v * max_value).round
-        i = (y * width + x) * 3
-        if c == 'G' then i += 1
-        elsif c == 'B' then i += 2
+      else
+        if (components.keys - ['V']).empty?
+          if max_value == 1
+            pnm_type = 'P4' # PBM
+          else
+            pnm_type = 'P5' # PGM
+          end
+        else
+          pnm_type = 'P6' # PPM
         end
-        raster[i * bytes_per_component, bytes_per_component] = [v].pack(component_template)
+      end
+      header = "#{pnm_type}\n"
+      comments.each {|c| header << '#' << c << "\n" }
+      header << "#{width} #{height}\n"
+      header << "#{max_value}\n" if /P[2536]/ =~ pnm_type
+      if /P[14]/ =~ pnm_type # PBM
+        max_value = 1
+      end
+      bytes_per_component = bytes_per_line = component_fmt = component_template = nil
+      case pnm_type
+      when 'P1' then bytes_per_component = 1; raster = '1' * (width * height)
+      when 'P4' then bytes_per_line = (width + 7) / 8; raster = ["1"*width].pack("B*") * height
+      when 'P2' then bytes_per_component = max_value.to_s.length+1; component_fmt = "%#{bytes_per_component}d"; raster = (component_fmt % 0) * (width * height)
+      when 'P5' then bytes_per_component, component_template = max_value < 0x100 ? [1, 'C'] : [2, 'n']; raster = "\0" * (bytes_per_component * width * height)
+      when 'P3' then bytes_per_component = max_value.to_s.length+1; component_fmt = "%#{bytes_per_component}d"; raster = (component_fmt % 0) * (3 * width * height)
+      when 'P6' then bytes_per_component, component_template = max_value < 0x100 ? [1, 'C'] : [2, 'n']; raster = "\0" * (bytes_per_component * 3 * width * height)
       else
         raise
       end
-    }
-    if pnm_type == 'P1'
-      raster.gsub!(/[01]{#{width}}/, "\\&\n")
-      if 70 < width
-        raster.gsub!(/[01]{70}/, "\\&\n")
-      end
-      raster << "\n" if /\n\z/ !~ raster
-    elsif /P[23]/ =~ pnm_type
-      components_per_line = /P2/ =~ pnm_type ? width : 3 * width
-      raster.gsub!(/  +/, ' ')
-      raster.gsub!(/( \d+){#{components_per_line}}/, "\\&\n")
-      raster.gsub!(/(\A|\n) +/, '\1')
-      raster.gsub!(/.{71,}\n/) {
-        $&.gsub(/(.{1,69})[ \n]/, "\\1\n")
+      raster.force_encoding("ASCII-8BIT") if raster.respond_to? :force_encoding
+      @ary.each {|rec|
+        c = rec['component']
+        next if /\A[RGBV]\z/ !~ c
+        x = rec['x'].to_i
+        y = rec['y'].to_i
+        next if x < 0 || width <= x
+        next if y < 0 || height <= y
+        v = rec['value'].to_f
+        if v < 0
+          v = 0
+        elsif 1 < v
+          v = 1
+        end
+        case pnm_type
+        when 'P1'
+          v = v < 0.5 ? '1' : '0'
+          raster[y * width + x] = v
+        when 'P4'
+          xhi, xlo = x.divmod(8)
+          i = y * bytes_per_line + xhi
+          byte = raster[i].ord
+          if v < 0.5
+            byte |= 0x80 >> xlo
+          else
+            byte &= 0xff7f >> xlo
+          end
+          raster[i] = [byte].pack("C")
+        when 'P2'
+          v = (v * max_value).round
+          raster[(y * width + x) * bytes_per_component, bytes_per_component] = component_fmt % v
+        when 'P5'
+          v = (v * max_value).round
+          raster[(y * width + x) * bytes_per_component, bytes_per_component] = [v].pack(component_template)
+        when 'P3'
+          v = (v * max_value).round
+          i = (y * width + x) * 3
+          if c == 'G' then i += 1
+          elsif c == 'B' then i += 2
+          end
+          raster[i * bytes_per_component, bytes_per_component] = component_fmt % v
+        when 'P6'
+          v = (v * max_value).round
+          i = (y * width + x) * 3
+          if c == 'G' then i += 1
+          elsif c == 'B' then i += 2
+          end
+          raster[i * bytes_per_component, bytes_per_component] = [v].pack(component_template)
+        else
+          raise
+        end
       }
-      raster << "\n" if /\n\z/ !~ raster
+      if pnm_type == 'P1'
+        raster.gsub!(/[01]{#{width}}/, "\\&\n")
+        if 70 < width
+          raster.gsub!(/[01]{70}/, "\\&\n")
+        end
+        raster << "\n" if /\n\z/ !~ raster
+      elsif /P[23]/ =~ pnm_type
+        components_per_line = /P2/ =~ pnm_type ? width : 3 * width
+        raster.gsub!(/  +/, ' ')
+        raster.gsub!(/( \d+){#{components_per_line}}/, "\\&\n")
+        raster.gsub!(/(\A|\n) +/, '\1')
+        raster.gsub!(/.{71,}\n/) {
+          $&.gsub(/(.{1,69})[ \n]/, "\\1\n")
+        }
+        raster << "\n" if /\n\z/ !~ raster
+      end
+      @io << (header+raster)
     end
-    out << (header+raster)
   end
+
 end
