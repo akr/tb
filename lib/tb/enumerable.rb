@@ -93,7 +93,7 @@ module Tb::Enumerable
   # creates a new Tb::Enumerator object which have
   # new field named by _field_ with the value returned by the block.
   #
-  #   t1 = Tb.new %w[a b], [1, 2], [3, 4]
+  #   t1 = Tb::Enumerator.from_header_and_values %w[a b], [1, 2], [3, 4]
   #   p t1.newfield("x") {|row| row["a"] + row["b"] + 100 }.to_a
   #   #=> [{"x"=>103, "a"=>1, "b"=>2},
   #   #    {"x"=>107, "a"=>3, "b"=>4}]

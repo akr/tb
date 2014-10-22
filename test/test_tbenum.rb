@@ -4,16 +4,8 @@ require 'tmpdir'
 
 class TestTbEnum < Test::Unit::TestCase
   def test_cat_without_block
-    t1 = Tb::Enumerator.new {|y|
-      y.set_header %w[a b]
-      y.yield({'a' => 1, 'b' => 2})
-      y.yield({'a' => 3, 'b' => 4})
-    }
-    t2 = Tb::Enumerator.new {|y|
-      y.set_header %w[c d]
-      y.yield({'c' => 5, 'd' => 6})
-      y.yield({'c' => 7, 'd' => 8})
-    }
+    t1 = Tb::Enumerator.from_header_and_values(%w[a b], [1, 2], [3, 4])
+    t2 = Tb::Enumerator.from_header_and_values(%w[c d], [5, 6], [7, 8])
     e = t1.cat(t2)
     result = []
     e.with_header {|header|
@@ -32,16 +24,8 @@ class TestTbEnum < Test::Unit::TestCase
   end
 
   def test_cat_with_block
-    t1 = Tb::Enumerator.new {|y|
-      y.set_header %w[a b]
-      y.yield({'a' => 1, 'b' => 2})
-      y.yield({'a' => 3, 'b' => 4})
-    }
-    t2 = Tb::Enumerator.new {|y|
-      y.set_header %w[c d]
-      y.yield({'c' => 5, 'd' => 6})
-      y.yield({'c' => 7, 'd' => 8})
-    }
+    t1 = Tb::Enumerator.from_header_and_values(%w[a b], [1, 2], [3, 4])
+    t2 = Tb::Enumerator.from_header_and_values(%w[c d], [5, 6], [7, 8])
     result = []
     t1.cat(t2) {|x|
       assert_kind_of(Hash, x)

@@ -52,6 +52,15 @@ end
 class Tb::Enumerator < Enumerator
   include Tb::Enumerable
 
+  def self.from_header_and_values(header, *values_list)
+    Tb::Enumerator.new {|y|
+      y.set_header header
+      values_list.each {|values|
+        y.yield Hash[header.zip(values)]
+      }
+    }
+  end
+
   def self.new(&enumerator_proc)
     super() {|y|
       header_proc = Thread.current[:tb_enumerator_header_proc]
