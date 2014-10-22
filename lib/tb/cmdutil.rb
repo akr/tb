@@ -138,19 +138,6 @@ def tablereader_open(filename, &b)
   Tb.open_reader2(filename, Tb::Cmd.opt_N, &b)
 end
 
-def tbl_generate_tsv(tbl, out)
-  if Tb::Cmd.opt_N
-    header = tbl.list_fields
-    Tb.tsv_stream_output(out) {|gen|
-      tbl.each {|rec|
-        gen << rec.values_at(*header)
-      }
-    }
-  else
-    tbl.generate_tsv(out)
-  end
-end
-
 def tbl_generate_ltsv(tbl, out)
   if Tb::Cmd.opt_N
     header = tbl.list_fields
