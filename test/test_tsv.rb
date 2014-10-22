@@ -2,49 +2,28 @@ require 'tb'
 require 'test/unit'
 
 class TestTbTSV < Test::Unit::TestCase
-=begin
+  def parse_tsv(tsv)
+    Tb::HeaderTSVReader.new(StringIO.new(tsv)).to_a
+  end
+
+  def generate_tsv(ary)
+    writer = Tb::HeaderTSVWriter.new(out = '')
+    ary.each {|h| writer.put_hash h }
+    writer.finish
+    out
+  end
+
   def test_parse
     tsv = "a\tb\n1\t2\n"
-    t = Tb.parse_tsv(tsv)
-    records = []
-    t.each_record {|record|
-      records << record.to_h_with_reserved
-    }
+    ary = parse_tsv(tsv)
     assert_equal(
-      [{"_recordid"=>0, "a"=>"1", "b"=>"2"}],
-      records)
+      [{"a"=>"1", "b"=>"2"}],
+      ary)
   end
-
-  def test_parse_conv
-    tsv = "foo\na\tb\n1\t2\n"
-    t = Tb.parse_tsv(tsv) {|aa|
-      assert_equal([%w[foo],
-                   %w[a b],
-                   %w[1 2]],
-                   aa)
-      aa.shift
-      aa
-    }
-    records = []
-    t.each_record {|record|
-      records << record.to_h_with_reserved
-    }
-    assert_equal(
-      [{"_recordid"=>0, "a"=>"1", "b"=>"2"}],
-      records)
-  end
-=end
 
   def test_generate_tsv
-    tbl = Tb.new %w[a b], %w[foo bar]
-    tbl.generate_tsv(out="")
-    assert_equal("a\tb\nfoo\tbar\n", out)
-  end
-
-  def test_generate_tsv_with_block
-    tbl = Tb.new %w[a b], %w[foo bar], %w[q w]
-    tbl.generate_tsv(out="") {|recids| recids.reverse }
-    assert_equal("a\tb\nq\tw\nfoo\tbar\n", out)
+    t = [{'a' => 'foo', 'b' => 'bar'}]
+    assert_equal("a\tb\nfoo\tbar\n", generate_tsv(t))
   end
 
 end
