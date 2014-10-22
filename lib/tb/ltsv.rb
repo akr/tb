@@ -107,32 +107,6 @@ class Tb
     end
   end
 
-  def Tb.ltsv_stream_output(out)
-    gen = Object.new
-    gen.instance_variable_set(:@out, out)
-    def gen.<<(assoc)
-      @out << Tb.ltsv_assoc_join(assoc) << "\n"
-    end
-    yield gen
-  end
-
-  # :call-seq:
-  #   generate_ltsv(out='') {|recordids| modified_recordids }
-  #   generate_ltsv(out='')
-  #
-  def generate_ltsv(out='', fields=nil, &block)
-    recordids = list_recordids
-    if block_given?
-      recordids = yield(recordids)
-    end
-    Tb.ltsv_stream_output(out) {|gen|
-      recordids.each {|recordid|
-        gen << get_record(recordid)
-      }
-    }
-    out
-  end
-
   def Tb.ltsv_split_line(line)
     line = line.chomp("\n")
     line = line.chomp("\r")
