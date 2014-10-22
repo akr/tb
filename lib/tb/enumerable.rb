@@ -211,6 +211,14 @@ module Tb::Enumerable
     end
   end
 
+  def write_to_tsv(io, with_header=true)
+    if with_header
+      write_with(Tb::HeaderTSVWriter.new(io))
+    else
+      write_with(Tb::NumericTSVWriter.new(io))
+    end
+  end
+
   def write_to_ltsv(io)
     write_with(Tb::LTSVWriter.new(io))
   end

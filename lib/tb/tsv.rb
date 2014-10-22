@@ -65,14 +65,18 @@ class Tb
     values.map {|v| v.to_s.gsub(/[\t\r\n]/, ' ') }.join("\t")
   end
 
+  def Tb.tsv_fields_split(line)
+    line = line.chomp("\n")
+    line = line.chomp("\r")
+    line.split(/\t/, -1)
+  end
+
   class HeaderTSVReader < HeaderReader
     def initialize(io)
       super lambda {
         line = io.gets
         if line
-          line = line.chomp("\n")
-          line = line.chomp("\r")
-          line.split(/\t/, -1)
+          Tb.tsv_fields_split(line)
         else
           nil
         end
@@ -82,6 +86,27 @@ class Tb
 
   class HeaderTSVWriter < HeaderWriter
     # io is an object which has "<<" method.
+    def initialize(io)
+      super lambda {|ary|
+        io << (Tb.tsv_fields_join(ary) + "\n")
+      }
+    end
+  end
+
+  class NumericTSVReader < NumericReader
+    def initialize(io)
+      super lambda {
+        line = io.gets
+        if line
+          Tb.tsv_fields_split(line)
+        else
+          nil
+        end
+      }
+    end
+  end
+
+  class NumericTSVWriter < NumericWriter
     def initialize(io)
       super lambda {|ary|
         io << (Tb.tsv_fields_join(ary) + "\n")
