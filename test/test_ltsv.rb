@@ -2,6 +2,17 @@ require 'tb'
 require 'test/unit'
 
 class TestTbLTSV < Test::Unit::TestCase
+  def parse_ltsv(ltsv)
+    Tb::LTSVReader.new(StringIO.new(ltsv)).to_a
+  end
+
+  def generate_ltsv(ary)
+    writer = Tb::LTSVWriter.new(out = '')
+    ary.each {|h| writer.put_hash h }
+    writer.finish
+    out
+  end
+
   def test_escape_and_unescape
     0x00.upto(0x7f) {|c|
       s = [c].pack("C")
@@ -22,27 +33,21 @@ class TestTbLTSV < Test::Unit::TestCase
   end
 
   def test_parse2
-    ltsv = "a:1\tb:2\n"
-    t = Tb.parse_ltsv(ltsv)
-    records = []
-    t.each_record {|record|
-      records << record.to_h_with_reserved
-    }
+    t = parse_ltsv("a:1\tb:2\n")
     assert_equal(
-      [{"_recordid"=>0, "a"=>"1", "b"=>"2"}],
-      records)
+      [{"a"=>"1", "b"=>"2"}],
+      t)
   end
 
   def test_generate_ltsv
-    tbl = Tb.new %w[a b], %w[foo bar]
-    tbl.generate_ltsv(out="")
-    assert_equal("a:foo\tb:bar\n", out)
+    t = [{'a' => 'foo', 'b' => 'bar'}]
+    assert_equal("a:foo\tb:bar\n", generate_ltsv(t))
   end
 
-  def test_generate_ltsv_with_block
-    tbl = Tb.new %w[a b], %w[foo bar], %w[q w]
-    tbl.generate_ltsv(out="") {|recids| recids.reverse }
-    assert_equal("a:q\tb:w\na:foo\tb:bar\n", out)
+  def test_generate_ltsv2
+    t = [{'a' => 'foo', 'b' => 'bar'},
+         {'a' => 'q', 'b' => 'w'}]
+    assert_equal("a:foo\tb:bar\na:q\tb:w\n", generate_ltsv(t))
   end
 
 end
