@@ -29,13 +29,6 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class Tb
-  # :call-seq:
-  #   Tb.pnm_stream_input(pnm_io) {|ary| ... }
-  #
-  def Tb.pnm_stream_input(pnm_io)
-    PNMReader.new(content)
-  end
-
   # practical only for (very) small images.
   class PNMReader < HashReader
     def initialize(pnm_io)
