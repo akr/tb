@@ -43,7 +43,7 @@ class Tb
   def Tb.parse_pnm(pnm_content)
     pnm_content.force_encoding("ASCII-8BIT") if pnm_content.respond_to? :force_encoding
     pnm_io = StringIO.new(pnm_content)
-    reader = PNMReader2.new(pnm_io)
+    reader = PNMReader.new(pnm_io)
     header = reader.get_named_header
     t = Tb.new(header)
     reader.each {|pairs|
@@ -56,11 +56,11 @@ class Tb
   #   Tb.pnm_stream_input(pnm_io) {|ary| ... }
   #
   def Tb.pnm_stream_input(pnm_io)
-    PNMReader2.new(content)
+    PNMReader.new(content)
   end
 
   # practical only for (very) small images.
-  class PNMReader2 < HeaderReader
+  class PNMReader < HeaderReader
     def initialize(pnm_io)
       pnm_io.binmode
       content = pnm_io.read

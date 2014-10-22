@@ -304,7 +304,7 @@ class TestTbPNM < Test::Unit::TestCase
 
   def test_pnmreader_to_a
     pbm = "P1\n2 3\n101101\n"
-    r = Tb::PNMReader2.new(StringIO.new(pbm))
+    r = Tb::PNMReader.new(StringIO.new(pbm))
     header = r.get_named_header
     assert_equal(["type", "x", "y", "component", "value"], header)
     assert_equal(
