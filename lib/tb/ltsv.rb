@@ -31,10 +31,6 @@
 require 'stringio'
 
 class Tb
-  def Tb.load_ltsv(filename, &block)
-    Tb.parse_ltsv(File.read(filename), &block)
-  end
-
   def Tb.parse_ltsv(ltsv)
     assoc_list = []
     ltsv_stream_input(ltsv) {|assoc|
