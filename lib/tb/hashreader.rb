@@ -30,7 +30,7 @@
 
 require 'tempfile'
 
-class Tb
+module Tb
   class HashReader
     include Tb::Enumerable
 

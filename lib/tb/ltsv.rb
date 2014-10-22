@@ -30,7 +30,7 @@
 
 require 'stringio'
 
-class Tb
+module Tb
   def Tb.ltsv_escape_key(str)
     if /[\0-\x1f":\\\x7f]/ =~ str
       '"' +

@@ -30,7 +30,7 @@
 
 require 'tempfile'
 
-class Tb
+module Tb
 end
 
 require 'pp'

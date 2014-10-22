@@ -28,7 +28,7 @@
 
 require 'json'
 
-class Tb
+module Tb
   class JSONLReader < Tb::HashReader
     # io.gets should returns a string.
     def initialize(io)

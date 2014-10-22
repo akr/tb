@@ -30,7 +30,7 @@
 
 require 'tempfile'
 
-class Tb
+module Tb
   class HeaderWriter
     def initialize(put_array)
       @put_array = put_array

@@ -28,7 +28,7 @@
 
 require 'json'
 
-class Tb
+module Tb
   class JSONReader < Tb::HashReader
     def initialize(io)
       ary = JSON.parse(io.read)

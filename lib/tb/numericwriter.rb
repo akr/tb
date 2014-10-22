@@ -30,7 +30,7 @@
 
 require 'tempfile'
 
-class Tb
+module Tb
   class NumericWriter
     def initialize(put_array, put_finish=nil)
       @put_array = put_array

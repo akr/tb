@@ -30,7 +30,7 @@
 
 require 'csv'
 
-class Tb
+module Tb
   def Tb.csv_encode_row(ary)
     ary.to_csv
   end

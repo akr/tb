@@ -30,7 +30,7 @@
 
 require 'tempfile'
 
-class Tb
+module Tb
   class HashWriter
     def initialize(put_hash, put_finish=nil)
       @put_hash = put_hash

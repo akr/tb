@@ -30,7 +30,7 @@
 
 require 'stringio'
 
-class Tb
+module Tb
   def Tb.tsv_fields_join(values)
     values.map {|v| v.to_s.gsub(/[\t\r\n]/, ' ') }.join("\t") + "\n"
   end
