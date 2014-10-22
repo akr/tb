@@ -40,9 +40,9 @@ def (Tb::Cmd).main_to_ltsv(argv)
   op_to_ltsv.parse!(argv)
   exit_if_help('to-ltsv')
   argv = ['-'] if argv.empty?
-  tbl = Tb::CatReader.open(argv, Tb::Cmd.opt_N).to_tb
+  reader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   with_output {|out|
-    tbl_generate_ltsv(tbl, out)
+    reader.write_to_ltsv(out)
   }
 end
 

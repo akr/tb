@@ -57,8 +57,8 @@ class TestTbCmdToLTSV < Test::Unit::TestCase
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a:1\tb:2
       a:3\tb:4
-      a:6\tb:5
-      a:8\tb:7
+      b:5\ta:6
+      b:7\ta:8
     End
   end
 
