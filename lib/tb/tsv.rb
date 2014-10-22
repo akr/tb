@@ -35,7 +35,7 @@ class Tb
     gen = Object.new
     gen.instance_variable_set(:@out, out)
     def gen.<<(ary)
-      @out << Tb.tsv_fields_join(ary) << "\n"
+      @out << Tb.tsv_fields_join(ary)
     end
     yield gen
   end
@@ -62,7 +62,7 @@ class Tb
   end
 
   def Tb.tsv_fields_join(values)
-    values.map {|v| v.to_s.gsub(/[\t\r\n]/, ' ') }.join("\t")
+    values.map {|v| v.to_s.gsub(/[\t\r\n]/, ' ') }.join("\t")+ "\n"
   end
 
   def Tb.tsv_fields_split(line)
@@ -88,7 +88,7 @@ class Tb
     # io is an object which has "<<" method.
     def initialize(io)
       super lambda {|ary|
-        io << (Tb.tsv_fields_join(ary) + "\n")
+        io << Tb.tsv_fields_join(ary)
       }
     end
   end
@@ -109,7 +109,7 @@ class Tb
   class NumericTSVWriter < NumericWriter
     def initialize(io)
       super lambda {|ary|
-        io << (Tb.tsv_fields_join(ary) + "\n")
+        io << Tb.tsv_fields_join(ary)
       }
     end
   end
