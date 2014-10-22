@@ -31,36 +31,6 @@
 require 'stringio'
 
 class Tb
-  def Tb.tsv_stream_output(out)
-    gen = Object.new
-    gen.instance_variable_set(:@out, out)
-    def gen.<<(ary)
-      @out << Tb.tsv_fields_join(ary)
-    end
-    yield gen
-  end
-
-  # :call-seq:
-  #   generate_tsv(out='', fields=nil) {|recordids| modified_recordids }
-  #   generate_tsv(out='', fields=nil)
-  #
-  def generate_tsv(out='', fields=nil, &block)
-    if fields.nil?
-      fields = list_fields
-    end
-    recordids = list_recordids
-    if block_given?
-      recordids = yield(recordids)
-    end
-    Tb.tsv_stream_output(out) {|gen|
-      gen << fields
-      recordids.each {|recordid|
-        gen << get_values(recordid, *fields)
-      }
-    }
-    out
-  end
-
   def Tb.tsv_fields_join(values)
     values.map {|v| v.to_s.gsub(/[\t\r\n]/, ' ') }.join("\t")+ "\n"
   end
