@@ -176,19 +176,6 @@ module Tb::Enumerable
     natjoin2(tbl2, missing_value, retain_left, retain_right)
   end
 
-  def to_tb
-    tb = Tb.new
-    self.each {|pairs|
-      pairs.each {|k, v|
-        unless tb.has_field? k
-          tb.define_field(k)
-        end
-      }
-      tb.insert pairs
-    }
-    tb
-  end
-
   def write_with(writer)
     header_proc = nil
     if writer.header_required?
