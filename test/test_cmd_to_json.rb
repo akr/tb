@@ -68,6 +68,22 @@ class TestTbCmdToJSON < Test::Unit::TestCase
     End
   end
 
+  def test_ltsv_to_json1
+    File.open(i="i.ltsv", "w") {|f| f << "foo:bar\n" }
+    Tb::Cmd.main_to_json(['-o', o="o.json", i])
+    assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, ''))
+      [{"foo":"bar"}]
+    End
+  end
+
+  def test_ltsv_to_json2
+    File.open(i="i.ltsv", "w") {|f| f << "foo:bar\nbaz:qux\n" }
+    Tb::Cmd.main_to_json(['-o', o="o.json", i])
+    assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, ''))
+      [{"foo":"bar"}, {"baz":"qux"}]
+    End
+  end
+
   def test_twofile
     File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b
