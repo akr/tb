@@ -59,15 +59,8 @@ def (Tb::Cmd).main_cut(argv)
       output_tbenum(er)
     else
       er = Tb::Enumerator.new {|y|
-        tblreader.with_header {|header0|
-          if header0
-            fieldset = Tb::FieldSet.new(*header0)
-            fs.each {|f|
-              fieldset.index_from_field_ex(f)
-            }
-          end
-          y.set_header fs
-        }.each {|pairs|
+        y.set_header fs
+        tblreader.each {|pairs|
           y.yield pairs.reject {|k, v| !fs.include?(k) }
         }
       }

@@ -73,12 +73,17 @@ class TestTbCmdCut < Test::Unit::TestCase
     assert_match(/Header too short/, stderr)
   end
 
-  def test_unextendable
+  def test_zero
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b
       0,1,2,3
     End
-    assert_raise(ArgumentError) { Tb::Cmd.main_cut(['-o', "o.csv", '0', i]) }
+    o = "o.csv"
+    stderr = capture_stderr {
+      Tb::Cmd.main_cut(['-o', o, '0', i])
+    }
+    assert_equal("0\n\n", File.read(o))
+    assert_match(/Header too short/, stderr)
   end
 
   def test_twofile
