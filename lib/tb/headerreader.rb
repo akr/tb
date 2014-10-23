@@ -64,6 +64,12 @@ module Tb
         return nil
       end
       hash = {}
+      if @header.length < ary.length
+        @header.length.upto(ary.length-1) {|i|
+          warn "Header too short: field #{i+1} : #{ary[i].inspect}"
+        }
+        ary[@header.length..-1] = []
+      end
       ary.each_with_index {|v, i|
         field = i < @header.length ? @header[i] : (i-@header.length+1).to_s
         hash[field] = v

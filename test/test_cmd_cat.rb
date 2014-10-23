@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
+require_relative 'tb_test_util'
 
 class TestTbCmdCat < Test::Unit::TestCase
   def setup
@@ -69,14 +70,18 @@ class TestTbCmdCat < Test::Unit::TestCase
       5,6
       7,8,y
     End
-    Tb::Cmd.main_cat(['-o', o="o.csv", i1, i2])
+    o = "o.csv"
+    stderr = capture_stderr {
+      Tb::Cmd.main_cat(['-o', o, i1, i2])
+    }
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b,c
       1,2
-      3,4,,x
+      3,4
       ,5,6
-      ,7,8,y
+      ,7,8
     End
+    assert_match(/Header too short/, stderr)
   end
 
   def test_extend_both
@@ -88,12 +93,16 @@ class TestTbCmdCat < Test::Unit::TestCase
       b
       2,y
     End
-    Tb::Cmd.main_cat(['-o', o="o.csv", i1, i2])
+    o = "o.csv"
+    stderr = capture_stderr {
+      Tb::Cmd.main_cat(['-o', o, i1, i2])
+    }
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b
-      1,,x
-      ,2,y
+      1
+      ,2
     End
+    assert_match(/Header too short/, stderr)
   end
 
   def test_field_order

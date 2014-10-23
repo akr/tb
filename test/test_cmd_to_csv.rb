@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
+require_relative 'tb_test_util'
 
 class TestTbCmdToCSV < Test::Unit::TestCase
   def setup
@@ -49,18 +50,22 @@ class TestTbCmdToCSV < Test::Unit::TestCase
     End
   end
 
-  def test_complement_header
+  def test_short_header
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b
       0,1,2
       4,5,6
     End
-    Tb::Cmd.main_to_csv(['-o', o="o.csv", i])
+    o = "o.csv"
+    stderr = capture_stderr {
+      Tb::Cmd.main_to_csv(['-o', o, i])
+    }
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
-      a,b,1
-      0,1,2
-      4,5,6
+      a,b
+      0,1
+      4,5
     End
+    assert_match(/Header too short/, stderr)
   end
 
   def test_numeric

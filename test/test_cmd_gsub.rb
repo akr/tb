@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
+require_relative 'tb_test_util'
 
 class TestTbCmdGsub < Test::Unit::TestCase
   def setup
@@ -72,11 +73,15 @@ class TestTbCmdGsub < Test::Unit::TestCase
       a,b
       foo,bar,baz
     End
-    Tb::Cmd.main_gsub(['-o', o="o.csv", '-f', '1', 'baz', 'Y', i])
+    o = "o.csv"
+    stderr = capture_stderr {
+      Tb::Cmd.main_gsub(['-o', o, '-f', '1', 'baz', 'Y', i])
+    }
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b
-      foo,bar,Y
+      foo,bar
     End
+    assert_match(/Header too short/, stderr)
   end
 
   def test_twofile

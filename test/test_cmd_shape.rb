@@ -19,6 +19,20 @@ class TestTbCmdShape < Test::Unit::TestCase
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c
       0,1
+      4,5,6
+    End
+    Tb::Cmd.main_shape(['-o', o="o.csv", i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      header_fields,min_fields,max_fields,records,filename
+      3,2,3,2,i.csv
+    End
+  end
+
+=begin
+  def test_extra_field
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      0,1
       4,5,6,7
     End
     Tb::Cmd.main_shape(['-o', o="o.csv", i])
@@ -27,6 +41,7 @@ class TestTbCmdShape < Test::Unit::TestCase
       3,2,4,2,i.csv
     End
   end
+=end
 
   def test_twofile
     File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }

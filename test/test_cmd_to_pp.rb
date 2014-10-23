@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
+require_relative 'tb_test_util'
 
 class TestTbCmdToPP < Test::Unit::TestCase
   def setup
@@ -33,10 +34,14 @@ class TestTbCmdToPP < Test::Unit::TestCase
       a,b
       0,1,2,3
     End
-    Tb::Cmd.main_to_pp(['-o', o="o.pp", i])
+    o = "o.pp"
+    stderr = capture_stderr {
+      Tb::Cmd.main_to_pp(['-o', o, i])
+    }
     assert_equal(<<-"End".gsub(/\s/, ''), File.read(o).gsub(/\s/, ''))
-      { "a" => "0", "b" => "1", "1" => "2", "2" => "3" }
+      { "a" => "0", "b" => "1" }
     End
+    assert_match(/Header too short/, stderr)
   end
 
   def test_twofile

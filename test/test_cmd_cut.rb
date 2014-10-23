@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
+require_relative 'tb_test_util'
 
 class TestTbCmdCut < Test::Unit::TestCase
   def setup
@@ -61,11 +62,15 @@ class TestTbCmdCut < Test::Unit::TestCase
       a,b
       0,1,2,3
     End
-    Tb::Cmd.main_cut(['-o', o="o.csv", 'a,2,1', i])
+    o = "o.csv"
+    stderr = capture_stderr {
+      Tb::Cmd.main_cut(['-o', o, 'a,2,1', i])
+    }
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,2,1
-      0,3,2
+      0
     End
+    assert_match(/Header too short/, stderr)
   end
 
   def test_unextendable

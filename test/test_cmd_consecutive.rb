@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
+require_relative 'tb_test_util'
 
 class TestTbCmdConsecutive < Test::Unit::TestCase
   def setup
@@ -46,22 +47,22 @@ class TestTbCmdConsecutive < Test::Unit::TestCase
   end
 
   def test_extend
-    old_verbose = $VERBOSE
-    $VERBOSE = nil
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b
       1,2,3
       4,5,6
       7,8,9
     End
-    Tb::Cmd.main_consecutive(['-o', o="o.csv", i])
+    o = "o.csv"
+    stderr = capture_stderr {
+      Tb::Cmd.main_consecutive(['-o', o, i])
+    }
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a_1,a_2,b_1,b_2
-      1,4,2,5,3,6
-      4,7,5,8,6,9
+      1,4,2,5
+      4,7,5,8
     End
-  ensure
-    $VERBOSE = old_verbose
+    assert_match(/Header too short/, stderr)
   end
 
   def test_n3
