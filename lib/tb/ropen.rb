@@ -28,89 +28,66 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-def Tb.open_reader2(filename, numeric=false)
-  case filename
-  when /\Acsv:/
-    filename = $'
-    reader_maker = lambda {|io| numeric ? Tb::NumericCSVReader.new(io) : Tb::HeaderCSVReader.new(io) }
-  when /\Atsv:/
-    filename = $'
-    reader_maker = lambda {|io| numeric ? Tb::NumericTSVReader.new(io) : Tb::HeaderTSVReader.new(io) }
-  when /\Altsv:/
-    filename = $'
-    reader_maker = lambda {|io| Tb::LTSVReader.new(io) }
-  when /\Ap[pgbn]m:/
-    filename = $'
-    reader_maker = lambda {|io| Tb::PNMReader.new(io) }
-  when /\Ajson:/
-    filename = $'
-    reader_maker = lambda {|io| Tb::JSONReader.new(io) }
-  when /\Ajsonl:/
-    filename = $'
-    reader_maker = lambda {|io| Tb::JSONLReader.new(io) }
-  when /\.csv\z/
-    reader_maker = lambda {|io| numeric ? Tb::NumericCSVReader.new(io) : Tb::HeaderCSVReader.new(io) }
-  when /\.tsv\z/
-    reader_maker = lambda {|io| numeric ? Tb::NumericTSVReader.new(io) : Tb::HeaderTSVReader.new(io) }
-  when /\.ltsv\z/
-    reader_maker = lambda {|io| Tb::LTSVReader.new(io) }
-  when /\.p[pgbn]m\z/
-    reader_maker = lambda {|io| Tb::PNMReader.new(io) }
-  when /\.json\z/
-    reader_maker = lambda {|io| Tb::JSONReader.new(io) }
-  when /\.jsonl\z/
-    reader_maker = lambda {|io| Tb::JSONLReader.new(io) }
+Tb::FormatHash = {
+  'csv'   => [Tb::HeaderCSVReader,  Tb::HeaderCSVWriter],
+  'ncsv'  => [Tb::NumericCSVReader, Tb::NumericCSVWriter],
+  'tsv'   => [Tb::HeaderTSVReader,  Tb::HeaderTSVWriter],
+  'ntsv'  => [Tb::NumericTSVReader, Tb::NumericTSVWriter],
+  'ltsv'  => [Tb::LTSVReader,       Tb::LTSVWriter],
+  'pnm'   => [Tb::PNMReader,        Tb::PNMWriter],
+  'ppm'   => [Tb::PNMReader,        Tb::PNMWriter],
+  'pgm'   => [Tb::PNMReader,        Tb::PNMWriter],
+  'pbm'   => [Tb::PNMReader,        Tb::PNMWriter],
+  'json'  => [Tb::JSONReader,       Tb::JSONWriter],
+  'jsonl' => [Tb::JSONLReader,      Tb::JSONLWriter],
+}
+
+def Tb.undecorate_filename(filename, numeric)
+  if filename.respond_to?(:to_str)
+    filename = filename.to_str
+  elsif filename.respond_to?(:to_path)
+    filename = filename.to_path
   else
-    reader_maker = lambda {|io| numeric ? Tb::NumericCSVReader.new(io) : Tb::HeaderCSVReader.new(io) }
-  end
-  if !filename.respond_to?(:to_str) && !filename.respond_to?(:to_path)
     raise ArgumentError, "unexpected filename: #{filename.inspect}"
   end
-  if filename == '-'
-    reader = reader_maker.call($stdin)
-  else
-    reader = reader_maker.call(File.open(filename))
-  end
-  if block_given?
-    yield reader
-  else
-    reader
-  end
-end
-
-def Tb.open_writer(filename, numeric)
   if /\A([a-z0-9]{2,}):/ =~ filename
     fmt = $1
     filename = $'
+    err("unexpected format: #{fmt.inspect}") if !Tb::FormatHash.has_key?(fmt)
+  elsif /\.([a-z0-9]+{2,})\z/ =~ filename
+    fmt = $1
+    fmt = 'csv' if !Tb::FormatHash.has_key?(fmt)
   else
-    fmt = nil
+    fmt = 'csv'
   end
-  if !fmt
-    case filename
-    when /\.csv\z/ then fmt = 'csv'
-    when /\.ltsv\z/ then fmt = 'ltsv'
-    when /\.json\z/ then fmt = 'json'
-    when /\.jsonl\z/ then fmt = 'jsonl'
-    end
-  end
-  if fmt
+  if numeric
     case fmt
-    when 'csv'
-      writer_maker = lambda {|out| numeric ? Tb::NumericCSVWriter.new(out) : Tb::HeaderCSVWriter.new(out) }
-    when 'ltsv'
-      writer_maker = lambda {|out| Tb::LTSVWriter.new(out) }
-    when 'json'
-      writer_maker = lambda {|out| Tb::JSONWriter.new(out) }
-    when 'jsonl'
-      writer_maker = lambda {|out| Tb::JSONLWriter.new(out) }
-    else
-      err("unexpected format: #{fmt.inspect}")
+    when 'csv' then fmt = 'ncsv'
+    when 'tsv' then fmt = 'ntsv'
     end
   end
-  writer_maker ||= lambda {|out| numeric ? Tb::NumericCSVWriter.new(out) : Tb::HeaderCSVWriter.new(out) }
-  with_output(filename) {|out|
-    writer = writer_maker.call(out)
-    yield writer
-    writer.finish
-  }
+  return filename, fmt
+end
+
+def Tb.open_reader2(filename, numeric=false)
+  filename, fmt = Tb.undecorate_filename(filename, numeric)
+  factory = Tb::FormatHash.fetch(fmt)[0]
+  io_opened = nil
+  if filename == '-'
+    reader = factory.new($stdin)
+  else
+    io_opened = File.open(filename)
+    reader = factory.new(io_opened)
+  end
+  if block_given?
+    begin
+      yield reader
+    ensure
+      if io_opened && !io_opened.closed?
+        io_opened.close
+      end
+    end
+  else
+    reader
+  end
 end

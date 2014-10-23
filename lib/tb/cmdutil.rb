@@ -163,40 +163,12 @@ def with_output(filename=Tb::Cmd.opt_output)
 end
 
 def output_tbenum(te)
-  output_tbenum2(te, Tb::Cmd.opt_output, Tb::Cmd.opt_N)
-end
-
-def output_tbenum2(te, filename, numeric)
-  if /\A([a-z0-9]{2,}):/ =~ filename
-    fmt = $1
-    filename = $'
-  else
-    fmt = nil
-  end
-  if !fmt
-    case filename
-    when /\.csv\z/
-      fmt = 'csv'
-    when /\.ltsv\z/
-      fmt = 'ltsv'
-    when /\.json\z/
-      fmt = 'json'
-    end
-  end
-  if fmt
-    case fmt
-    when 'csv'
-      write_proc = lambda {|out| te.write_to_csv(out, !numeric) }
-    when 'ltsv'
-      write_proc = lambda {|out| te.write_to_ltsv(out) }
-    when 'json'
-      write_proc = lambda {|out| te.write_to_json(out) }
-    else
-      err("unexpected format: #{fmt.inspect}")
-    end
-  end
-  write_proc ||= lambda {|out| te.write_to_csv(out, !numeric) }
+  filename = Tb::Cmd.opt_output
+  numeric = Tb::Cmd.opt_N
+  filename, fmt = Tb.undecorate_filename(filename, numeric)
+  factory = Tb::FormatHash.fetch(fmt)[1]
   with_output(filename) {|out|
-    write_proc.call(out)
+    writer = factory.new(out)
+    te.write_with(writer)
   }
 end
