@@ -48,12 +48,23 @@ module Tb
       if !@header
         @header = []
       end
+      h = {}
+      @header.each_with_index {|f, i|
+        if f.nil?
+          warn "empty header field #{i+1}"
+        elsif h.has_key? f
+          warn "ambiguous header field: #{f.inspect}"
+          @header[i] = nil
+        else
+          h[f] = true
+        end
+      }
     end
     private :read_header_once
 
     def get_named_header
       read_header_once
-      @header
+      @header.compact
     end
 
     def get_hash
@@ -70,8 +81,10 @@ module Tb
         ary[@header.length..-1] = []
       end
       ary.each_with_index {|v, i|
-        field = i < @header.length ? @header[i] : (i-@header.length+1).to_s
-        hash[field] = v
+        field = @header[i]
+        if !field.nil?
+          hash[field] = v
+        end
       }
       hash
     end

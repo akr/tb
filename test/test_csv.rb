@@ -1,5 +1,6 @@
 require 'tb'
 require 'test/unit'
+require_relative 'util_tbtest'
 
 class TestTbCSV < Test::Unit::TestCase
   def parse_csv(csv)
@@ -57,4 +58,19 @@ class TestTbCSV < Test::Unit::TestCase
     End
   end
 
+  def test_parse_ambiguous_header
+    t = nil
+    stderr = capture_stderr {
+      t = parse_csv(<<-'End'.gsub(/^\s+/, ''))
+      a,b,a,b,c
+      0,1,2,3,4
+      5,6,7,8,9
+      End
+    }
+    assert_equal(
+      [{"a"=>"0", "b"=>"1", "c"=>"4"},
+       {"a"=>"5", "b"=>"6", "c"=>"9"}],
+      t)
+    assert_match(/ambiguous header field:/, stderr)
+  end
 end
