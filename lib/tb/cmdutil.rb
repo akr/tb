@@ -135,7 +135,7 @@ def split_csv_argument(arg)
 end
 
 def tablereader_open(filename, &b)
-  Tb.open_reader2(filename, Tb::Cmd.opt_N, &b)
+  Tb.open_reader(filename, Tb::Cmd.opt_N, &b)
 end
 
 def with_output(filename=Tb::Cmd.opt_output)

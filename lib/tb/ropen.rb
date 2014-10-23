@@ -69,7 +69,7 @@ def Tb.undecorate_filename(filename, numeric)
   return filename, fmt
 end
 
-def Tb.open_reader2(filename, numeric=false)
+def Tb.open_reader(filename, numeric=false)
   filename, fmt = Tb.undecorate_filename(filename, numeric)
   factory = Tb::FormatHash.fetch(fmt)[0]
   io_opened = nil
