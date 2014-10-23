@@ -44,6 +44,9 @@ class Tb::Yielder
     if !@header_proc_called
       set_header(nil)
     end
+    unless args.is_a?(Array) && args.length == 1 && args[0].is_a?(Hash)
+      raise "unexpected args: #{args.inspect}"
+    end
     @base_yielder.yield(*args)
   end
   alias << yield

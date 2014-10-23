@@ -82,7 +82,7 @@ def (Tb::Cmd).main_crop(argv)
           pairs2 = pairs2.map {|f, v|
             [(f.to_i - range_col1 + 1).to_s, v]
           }
-          y.yield pairs2
+          y.yield Hash[pairs2]
         end
         rownum += 1
       }
