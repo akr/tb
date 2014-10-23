@@ -48,7 +48,6 @@ module Tb
       if !@header
         @header = []
       end
-      @fieldset = Tb::FieldSet.new(*@header)
     end
     private :read_header_once
 
@@ -75,28 +74,6 @@ module Tb
         hash[field] = v
       }
       hash
-    end
-
-    def index_from_field_ex(f)
-      raise TypeError if !@fieldset
-      @fieldset.index_from_field_ex(f)
-    end
-
-    def index_from_field(f)
-      raise TypeError if !@fieldset
-      @fieldset.index_from_field(f)
-    end
-
-    def field_from_index_ex(i)
-      raise TypeError if !@fieldset
-      raise ArgumentError, "negative index: #{i}" if i < 0
-      @fieldset.field_from_index_ex(i)
-    end
-
-    def field_from_index(i)
-      raise TypeError if !@fieldset
-      raise ArgumentError, "negative index: #{i}" if i < 0
-      @fieldset.field_from_index(i)
     end
 
     def header_and_each(header_proc)

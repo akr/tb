@@ -102,11 +102,11 @@ module Tb::Enumerable
     Tb::Enumerator.new {|y|
       self.with_header {|header|
         if header
-          y.set_header(Tb::FieldSet.normalize([field, *header]))
+          y.set_header([field, *header])
         end
       }.each {|row|
         keys = row.keys
-        keys = Tb::FieldSet.normalize([field, *keys])
+        keys = [field, *keys]
         vals = row.values
         vals = [yield(row), *vals]
         y << Hash[keys.zip(vals)]

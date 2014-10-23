@@ -57,7 +57,6 @@ require 'tb/jsonl'
 
 require 'tb/ropen'
 require 'tb/catreader'
-require 'tb/fieldset'
 require 'tb/search'
 require 'tb/ex_enumerable'
 require 'tb/ex_enumerator'
