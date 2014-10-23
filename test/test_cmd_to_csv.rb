@@ -1,7 +1,7 @@
 require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
-require_relative 'tb_test_util'
+require_relative 'util_tbtest'
 
 class TestTbCmdToCSV < Test::Unit::TestCase
   def setup
