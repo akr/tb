@@ -71,6 +71,22 @@ class TestTbCSV < Test::Unit::TestCase
       [{"a"=>"0", "b"=>"1", "c"=>"4"},
        {"a"=>"5", "b"=>"6", "c"=>"9"}],
       t)
-    assert_match(/ambiguous header field:/, stderr)
+    assert_match(/Ambiguous header field/, stderr)
+  end
+
+  def test_parse_empty_header_field
+    t = nil
+    stderr = capture_stderr {
+      t = parse_csv(<<-'End'.gsub(/^\s+/, ''))
+      a,,c
+      0,1,2
+      5,6,7
+      End
+    }
+    assert_equal(
+      [{"a"=>"0", "c"=>"2"},
+       {"a"=>"5", "c"=>"7"}],
+      t)
+    assert_match(/Empty header field/, stderr)
   end
 end

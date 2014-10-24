@@ -48,15 +48,19 @@ module Tb
       if !@header
         @header = []
       end
-      h = {}
+      h = Hash.new { [] }
       @header.each_with_index {|f, i|
-        if f.nil?
-          warn "empty header field #{i+1}"
-        elsif h.has_key? f
-          warn "ambiguous header field: #{f.inspect}"
-          @header[i] = nil
-        else
-          h[f] = true
+        h[f] <<= i
+      }
+      if h.has_key? nil
+        warn "Empty header field #{h[nil].map(&:succ).join(',')}"
+      end
+      h.each {|f, is|
+        if 1 < is.length
+          warn "Ambiguous header field: field #{is.map(&:succ).join(',')} has same name #{f.inspect}"
+          is[1..-1].each {|i|
+            @header[i] = nil
+          }
         end
       }
     end
@@ -75,9 +79,7 @@ module Tb
       end
       hash = {}
       if @header.length < ary.length
-        @header.length.upto(ary.length-1) {|i|
-          warn "Header too short: field #{i+1} : #{ary[i].inspect}"
-        }
+        warn "Header too short: header has #{@header.length} fields but a record has #{ary.length} fields : #{ary[@header.length..-1].map(&:inspect).join(',')}"
         ary[@header.length..-1] = []
       end
       ary.each_with_index {|v, i|
