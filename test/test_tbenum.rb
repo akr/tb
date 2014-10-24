@@ -41,9 +41,9 @@ class TestTbEnum < Test::Unit::TestCase
 
   def test_write_to_csv_basic
     obj = [
-      [['a', 0], ['b', 1], ['c', 2]],
-      [['a', 3], ['b', 4], ['c', 5]],
-      [['a', 6], ['b', 7], ['c', 8]],
+      {'a' => 0, 'b' => 1, 'c' => 2},
+      {'a' => 3, 'b' => 4, 'c' => 5},
+      {'a' => 6, 'b' => 7, 'c' => 8},
     ]
     def obj.header_and_each(header_proc, &block)
       header_proc.call(nil) if header_proc
@@ -65,9 +65,9 @@ class TestTbEnum < Test::Unit::TestCase
 
   def test_write_to_csv_header_extension
     obj = [
-      [['a', 0]],
-      [['b', 1]],
-      [['c', 2]],
+      {'a' => 0},
+      {'b' => 1},
+      {'c' => 2},
     ]
     def obj.header_and_each(header_proc, &block)
       header_proc.call(nil) if header_proc
@@ -89,9 +89,9 @@ class TestTbEnum < Test::Unit::TestCase
 
   def test_write_to_csv_without_header
     obj = [
-      [['1', "x"]],
-      [['2', "y"]],
-      [['3', "z"]],
+      {'1' => "x"},
+      {'2' => "y"},
+      {'3' => "z"},
     ]
     def obj.header_and_each(header_proc, &block)
       header_proc.call(nil) if header_proc
