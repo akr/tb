@@ -42,7 +42,7 @@ def (Tb::Cmd).main_to_yaml(argv)
   exit_if_help('to-yaml')
   argv = ['-'] if argv.empty?
   reader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
-  ary = reader.map {|rec| rec.to_h }
+  ary = reader.to_a
   with_output {|out|
     YAML.dump(ary, out)
     out.puts
