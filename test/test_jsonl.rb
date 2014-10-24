@@ -16,12 +16,12 @@ class TestTbJSONL < Test::Unit::TestCase
 
   def test_reader_header
     jsonl = <<-'End'
-      {"A":"a","B":"b","C":"c"}
+      {"A":"a"}
       {"A":"d","B":"e","C":"f"}
     End
     reader = Tb::JSONLReader.new(StringIO.new(jsonl))
     assert_equal(%w[A B C], reader.get_named_header)
-    assert_equal({"A"=>"a", "B"=>"b", "C"=>"c"}, reader.get_hash)
+    assert_equal({"A"=>"a"}, reader.get_hash)
     assert_equal({"A"=>"d", "B"=>"e", "C"=>"f"}, reader.get_hash)
     assert_equal(nil, reader.get_hash)
     assert_equal(nil, reader.get_hash)
