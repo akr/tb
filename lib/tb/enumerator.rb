@@ -53,7 +53,7 @@ class Tb::Yielder
 end
 
 class Tb::Enumerator < Enumerator
-  include Tb::Enumerable
+  include Tb::EnumerableWithEach
 
   def self.from_header_and_values(header, *values_list)
     Tb::Enumerator.new {|y|
@@ -74,10 +74,6 @@ class Tb::Enumerator < Enumerator
         header_proc.call(nil)
       end
     }
-  end
-
-  def each(&each_proc)
-    header_and_each(nil, &each_proc)
   end
 
   def header_and_each(header_proc, &each_proc)
