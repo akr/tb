@@ -1,6 +1,6 @@
 # lib/tb/pnm.rb - tools for (very small) PNM images.
 #
-# Copyright (C) 2010-2012 Tanaka Akira  <akr@fsij.org>
+# Copyright (C) 2010-2014 Tanaka Akira  <akr@fsij.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
