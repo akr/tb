@@ -41,6 +41,23 @@ def (Tb::Cmd).op_newfield
   op
 end
 
+Tb::Cmd.def_vhelp('newfield', <<'End')
+Example:
+
+  % cat tst.csv
+  a,b,c
+  0,1,2
+  4,5,6
+  % tb newfield foo bar tst.csv
+  foo,a,b,c
+  bar,0,1,2
+  bar,4,5,6
+  % tb newfield foo --ruby '_["b"] + _["c"]' tst.csv
+  foo,a,b,c
+  12,0,1,2
+  56,4,5,6
+End
+
 def (Tb::Cmd).main_newfield(argv)
   op_newfield.parse!(argv)
   exit_if_help('newfield')

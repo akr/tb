@@ -45,6 +45,18 @@ def (Tb::Cmd).op_grep
   op
 end
 
+Tb::Cmd.def_vhelp('grep', <<'End')
+Example:
+
+  % cat tst.csv
+  a,b,c
+  0,1,2
+  4,5,6
+  % tb grep 0 tst.csv
+  a,b,c
+  0,1,2
+End
+
 def (Tb::Cmd).main_grep(argv)
   op_grep.parse!(argv)
   exit_if_help('grep')

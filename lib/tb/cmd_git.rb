@@ -43,6 +43,20 @@ def (Tb::Cmd).op_git
   op
 end
 
+Tb::Cmd.def_vhelp('git', <<'End')
+Example:
+
+  % tb git | tb cut commit
+  commit
+  dedc77387459ea90b5f508be03cce9ecf0d990b5
+  bebf22d1d97921fb86f816ea48235948fa4c73b3
+  38d61f96a8b33a6c5d527e564dc78b4a47b3eff0
+  48c10d3b1b0609d389ce1d9203e57f63c1408703
+  d002c43e0a85ec7051f667140261d6b0e74e9039
+  9292cade7c71d0b8805898621a53ba7a4713d029
+  ...
+End
+
 Tb::Cmd::GIT_LOG_FORMAT_SPEC = [
   %w[commit %H],
   %w[tree %T],

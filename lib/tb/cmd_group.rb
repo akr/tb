@@ -41,6 +41,38 @@ def (Tb::Cmd).op_group
   op
 end
 
+Tb::Cmd.def_vhelp('group', <<'End')
+Example:
+
+  % cat tst.csv
+  a,b,c
+  A,X,2
+  A,Y,3
+  B,Y,4
+  % tb group a tst.csv
+  a
+  A
+  B
+  % tb group a -a count tst.csv
+  a,count
+  A,2
+  B,1
+  % tb group a -a 'avg(c)' tst.csv
+  a,avg(c)
+  A,2.5
+  B,4.0
+  % tb group a,b tst.csv
+  a,b
+  A,X
+  A,Y
+  B,Y
+  % tb group a,b -a count tst.csv
+  a,b,count
+  A,X,1
+  A,Y,1
+  B,Y,1
+End
+
 def (Tb::Cmd).main_group(argv)
   op_group.parse!(argv)
   exit_if_help('group')

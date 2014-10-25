@@ -42,6 +42,30 @@ def (Tb::Cmd).op_cross
   op
 end
 
+Tb::Cmd.def_vhelp('cross', <<'End')
+Example:
+
+  % cat tst.csv
+  a,b,c
+  A,X,2
+  A,Y,3
+  B,Y,4
+  % tb cross a b tst.csv
+  b,X,Y
+  a,count,count
+  A,1,1
+  B,,1
+  % tb cross -c a b tst.csv
+  a,X,Y
+  A,1,1
+  B,,1
+  % tb cross a b -a 'avg(c)' tst.csv
+  b,X,Y
+  a,avg(c),avg(c)
+  A,2.0,3.0
+  B,,4.0
+End
+
 def (Tb::Cmd).main_cross(argv)
   op_cross.parse!(argv)
   exit_if_help('cross')

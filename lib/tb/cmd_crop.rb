@@ -35,9 +35,25 @@ def (Tb::Cmd).op_crop
   op.banner = "Usage: tb crop [OPTS] [TABLE ...]\n" +
     "Extract rectangle in a table."
   define_common_option(op, "ho", "--no-pager")
-  op.def_option('-r RANGE', 'range.  i.e. "2,1-4,3", "B1:D3"') {|arg| Tb::Cmd.opt_crop_range = arg }
+  op.def_option('-r RANGE', 'range.  i.e. "R2C1:R4C3", "B1:D3"') {|arg| Tb::Cmd.opt_crop_range = arg }
   op
 end
+
+Tb::Cmd.def_vhelp('crop', <<'End')
+Example:
+
+  % cat tst.csv
+  0,1,2,4
+  5,6,7,8
+  9,a,b,c
+  d,e,f,g
+  h,i,j,k
+  % tb crop -r R2C2:R4C3 tst.csv
+  6,7
+  a,b
+  e,f
+End
+
 
 def (Tb::Cmd).decode_a1_addressing_col(str)
   (26**str.length-1)/25+str.tr("A-Z", "0-9A-P").to_i(26)

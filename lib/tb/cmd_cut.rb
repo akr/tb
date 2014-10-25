@@ -39,6 +39,23 @@ def (Tb::Cmd).op_cut
   op
 end
 
+Tb::Cmd.def_vhelp('cut', <<'End')
+Example:
+
+  % cat tst.csv
+  a,b,c
+  0,1,2
+  4,5,6
+  % tb cut a,c tst.csv
+  a,c
+  0,2
+  4,6
+  % tb cut -v a tst.csv
+  b,c
+  1,2
+  5,6
+End
+
 def (Tb::Cmd).main_cut(argv)
   op_cut.parse!(argv)
   exit_if_help('cut')
