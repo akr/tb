@@ -49,7 +49,7 @@ def (Tb::Cmd).main_to_json(argv)
       tablereader_open(filename) {|tblreader|
         tblreader.each {|pairs|
           out.print sep if sep
-          out.print JSON.pretty_generate(Hash[pairs.to_a])
+          out.print JSON.pretty_generate(pairs)
           sep = ",\n"
         }
       }
