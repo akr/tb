@@ -34,7 +34,13 @@ module Tb
 
     def initialize(get_array)
       @get_array = get_array
+      @header_array_hook = nil
+      @row_array_hook = nil
+      @enable_warning = true
     end
+    attr_accessor :header_array_hook
+    attr_accessor :row_array_hook
+    attr_accessor :enable_warning
 
     def header_known?
       true
@@ -48,16 +54,17 @@ module Tb
       if !@header
         @header = []
       end
+      @header_array_hook.call(@header) if @header_array_hook
       h = Hash.new { [] }
       @header.each_with_index {|f, i|
         h[f] <<= i
       }
       if h.has_key? nil
-        warn "Empty header field #{h[nil].map(&:succ).join(',')}"
+        warn "Empty header field #{h[nil].map(&:succ).join(',')}" if @enable_warning
       end
       h.each {|f, is|
         if 1 < is.length
-          warn "Ambiguous header field: field #{is.map(&:succ).join(',')} has same name #{f.inspect}"
+          warn "Ambiguous header field: field #{is.map(&:succ).join(',')} has same name #{f.inspect}" if @enable_warning
           is[1..-1].each {|i|
             @header[i] = nil
           }
@@ -77,9 +84,10 @@ module Tb
       if !ary
         return nil
       end
+      @row_array_hook.call(ary) if  @row_array_hook
       hash = {}
       if @header.length < ary.length
-        warn "Header too short: header has #{@header.length} fields but a record has #{ary.length} fields : #{ary[@header.length..-1].map(&:inspect).join(',')}"
+        warn "Header too short: header has #{@header.length} fields but a record has #{ary.length} fields : #{ary[@header.length..-1].map(&:inspect).join(',')}" if @enable_warning
         ary[@header.length..-1] = []
       end
       ary.each_with_index {|v, i|

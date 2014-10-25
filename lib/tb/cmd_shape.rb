@@ -47,18 +47,25 @@ def (Tb::Cmd).main_shape(argv)
         max_num_fields = nil
         num_records = 0
         num_header_fields = nil
-        tblreader.with_header {|header|
-          num_header_fields = header.length
-        }.each {|pairs|
-          ary = pairs.values
+        if tblreader.respond_to? :header_array_hook
+          tblreader.header_array_hook = lambda {|header|
+            num_header_fields = header.length
+          }
+        end
+        if tblreader.respond_to? :row_array_hook
+          tblreader.row_array_hook = lambda {|ary|
+            n = ary.length
+            if min_num_fields.nil?
+              min_num_fields = max_num_fields = n
+            else
+              min_num_fields = n if n < min_num_fields
+              max_num_fields = n if max_num_fields < n
+            end
+          }
+        end
+        tblreader.enable_warning = false
+        tblreader.each {|pairs|
           num_records += 1
-          n = ary.length
-          if min_num_fields.nil?
-            min_num_fields = max_num_fields = n
-          else
-            min_num_fields = n if n < min_num_fields
-            max_num_fields = n if max_num_fields < n
-          end
         }
         y.yield({'header_fields'=>num_header_fields,
                  'min_fields'=>min_num_fields,

@@ -28,7 +28,6 @@ class TestTbCmdShape < Test::Unit::TestCase
     End
   end
 
-=begin
   def test_extra_field
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c
@@ -41,7 +40,6 @@ class TestTbCmdShape < Test::Unit::TestCase
       3,2,4,2,i.csv
     End
   end
-=end
 
   def test_twofile
     File.open(i1="i1.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
