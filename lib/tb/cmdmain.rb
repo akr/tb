@@ -45,5 +45,7 @@ def (Tb::Cmd).main(argv)
 rescue SystemExit
   $stderr.puts $!.message if $!.message != 'exit'
   raise
+rescue Errno::EPIPE
+  exit false
 end
 
