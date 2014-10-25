@@ -46,7 +46,6 @@ class TestTbEnumerable < Test::Unit::TestCase
                  a.tb_categorize(:color, lambda {|e| true }, :seed=>0, :op=>lambda {|s, v| s+1 }))
 
     assert_raise(ArgumentError) { a.tb_categorize(:color, lambda {|e| true }, :seed=>0,
-                                               :seed=>nil,
                                                :op=>lambda {|s, v| s+1 },
                                                :update=>lambda {|ks, s, v| s+1 }) }
 
