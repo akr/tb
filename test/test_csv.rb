@@ -26,7 +26,20 @@ class TestTbCSV < Test::Unit::TestCase
       t)
   end
 
-  def test_parse_empty
+  def test_parse_empty_line_before_header
+    empty_line = "\n"
+    t = parse_csv(empty_line + <<-'End'.gsub(/^\s+/, ''))
+    a,b
+    1,2
+    3,4
+    End
+    assert_equal(
+      [{"a"=>"1", "b"=>"2"},
+       {"a"=>"3", "b"=>"4"}],
+      t)
+  end
+
+  def test_parse_empty_value
     t = parse_csv(<<-'End'.gsub(/^\s+/, ''))
     a,b,c
     1,,2
@@ -36,6 +49,11 @@ class TestTbCSV < Test::Unit::TestCase
       [{"a"=>"1", "b"=>nil, "c"=>"2"},
        {"a"=>"3", "b"=>"", "c"=>"4"}],
       t)
+  end
+
+  def test_parse_newline
+    t = parse_csv("\n")
+    assert_equal([], t)
   end
 
   def test_generate
