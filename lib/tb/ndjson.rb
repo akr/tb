@@ -28,12 +28,22 @@
 
 require 'json'
 
+# NDJSON is Newline Delimited JSON
+# http://ndjson.org/
+#
+# Tb::NDJSONReader accepts empty lines.
+
 module Tb
   class NDJSONReader < Tb::HashReader
     # io.gets should returns a string.
     def initialize(io)
       super lambda {
-        line = io.gets
+        while true
+          line = io.gets
+          if line.nil? || /\S/ =~ line
+            break
+          end
+        end
         if line
           JSON.parse(line)
         else

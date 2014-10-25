@@ -2,8 +2,8 @@ require 'tb'
 require 'test/unit'
 
 class TestTbNDJSON < Test::Unit::TestCase
-  def parse_ndjson(csv)
-    Tb::NDJSONReader.new(StringIO.new(csv)).to_a
+  def parse_ndjson(ndjson)
+    Tb::NDJSONReader.new(StringIO.new(ndjson)).to_a
   end
 
   def generate_ndjson(ary)
@@ -53,6 +53,10 @@ class TestTbNDJSON < Test::Unit::TestCase
 
   def test_newline_in_string
     assert_equal('{"r":"\r","n":"\n"}'+"\n", generate_ndjson([{"r"=>"\r", "n"=>"\n"}]))
+  end
+
+  def test_empty_line
+    assert_equal([{"a"=>"1"}, {"a"=>"2"}], parse_ndjson('{"a":"1"}'+"\n\n" + '{"a":"2"}'+"\n"))
   end
 
 end
