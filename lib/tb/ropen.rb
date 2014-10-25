@@ -29,17 +29,17 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Tb::FormatHash = {
-  'csv'   => [Tb::HeaderCSVReader,  Tb::HeaderCSVWriter],
-  'ncsv'  => [Tb::NumericCSVReader, Tb::NumericCSVWriter],
-  'tsv'   => [Tb::HeaderTSVReader,  Tb::HeaderTSVWriter],
-  'ntsv'  => [Tb::NumericTSVReader, Tb::NumericTSVWriter],
-  'ltsv'  => [Tb::LTSVReader,       Tb::LTSVWriter],
-  'pnm'   => [Tb::PNMReader,        Tb::PNMWriter],
-  'ppm'   => [Tb::PNMReader,        Tb::PNMWriter],
-  'pgm'   => [Tb::PNMReader,        Tb::PNMWriter],
-  'pbm'   => [Tb::PNMReader,        Tb::PNMWriter],
-  'json'  => [Tb::JSONReader,       Tb::JSONWriter],
-  'jsonl' => [Tb::JSONLReader,      Tb::JSONLWriter],
+  'csv'    => [Tb::HeaderCSVReader,  Tb::HeaderCSVWriter],
+  'ncsv'   => [Tb::NumericCSVReader, Tb::NumericCSVWriter],
+  'tsv'    => [Tb::HeaderTSVReader,  Tb::HeaderTSVWriter],
+  'ntsv'   => [Tb::NumericTSVReader, Tb::NumericTSVWriter],
+  'ltsv'   => [Tb::LTSVReader,       Tb::LTSVWriter],
+  'pnm'    => [Tb::PNMReader,        Tb::PNMWriter],
+  'ppm'    => [Tb::PNMReader,        Tb::PNMWriter],
+  'pgm'    => [Tb::PNMReader,        Tb::PNMWriter],
+  'pbm'    => [Tb::PNMReader,        Tb::PNMWriter],
+  'json'   => [Tb::JSONReader,       Tb::JSONWriter],
+  'ndjson' => [Tb::NDJSONReader,     Tb::NDJSONWriter],
 }
 
 def Tb.undecorate_filename(filename, numeric)

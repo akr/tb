@@ -15,15 +15,15 @@ class TestTbCmdShape < Test::Unit::TestCase
     FileUtils.rmtree @tmpdir
   end
 
-  def test_jsonl
-    File.open(i="i.jsonl", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+  def test_ndjson
+    File.open(i="i.ndjson", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       {"a":0, "b":1}
       {"a":4, "b":5, "c":6}
     End
     Tb::Cmd.main_shape(['-o', o="o.csv", i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       filename,records,min_pairs,max_pairs
-      i.jsonl,2,2,3
+      i.ndjson,2,2,3
     End
   end
 
@@ -40,13 +40,13 @@ class TestTbCmdShape < Test::Unit::TestCase
     End
   end
 
-  def test_output_jsonl
+  def test_output_ndjson
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c
       0,1
       4,5,6
     End
-    Tb::Cmd.main_shape(['-o', o="o.jsonl", i])
+    Tb::Cmd.main_shape(['-o', o="o.ndjson", i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       {"filename":"i.csv","records":2,"min_pairs":2,"max_pairs":3,"header_fields":3,"min_fields":2,"max_fields":3}
     End

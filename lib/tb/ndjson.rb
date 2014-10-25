@@ -29,7 +29,7 @@
 require 'json'
 
 module Tb
-  class JSONLReader < Tb::HashReader
+  class NDJSONReader < Tb::HashReader
     # io.gets should returns a string.
     def initialize(io)
       super lambda {
@@ -43,7 +43,7 @@ module Tb
     end
   end
 
-  class JSONLWriter < Tb::HashWriter
+  class NDJSONWriter < Tb::HashWriter
     def initialize(io)
       super lambda {|hash|
         io << (JSON.generate(hash) + "\n")

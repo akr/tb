@@ -144,6 +144,6 @@ other table operations (gsub, rename, cross, melt, unmelt, etc.),
 information extractions (git, svn, tar),
 and more.
 
-tb supports various table formats: CSV, TSV, JSON, JSON lines, LTSV, etc.
+tb supports various table formats: CSV, TSV, JSON, NDJSON, LTSV, etc.
 End
 end

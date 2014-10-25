@@ -53,7 +53,7 @@ require 'tb/tsv'
 require 'tb/ltsv'
 require 'tb/pnm'
 require 'tb/json'
-require 'tb/jsonl'
+require 'tb/ndjson'
 
 require 'tb/ropen'
 require 'tb/catreader'
