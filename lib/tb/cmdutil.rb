@@ -166,7 +166,7 @@ def output_tbenum(te)
   filename = Tb::Cmd.opt_output
   numeric = Tb::Cmd.opt_N
   filename, fmt = Tb.undecorate_filename(filename, numeric)
-  factory = Tb::FormatHash.fetch(fmt)[1]
+  factory = Tb::FormatHash.fetch(fmt)[:writer]
   with_output(filename) {|out|
     writer = factory.new(out)
     te.write_with(writer)

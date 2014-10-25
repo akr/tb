@@ -29,17 +29,17 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Tb::FormatHash = {
-  'csv'    => [Tb::HeaderCSVReader,  Tb::HeaderCSVWriter],
-  'ncsv'   => [Tb::NumericCSVReader, Tb::NumericCSVWriter],
-  'tsv'    => [Tb::HeaderTSVReader,  Tb::HeaderTSVWriter],
-  'ntsv'   => [Tb::NumericTSVReader, Tb::NumericTSVWriter],
-  'ltsv'   => [Tb::LTSVReader,       Tb::LTSVWriter],
-  'pnm'    => [Tb::PNMReader,        Tb::PNMWriter],
-  'ppm'    => [Tb::PNMReader,        Tb::PNMWriter],
-  'pgm'    => [Tb::PNMReader,        Tb::PNMWriter],
-  'pbm'    => [Tb::PNMReader,        Tb::PNMWriter],
-  'json'   => [Tb::JSONReader,       Tb::JSONWriter],
-  'ndjson' => [Tb::NDJSONReader,     Tb::NDJSONWriter],
+  'csv'    => { :reader => Tb::HeaderCSVReader,  :writer => Tb::HeaderCSVWriter},
+  'ncsv'   => { :reader => Tb::NumericCSVReader, :writer => Tb::NumericCSVWriter},
+  'tsv'    => { :reader => Tb::HeaderTSVReader,  :writer => Tb::HeaderTSVWriter},
+  'ntsv'   => { :reader => Tb::NumericTSVReader, :writer => Tb::NumericTSVWriter},
+  'ltsv'   => { :reader => Tb::LTSVReader,       :writer => Tb::LTSVWriter},
+  'pnm'    => { :reader => Tb::PNMReader,        :writer => Tb::PNMWriter},
+  'ppm'    => { :reader => Tb::PNMReader,        :writer => Tb::PNMWriter},
+  'pgm'    => { :reader => Tb::PNMReader,        :writer => Tb::PNMWriter},
+  'pbm'    => { :reader => Tb::PNMReader,        :writer => Tb::PNMWriter},
+  'json'   => { :reader => Tb::JSONReader,       :writer => Tb::JSONWriter},
+  'ndjson' => { :reader => Tb::NDJSONReader,     :writer => Tb::NDJSONWriter},
 }
 
 def Tb.undecorate_filename(filename, numeric)
@@ -71,7 +71,7 @@ end
 
 def Tb.open_reader(filename, numeric=false)
   filename, fmt = Tb.undecorate_filename(filename, numeric)
-  factory = Tb::FormatHash.fetch(fmt)[0]
+  factory = Tb::FormatHash.fetch(fmt)[:reader]
   io_opened = nil
   if filename == '-'
     reader = factory.new($stdin)
