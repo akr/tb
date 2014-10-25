@@ -15,7 +15,19 @@ class TestTbCmdShape < Test::Unit::TestCase
     FileUtils.rmtree @tmpdir
   end
 
-  def test_basic
+  def test_jsonl
+    File.open(i="i.jsonl", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      {"a":0, "b":1}
+      {"a":4, "b":5, "c":6}
+    End
+    Tb::Cmd.main_shape(['-o', o="o.csv", i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      filename,records,min_pairs,max_pairs
+      i.jsonl,2,2,3
+    End
+  end
+
+  def test_csv
     File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
       a,b,c
       0,1
@@ -23,8 +35,20 @@ class TestTbCmdShape < Test::Unit::TestCase
     End
     Tb::Cmd.main_shape(['-o', o="o.csv", i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
-      header_fields,min_fields,max_fields,records,filename
-      3,2,3,2,i.csv
+      filename,records,min_pairs,max_pairs,header_fields,min_fields,max_fields
+      i.csv,2,2,3,3,2,3
+    End
+  end
+
+  def test_output_jsonl
+    File.open(i="i.csv", "w") {|f| f << <<-"End".gsub(/^[ \t]+/, '') }
+      a,b,c
+      0,1
+      4,5,6
+    End
+    Tb::Cmd.main_shape(['-o', o="o.jsonl", i])
+    assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
+      {"filename":"i.csv","records":2,"min_pairs":2,"max_pairs":3,"header_fields":3,"min_fields":2,"max_fields":3}
     End
   end
 
@@ -36,8 +60,8 @@ class TestTbCmdShape < Test::Unit::TestCase
     End
     Tb::Cmd.main_shape(['-o', o="o.csv", i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
-      header_fields,min_fields,max_fields,records,filename
-      3,2,4,2,i.csv
+      filename,records,min_pairs,max_pairs,header_fields,min_fields,max_fields
+      i.csv,2,2,3,3,2,4
     End
   end
 
@@ -54,9 +78,9 @@ class TestTbCmdShape < Test::Unit::TestCase
     End
     Tb::Cmd.main_shape(['-o', o="o.csv", i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
-      header_fields,min_fields,max_fields,records,filename
-      1,1,1,2,i1.csv
-      2,2,2,2,i2.csv
+      filename,records,min_pairs,max_pairs,header_fields,min_fields,max_fields
+      i1.csv,2,1,1,1,1,1
+      i2.csv,2,2,2,2,2,2
     End
   end
 

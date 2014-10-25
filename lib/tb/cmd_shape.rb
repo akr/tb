@@ -43,10 +43,11 @@ def (Tb::Cmd).main_shape(argv)
   ter = Tb::Enumerator.new {|y|
     filenames.each {|filename|
       tablereader_open(filename) {|tblreader|
-        min_num_fields = nil
-        max_num_fields = nil
+        tblreader.enable_warning = false if tblreader.respond_to? :enable_warning
         num_records = 0
         num_header_fields = nil
+        min_num_fields = nil
+        max_num_fields = nil
         if tblreader.respond_to? :header_array_hook
           tblreader.header_array_hook = lambda {|header|
             num_header_fields = header.length
@@ -63,15 +64,28 @@ def (Tb::Cmd).main_shape(argv)
             end
           }
         end
-        tblreader.enable_warning = false
+        min_num_pairs = nil
+        max_num_pairs = nil
         tblreader.each {|pairs|
           num_records += 1
+          n = pairs.length
+          if min_num_pairs.nil?
+            min_num_pairs = max_num_pairs = n
+          else
+            min_num_pairs = n if n < min_num_pairs
+            max_num_pairs = n if max_num_pairs < n
+          end
         }
-        y.yield({'header_fields'=>num_header_fields,
-                 'min_fields'=>min_num_fields,
-                 'max_fields'=>max_num_fields,
-                 'records'=>num_records,
-                 'filename'=>filename})
+        h = {
+          'filename'=>filename,
+          'records'=>num_records,
+          'min_pairs'=>min_num_pairs,
+          'max_pairs'=>max_num_pairs,
+        }
+        h['header_fields'] = num_header_fields if num_header_fields
+        h['min_fields'] = min_num_fields if min_num_fields
+        h['max_fields'] = max_num_fields if max_num_fields
+        y.yield(h)
       }
     }
   }
