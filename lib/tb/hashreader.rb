@@ -30,56 +30,54 @@
 
 require 'tempfile'
 
-module Tb
-  class HashReader
-    include Tb::EnumerableWithEach
+class Tb::HashReader
+  include Tb::EnumerableWithEach
 
-    def initialize(get_hash)
-      @get_hash = get_hash
+  def initialize(get_hash)
+    @get_hash = get_hash
+  end
+
+  def header_known?
+    false
+  end
+
+  def get_named_header
+    if defined? @hashreader_header_complete
+      return @hashreader_header_complete
     end
-
-    def header_known?
-      false
-    end
-
-    def get_named_header
-      if defined? @hashreader_header_complete
-        return @hashreader_header_complete
-      end
-      @hashreader_buffer = []
-      while hash = @get_hash.call
-        update_header hash
-        @hashreader_buffer << hash
-      end
-      update_header nil
-    end
-
-    def get_hash
-      if defined? @hashreader_buffer
-        return @hashreader_buffer.shift
-      end
-      hash = @get_hash.call
+    @hashreader_buffer = []
+    while hash = @get_hash.call
       update_header hash
-      hash
+      @hashreader_buffer << hash
     end
+    update_header nil
+  end
 
-    def update_header(hash)
-      unless defined? @hashreader_header_partial
-        @hashreader_header_partial = []
-      end
-      if hash
-        @hashreader_header_partial.concat(hash.keys - @hashreader_header_partial)
-      else
-        @hashreader_header_complete = @hashreader_header_partial
-      end
+  def get_hash
+    if defined? @hashreader_buffer
+      return @hashreader_buffer.shift
     end
+    hash = @get_hash.call
+    update_header hash
+    hash
+  end
 
-    def header_and_each(header_proc)
-      header_proc.call(get_named_header) if header_proc
-      while hash = get_hash
-        yield hash
-      end
-      nil
+  def update_header(hash)
+    unless defined? @hashreader_header_partial
+      @hashreader_header_partial = []
     end
+    if hash
+      @hashreader_header_partial.concat(hash.keys - @hashreader_header_partial)
+    else
+      @hashreader_header_complete = @hashreader_header_partial
+    end
+  end
+
+  def header_and_each(header_proc)
+    header_proc.call(get_named_header) if header_proc
+    while hash = get_hash
+      yield hash
+    end
+    nil
   end
 end

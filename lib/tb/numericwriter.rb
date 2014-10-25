@@ -30,34 +30,32 @@
 
 require 'tempfile'
 
-module Tb
-  class NumericWriter
-    def initialize(put_array, put_finish=nil)
-      @put_array = put_array
-      @put_finish = put_finish
-    end
+class Tb::NumericWriter
+  def initialize(put_array, put_finish=nil)
+    @put_array = put_array
+    @put_finish = put_finish
+  end
 
-    def header_required?
-      false
-    end
+  def header_required?
+    false
+  end
 
-    def header_generator=(gen)
-    end
+  def header_generator=(gen)
+  end
 
-    def put_hash(hash)
-      ary = []
-      hash.each {|k, v|
-        if /\A[1-9][0-9]*\z/ !~ k
-          raise ArgumentError, "numeric field name expected: #{k.inspect}"
-        end
-        ary[k.to_i-1] = v
-      }
-      @put_array.call ary
-      nil
-    end
+  def put_hash(hash)
+    ary = []
+    hash.each {|k, v|
+      if /\A[1-9][0-9]*\z/ !~ k
+        raise ArgumentError, "numeric field name expected: #{k.inspect}"
+      end
+      ary[k.to_i-1] = v
+    }
+    @put_array.call ary
+    nil
+  end
 
-    def finish
-      @put_finish.call if @put_finish
-    end
+  def finish
+    @put_finish.call if @put_finish
   end
 end

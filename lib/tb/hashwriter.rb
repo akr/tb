@@ -30,27 +30,25 @@
 
 require 'tempfile'
 
-module Tb
-  class HashWriter
-    def initialize(put_hash, put_finish=nil)
-      @put_hash = put_hash
-      @put_finish = put_finish
-    end
+class Tb::HashWriter
+  def initialize(put_hash, put_finish=nil)
+    @put_hash = put_hash
+    @put_finish = put_finish
+  end
 
-    def header_required?
-      false
-    end
+  def header_required?
+    false
+  end
 
-    def header_generator=(gen)
-    end
+  def header_generator=(gen)
+  end
 
-    def put_hash(hash)
-      @put_hash.call hash
-      nil
-    end
+  def put_hash(hash)
+    @put_hash.call hash
+    nil
+  end
 
-    def finish
-      @put_finish.call if @put_finish
-    end
+  def finish
+    @put_finish.call if @put_finish
   end
 end

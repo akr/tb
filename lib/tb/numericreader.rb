@@ -28,41 +28,39 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module Tb
-  class NumericReader
-    include Tb::EnumerableWithEach
+class Tb::NumericReader
+  include Tb::EnumerableWithEach
 
-    def initialize(get_array)
-      @get_array = get_array
-    end
+  def initialize(get_array)
+    @get_array = get_array
+  end
 
-    def header_known?
-      false
-    end
+  def header_known?
+    false
+  end
 
-    def get_named_header
-      []
-    end
+  def get_named_header
+    []
+  end
 
-    def get_hash
-      ary = @get_array.call
-      if !ary
-        return nil
-      end
-      hash = {}
-      ary.each_with_index {|v, i|
-        field = (i+1).to_s
-        hash[field] = v
-      }
-      hash
+  def get_hash
+    ary = @get_array.call
+    if !ary
+      return nil
     end
+    hash = {}
+    ary.each_with_index {|v, i|
+      field = (i+1).to_s
+      hash[field] = v
+    }
+    hash
+  end
 
-    def header_and_each(header_proc)
-      header_proc.call(get_named_header) if header_proc
-      while hash = get_hash
-        yield hash
-      end
-      nil
+  def header_and_each(header_proc)
+    header_proc.call(get_named_header) if header_proc
+    while hash = get_hash
+      yield hash
     end
+    nil
   end
 end

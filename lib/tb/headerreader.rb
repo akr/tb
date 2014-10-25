@@ -28,83 +28,81 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module Tb
-  class HeaderReader
-    include Tb::EnumerableWithEach
+class Tb::HeaderReader
+  include Tb::EnumerableWithEach
 
-    def initialize(get_array)
-      @get_array = get_array
-      @header_array_hook = nil
-      @row_array_hook = nil
-      @enable_warning = true
+  def initialize(get_array)
+    @get_array = get_array
+    @header_array_hook = nil
+    @row_array_hook = nil
+    @enable_warning = true
+  end
+  attr_accessor :header_array_hook
+  attr_accessor :row_array_hook
+  attr_accessor :enable_warning
+
+  def header_known?
+    true
+  end
+
+  def read_header_once
+    return if defined? @header
+    begin
+      @header = @get_array.call
+    end while @header && @header.all? {|elt| elt.nil? || elt == '' }
+    if !@header
+      @header = []
     end
-    attr_accessor :header_array_hook
-    attr_accessor :row_array_hook
-    attr_accessor :enable_warning
-
-    def header_known?
-      true
+    @header_array_hook.call(@header) if @header_array_hook
+    h = Hash.new { [] }
+    @header.each_with_index {|f, i|
+      h[f] <<= i
+    }
+    if h.has_key? nil
+      warn "Empty header field #{h[nil].map(&:succ).join(',')}" if @enable_warning
     end
-
-    def read_header_once
-      return if defined? @header
-      begin
-        @header = @get_array.call
-      end while @header && @header.all? {|elt| elt.nil? || elt == '' }
-      if !@header
-        @header = []
+    h.each {|f, is|
+      if 1 < is.length
+        warn "Ambiguous header field: field #{is.map(&:succ).join(',')} has same name #{f.inspect}" if @enable_warning
+        is[1..-1].each {|i|
+          @header[i] = nil
+        }
       end
-      @header_array_hook.call(@header) if @header_array_hook
-      h = Hash.new { [] }
-      @header.each_with_index {|f, i|
-        h[f] <<= i
-      }
-      if h.has_key? nil
-        warn "Empty header field #{h[nil].map(&:succ).join(',')}" if @enable_warning
-      end
-      h.each {|f, is|
-        if 1 < is.length
-          warn "Ambiguous header field: field #{is.map(&:succ).join(',')} has same name #{f.inspect}" if @enable_warning
-          is[1..-1].each {|i|
-            @header[i] = nil
-          }
-        end
-      }
-    end
-    private :read_header_once
+    }
+  end
+  private :read_header_once
 
-    def get_named_header
-      read_header_once
-      @header.compact
-    end
+  def get_named_header
+    read_header_once
+    @header.compact
+  end
 
-    def get_hash
-      read_header_once
-      ary = @get_array.call
-      if !ary
-        return nil
-      end
-      @row_array_hook.call(ary) if  @row_array_hook
-      hash = {}
-      if @header.length < ary.length
-        warn "Header too short: header has #{@header.length} fields but a record has #{ary.length} fields : #{ary[@header.length..-1].map(&:inspect).join(',')}" if @enable_warning
-        ary[@header.length..-1] = []
-      end
-      ary.each_with_index {|v, i|
-        field = @header[i]
-        if !field.nil?
-          hash[field] = v
-        end
-      }
-      hash
+  def get_hash
+    read_header_once
+    ary = @get_array.call
+    if !ary
+      return nil
     end
+    @row_array_hook.call(ary) if  @row_array_hook
+    hash = {}
+    if @header.length < ary.length
+      warn "Header too short: header has #{@header.length} fields but a record has #{ary.length} fields : #{ary[@header.length..-1].map(&:inspect).join(',')}" if @enable_warning
+      ary[@header.length..-1] = []
+    end
+    ary.each_with_index {|v, i|
+      field = @header[i]
+      if !field.nil?
+        hash[field] = v
+      end
+    }
+    hash
+  end
 
-    def header_and_each(header_proc)
-      header_proc.call(get_named_header) if header_proc
-      while hash = get_hash
-        yield hash
-      end
-      nil
+  def header_and_each(header_proc)
+    header_proc.call(get_named_header) if header_proc
+    while hash = get_hash
+      yield hash
     end
+    nil
   end
 end
