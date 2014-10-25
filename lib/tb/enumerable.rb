@@ -236,3 +236,11 @@ module Tb::Enumerable
     }
   end
 end
+
+module Tb::EnumerableWithEach
+  include Tb::Enumerable
+
+  def each(&b)
+    header_and_each(nil, &b)
+  end
+end

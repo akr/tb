@@ -30,7 +30,7 @@
 
 module Tb
   class HeaderReader
-    include Tb::Enumerable
+    include Tb::EnumerableWithEach
 
     def initialize(get_array)
       @get_array = get_array
@@ -105,10 +105,6 @@ module Tb
         yield hash
       end
       nil
-    end
-
-    def each(&b)
-      header_and_each(nil, &b)
     end
   end
 end
