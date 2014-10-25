@@ -2,6 +2,17 @@ require 'tb'
 require 'test/unit'
 
 class TestTbJSONL < Test::Unit::TestCase
+  def parse_jsonl(csv)
+    Tb::JSONLReader.new(StringIO.new(csv)).to_a
+  end
+
+  def generate_jsonl(ary)
+    writer = Tb::JSONLWriter.new(out = '')
+    ary.each {|h| writer.put_hash h }
+    writer.finish
+    out
+  end
+
   def test_reader
     jsonl = <<-'End'
       {"A":"a","B":"b","C":"c"}
@@ -38,6 +49,10 @@ class TestTbJSONL < Test::Unit::TestCase
     assert_equal(['{"A":"a","B":"b","C":"c"}'+"\n", '{"A":"d","B":"e","C":"f"}'+"\n"], arys)
     writer.finish
     assert_equal(['{"A":"a","B":"b","C":"c"}'+"\n", '{"A":"d","B":"e","C":"f"}'+"\n"], arys)
+  end
+
+  def test_newline_in_string
+    assert_equal('{"r":"\r","n":"\n"}'+"\n", generate_jsonl([{"r"=>"\r", "n"=>"\n"}]))
   end
 
 end
