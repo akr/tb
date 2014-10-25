@@ -168,16 +168,6 @@ module Tb
     end
   end
 
-  # :call-seq:
-  #   generate_pnm(out='')
-  def generate_pnm(out='')
-    writer = PNMWriter.new(out)
-    self.each {|rec|
-      writer.put_hash rec
-    }
-    writer.finish
-  end
-
   class PNMWriter
     def initialize(io)
       @io = io
