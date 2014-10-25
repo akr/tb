@@ -163,7 +163,7 @@ def with_output(filename=Tb::Cmd.opt_output)
 end
 
 def output_tbenum(te)
-  filename = Tb::Cmd.opt_output
+  filename = Tb::Cmd.opt_output || '-'
   numeric = Tb::Cmd.opt_N
   filename, fmt = Tb.undecorate_filename(filename, numeric)
   factory = Tb::FormatHash.fetch(fmt)[:writer]
