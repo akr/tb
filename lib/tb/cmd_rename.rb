@@ -36,6 +36,26 @@ def (Tb::Cmd).op_rename
   op
 end
 
+Tb::Cmd.def_vhelp('rename', <<'End')
+Example:
+
+  % cat tst.csv
+  foo,bar,baz
+  1,2,3
+  4,5,6
+  7,8,9
+  % tb rename bar,qux tst.csv
+  foo,qux,baz
+  1,2,3
+  4,5,6
+  7,8,9
+  % tb rename bar,qux,baz,quux tst.csv
+  foo,qux,quux
+  1,2,3
+  4,5,6
+  7,8,9
+End
+
 def (Tb::Cmd).main_rename(argv)
   op_rename.parse!(argv)
   exit_if_help('rename')

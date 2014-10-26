@@ -61,6 +61,21 @@ def (Tb::Cmd).op_melt
   op
 end
 
+Tb::Cmd.def_vhelp('melt', <<'End')
+Example:
+
+  % cat tst.csv
+  foo,bar,baz
+  A,1,x
+  B,2,y
+  % tb melt foo tst.csv
+  foo,variable,value
+  A,bar,1
+  A,baz,x
+  B,bar,2
+  B,baz,y
+End
+
 def (Tb::Cmd).main_melt(argv)
   op_melt.parse!(argv)
   exit_if_help('melt')

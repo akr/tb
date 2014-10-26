@@ -41,6 +41,26 @@ def (Tb::Cmd).op_sort
   op
 end
 
+Tb::Cmd.def_vhelp('sort', <<'End')
+Example:
+
+  % cat tst.csv
+  name,value
+  foo,1
+  bar,8
+  baz,2
+  % tb sort tst.csv
+  name,value
+  bar,8
+  baz,2
+  foo,1
+  % tb sort -f value tst.csv
+  name,value
+  foo,1
+  baz,2
+  bar,8
+End
+
 def (Tb::Cmd).main_sort(argv)
   op_sort.parse!(argv)
   exit_if_help('sort')

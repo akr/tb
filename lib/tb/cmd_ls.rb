@@ -45,6 +45,15 @@ def (Tb::Cmd).op_ls
   op
 end
 
+Tb::Cmd.def_vhelp('ls', <<'End')
+Example:
+
+  % tb ls -l lib
+  filemode,nlink,user,group,size,mtime,filename,symlink
+  drwxr-xr-x,2,akr,akr,4096,2014-10-26T09:15:35+09:00,lib/tb,
+  -rw-r--r--,1,akr,akr,2113,2014-10-25T18:40:05+09:00,lib/tb.rb,
+End
+
 def (Tb::Cmd).main_ls(argv)
   op_ls.parse!(argv)
   exit_if_help('ls')

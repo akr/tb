@@ -59,6 +59,34 @@ def (Tb::Cmd).op_join
   op
 end
 
+Tb::Cmd.def_vhelp('join', <<'End')
+Example:
+
+  % cat tst1.csv
+  name,length
+  A,20
+  B,30
+  C,25
+  % cat tst2.csv
+  name,weight
+  A,5
+  B,8
+  % tb join tst1.csv tst2.csv
+  name,length,weight
+  A,20,5
+  B,30,8
+  % tb join --left tst1.csv tst2.csv
+  name,length,weight
+  A,20,5
+  B,30,8
+  C,25,
+  % tb join --left --outer-missing=zzz tst1.csv tst2.csv
+  name,length,weight
+  A,20,5
+  B,30,8
+  C,25,zzz
+End
+
 def (Tb::Cmd).main_join(argv)
   op_join.parse!(argv)
   exit_if_help('join')

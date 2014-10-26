@@ -41,6 +41,27 @@ def (Tb::Cmd).op_unnest
   op
 end
 
+Tb::Cmd.def_vhelp('unnest', <<'End')
+Example:
+
+  % cat tst.csv
+  author,item
+  A,"name,length
+  foo,3
+  bar,5
+  "
+  B,"name,length
+  baz,2
+  qux,8
+  "
+  % tb unnest item tst.csv
+  author,name,length
+  A,foo,3
+  A,bar,5
+  B,baz,2
+  B,qux,8
+End
+
 def (Tb::Cmd).main_unnest(argv)
   op_unnest.parse!(argv)
   exit_if_help('unnest')

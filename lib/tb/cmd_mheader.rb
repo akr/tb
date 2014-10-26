@@ -39,6 +39,21 @@ def (Tb::Cmd).op_mheader
   op
 end
 
+Tb::Cmd.def_vhelp('mheader', <<'End')
+Example:
+
+  % cat tst.csv
+  foo,foo,bar,bar
+  baz,qux,baz,qux
+  1,2,3,4
+  5,6,7,8
+  % tb mheader tst.csv
+  foo baz,foo qux,bar baz,bar qux
+  1,2,3,4
+  5,6,7,8
+End
+
+
 def (Tb::Cmd).main_mheader(argv)
   op_mheader.parse!(argv)
   exit_if_help('mheader')

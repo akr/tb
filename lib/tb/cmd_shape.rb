@@ -36,6 +36,28 @@ def (Tb::Cmd).op_shape
   op
 end
 
+Tb::Cmd.def_vhelp('shape', <<'End')
+Example:
+
+  % cat tst.csv
+  foo,bar,baz
+  1,2,3
+  4,5
+  6,7,8,9
+  % tb shape tst.csv -o json:-
+  [
+  {
+    "filename": "tst.csv",
+    "records": 3,
+    "min_pairs": 2,
+    "max_pairs": 3,
+    "header_fields": 3,
+    "min_fields": 2,
+    "max_fields": 4
+  }
+  ]
+End
+
 def (Tb::Cmd).main_shape(argv)
   op_shape.parse!(argv)
   exit_if_help('shape')

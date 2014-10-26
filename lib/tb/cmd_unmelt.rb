@@ -58,6 +58,21 @@ def (Tb::Cmd).op_unmelt
   op
 end
 
+Tb::Cmd.def_vhelp('unmelt', <<'End')
+Example:
+
+  % cat tst.csv
+  foo,variable,value
+  A,bar,1
+  A,baz,x
+  B,bar,2
+  B,baz,y
+  % tb unmelt tst.csv
+  foo,bar,baz
+  A,1,x
+  B,2,y
+End
+
 def (Tb::Cmd).main_unmelt(argv)
   op_unmelt.parse!(argv)
   exit_if_help('unmelt')

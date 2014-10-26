@@ -36,6 +36,28 @@ def (Tb::Cmd).op_nest
   op
 end
 
+Tb::Cmd.def_vhelp('nest', <<'End')
+Example:
+
+  % cat tst.csv
+  name,author,length
+  foo,A,3
+  bar,A,5
+  baz,B,2
+  qux,B,8
+  % tb nest item,name,length tst.csv
+  author,item
+  A,"name,length
+  foo,3
+  bar,5
+  "
+  B,"name,length
+  baz,2
+  qux,8
+  "
+End
+
+
 def (Tb::Cmd).main_nest(argv)
   op_nest.parse!(argv)
   exit_if_help('nest')

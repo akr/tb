@@ -43,6 +43,44 @@ def (Tb::Cmd).op_tar
   op
 end
 
+Tb::Cmd.def_vhelp('tar', <<'End')
+Example:
+
+  % tb tar ruby-1.8.7.tar.bz2|head
+  mode,filemode,uid,user,gid,group,devmajor,devminor,size,mtime,path,linkname
+  0755,drwxr-xr-x,1001,knu,0,wheel,0,0,0,2008-06-01T00:19:03+09:00,ruby-1.8.7/,""
+  0755,drwxr-xr-x,1001,knu,0,wheel,0,0,0,2008-06-01T00:18:24+09:00,ruby-1.8.7/ext/,""
+  0755,drwxr-xr-x,1001,knu,0,wheel,0,0,0,2008-06-01T00:18:25+09:00,ruby-1.8.7/doc/,""
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,5011,2008-05-31T23:57:11+09:00,ruby-1.8.7/Makefile.in,""
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,124521,2008-05-31T20:44:49+09:00,ruby-1.8.7/parse.y,""
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,32308,2008-05-29T20:23:36+09:00,ruby-1.8.7/README.EXT,""
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,19502,2008-05-31T20:44:49+09:00,ruby-1.8.7/intern.h,""
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,22581,2008-05-23T14:22:13+09:00,ruby-1.8.7/class.c,""
+  0755,drwxr-xr-x,1001,knu,0,wheel,0,0,0,2008-06-01T00:18:24+09:00,ruby-1.8.7/djgpp/,""
+  % tb tar -l ruby-1.8.7.tar.bz2|head
+  mode,filemode,uid,user,gid,group,devmajor,devminor,size,mtime,atime,ctime,path,linkname,size_in_tar,tar_typeflag,tar_magic,tar_version,tar_chksum
+  0755,drwxr-xr-x,1001,knu,0,wheel,0,0,0,2008-06-01T00:19:03.000000000+09:00,,,ruby-1.8.7/,"",512,5,ustar,00,5406
+  0755,drwxr-xr-x,1001,knu,0,wheel,0,0,0,2008-06-01T00:18:24.000000000+09:00,,,ruby-1.8.7/ext/,"",512,5,ustar,00,5779
+  0755,drwxr-xr-x,1001,knu,0,wheel,0,0,0,2008-06-01T00:18:25.000000000+09:00,,,ruby-1.8.7/doc/,"",512,5,ustar,00,5753
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,5011,2008-05-31T23:57:11.000000000+09:00,,,ruby-1.8.7/Makefile.in,"",5632,0,ustar,00,6467
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,124521,2008-05-31T20:44:49.000000000+09:00,,,ruby-1.8.7/parse.y,"",125440,0,ustar,00,6114
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,32308,2008-05-29T20:23:36.000000000+09:00,,,ruby-1.8.7/README.EXT,"",33280,0,ustar,00,6133
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,19502,2008-05-31T20:44:49.000000000+09:00,,,ruby-1.8.7/intern.h,"",20480,0,ustar,00,6216
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,22581,2008-05-23T14:22:13.000000000+09:00,,,ruby-1.8.7/class.c,"",23552,0,ustar,00,6093
+  0755,drwxr-xr-x,1001,knu,0,wheel,0,0,0,2008-06-01T00:18:24.000000000+09:00,,,ruby-1.8.7/djgpp/,"",512,5,ustar,00,5975
+  % tb tar -l --hash=md5 ruby-1.8.7.tar.bz2|head
+  mode,filemode,uid,user,gid,group,devmajor,devminor,size,mtime,atime,ctime,path,linkname,size_in_tar,tar_typeflag,tar_magic,tar_version,tar_chksum,md5
+  0755,drwxr-xr-x,1001,knu,0,wheel,0,0,0,2008-06-01T00:19:03.000000000+09:00,,,ruby-1.8.7/,"",512,5,ustar,00,5406,
+  0755,drwxr-xr-x,1001,knu,0,wheel,0,0,0,2008-06-01T00:18:24.000000000+09:00,,,ruby-1.8.7/ext/,"",512,5,ustar,00,5779,
+  0755,drwxr-xr-x,1001,knu,0,wheel,0,0,0,2008-06-01T00:18:25.000000000+09:00,,,ruby-1.8.7/doc/,"",512,5,ustar,00,5753,
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,5011,2008-05-31T23:57:11.000000000+09:00,,,ruby-1.8.7/Makefile.in,"",5632,0,ustar,00,6467,1c038d48e3132822f18bf758a81e1794
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,124521,2008-05-31T20:44:49.000000000+09:00,,,ruby-1.8.7/parse.y,"",125440,0,ustar,00,6114,6f6bd781876136a7a71cf0ffcd6ecabc
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,32308,2008-05-29T20:23:36.000000000+09:00,,,ruby-1.8.7/README.EXT,"",33280,0,ustar,00,6133,22785b26a8eb77bd426a09f0d493228b
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,19502,2008-05-31T20:44:49.000000000+09:00,,,ruby-1.8.7/intern.h,"",20480,0,ustar,00,6216,cf8876629465d2e8fcefbe71c21915a7
+  0644,-rw-r--r--,1001,knu,0,wheel,0,0,22581,2008-05-23T14:22:13.000000000+09:00,,,ruby-1.8.7/class.c,"",23552,0,ustar,00,6093,bff1443982b7f0261ce45db9375e5881
+  0755,drwxr-xr-x,1001,knu,0,wheel,0,0,0,2008-06-01T00:18:24.000000000+09:00,,,ruby-1.8.7/djgpp/,"",512,5,ustar,00,5975,
+End
+
 Tb::Cmd::TAR_RECORD_LENGTH = 512
 Tb::Cmd::TAR_HEADER_STRUCTURE = [
   [:name, "Z100"],      # [POSIX] NUL-terminated character strings except when all characters in the array contain non-NUL characters including the last character.
