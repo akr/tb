@@ -138,9 +138,9 @@ Gem::Specification.new do |s|
 tb is a manipulation tool for tables.
 
 tb provides a command and a library for manipulating tables:
-Unix filter like operations (grep, sort, cat, cut, ls, etc.),
+Unix filter like operations (sort, cat, cut, ls, etc.),
 SQL like operations (join, group, etc.),
-other table operations (gsub, rename, cross, melt, unmelt, etc.),
+other table operations (search, gsub, rename, cross, melt, unmelt, etc.),
 information extractions (git, svn, tar),
 and more.
 

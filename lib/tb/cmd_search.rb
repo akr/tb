@@ -26,53 +26,55 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Tb::Cmd.subcommands << 'grep'
+Tb::Cmd.subcommands << 'search'
 
-Tb::Cmd.default_option[:opt_grep_e] = nil
-Tb::Cmd.default_option[:opt_grep_ruby] = nil
-Tb::Cmd.default_option[:opt_grep_f] = nil
-Tb::Cmd.default_option[:opt_grep_v] = nil
+Tb::Cmd.default_option[:opt_search_e] = nil
+Tb::Cmd.default_option[:opt_search_ruby] = nil
+Tb::Cmd.default_option[:opt_search_f] = nil
+Tb::Cmd.default_option[:opt_search_v] = nil
 
-def (Tb::Cmd).op_grep
+def (Tb::Cmd).op_search
   op = OptionParser.new
-  op.banner = "Usage: tb grep [OPTS] REGEXP [TABLE ...]\n" +
+  op.banner = "Usage: tb search [OPTS] REGEXP [TABLE ...]\n" +
     "Search rows using regexp or ruby expression."
   define_common_option(op, "hNo", "--no-pager")
-  op.def_option('-f FIELD', 'search field') {|field| Tb::Cmd.opt_grep_f = field }
-  op.def_option('-e REGEXP', 'specify a regexp.') {|pattern| Tb::Cmd.opt_grep_e = pattern }
-  op.def_option('--ruby RUBY-EXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|ruby_exp| Tb::Cmd.opt_grep_ruby = ruby_exp }
-  op.def_option('-v', 'ouput the records which doesn\'t match') { Tb::Cmd.opt_grep_v = true }
+  op.def_option('-f FIELD', 'search field') {|field| Tb::Cmd.opt_search_f = field }
+  op.def_option('-e REGEXP', 'specify a regexp.') {|pattern| Tb::Cmd.opt_search_e = pattern }
+  op.def_option('--ruby RUBY-EXP', 'predicate written in ruby.  A hash is given as _.  no usual regexp argument.') {|ruby_exp| Tb::Cmd.opt_search_ruby = ruby_exp }
+  op.def_option('-v', 'ouput the records which doesn\'t match') { Tb::Cmd.opt_search_v = true }
   op
 end
 
-Tb::Cmd.def_vhelp('grep', <<'End')
+Tb::Cmd.def_vhelp('search', <<'End')
 Example:
 
   % cat tst.csv
   a,b,c
   0,1,2
   4,5,6
-  % tb grep 0 tst.csv
+  % tb search 0 tst.csv
   a,b,c
   0,1,2
 End
 
-def (Tb::Cmd).main_grep(argv)
-  op_grep.parse!(argv)
-  exit_if_help('grep')
-  if Tb::Cmd.opt_grep_ruby
-    pred = eval("lambda {|_| #{Tb::Cmd.opt_grep_ruby} }")
-  elsif Tb::Cmd.opt_grep_e
-    re = Regexp.new(Tb::Cmd.opt_grep_e)
-    pred = Tb::Cmd.opt_grep_f ? lambda {|_| re =~ _[Tb::Cmd.opt_grep_f] } :
-                                lambda {|_| _.any? {|k, v| re =~ v.to_s } }
+def (Tb::Cmd).main_search(argv)
+  op_search.parse!(argv)
+  exit_if_help('search')
+  if Tb::Cmd.opt_search_ruby
+    pred = eval("lambda {|_| #{Tb::Cmd.opt_search_ruby} }")
+  elsif Tb::Cmd.opt_search_e
+    re = Regexp.new(Tb::Cmd.opt_search_e)
+    pred = Tb::Cmd.opt_search_f ?
+      lambda {|_| re =~ _[Tb::Cmd.opt_search_f] } :
+      lambda {|_| _.any? {|k, v| re =~ v.to_s } }
   else
     err("no regexp given.") if argv.empty?
     re = Regexp.new(argv.shift)
-    pred = Tb::Cmd.opt_grep_f ? lambda {|_| re =~ _[Tb::Cmd.opt_grep_f] } :
-                                lambda {|_| _.any? {|k, v| re =~ v.to_s } }
+    pred = Tb::Cmd.opt_search_f ?
+      lambda {|_| re =~ _[Tb::Cmd.opt_search_f] } :
+      lambda {|_| _.any? {|k, v| re =~ v.to_s } }
   end
-  opt_v = Tb::Cmd.opt_grep_v ? true : false
+  opt_v = Tb::Cmd.opt_search_v ? true : false
   argv = ['-'] if argv.empty?
   creader = Tb::CatReader.open(argv, Tb::Cmd.opt_N)
   er = Tb::Enumerator.new {|y|

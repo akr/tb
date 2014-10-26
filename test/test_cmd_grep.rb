@@ -2,7 +2,7 @@ require 'test/unit'
 require 'tb/cmdtop'
 require 'tmpdir'
 
-class TestTbCmdGrep < Test::Unit::TestCase
+class TestTbCmdSearch < Test::Unit::TestCase
   def setup
     Tb::Cmd.reset_option
     @curdir = Dir.pwd
@@ -23,7 +23,7 @@ class TestTbCmdGrep < Test::Unit::TestCase
       8,9,a,b
       c,d,e,f
     End
-    Tb::Cmd.main_grep(['-o', o="o.csv", '[6f]', i])
+    Tb::Cmd.main_search(['-o', o="o.csv", '[6f]', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b,c,d
       4,5,6,7
@@ -32,7 +32,7 @@ class TestTbCmdGrep < Test::Unit::TestCase
   end
 
   def test_no_regexp
-    exc = assert_raise(SystemExit) { Tb::Cmd.main_grep([]) }
+    exc = assert_raise(SystemExit) { Tb::Cmd.main_search([]) }
     assert(!exc.success?)
   end
 
@@ -44,7 +44,7 @@ class TestTbCmdGrep < Test::Unit::TestCase
       8,9,a,b
       c,d,e,f
     End
-    Tb::Cmd.main_grep(['-o', o="o.csv", '-e', '[6f]', i])
+    Tb::Cmd.main_search(['-o', o="o.csv", '-e', '[6f]', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b,c,d
       4,5,6,7
@@ -60,7 +60,7 @@ class TestTbCmdGrep < Test::Unit::TestCase
       8,9,a,b
       c,d,e,f
     End
-    Tb::Cmd.main_grep(['-o', o="o.csv", '--ruby', '_["b"] == "5"', i])
+    Tb::Cmd.main_search(['-o', o="o.csv", '--ruby', '_["b"] == "5"', i])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b,c,d
       4,5,6,7
@@ -78,7 +78,7 @@ class TestTbCmdGrep < Test::Unit::TestCase
       5,6
       7,8
     End
-    Tb::Cmd.main_grep(['-o', o="o.csv", '[46]', i1, i2])
+    Tb::Cmd.main_search(['-o', o="o.csv", '[46]', i1, i2])
     assert_equal(<<-"End".gsub(/^[ \t]+/, ''), File.read(o))
       a,b
       3,4

@@ -1,9 +1,9 @@
 = tb - manipulation tool for tables
 
 tb provides a command and a library for manipulating tables:
-Unix filter like operations (grep, sort, cat, cut, ls, etc.),
+Unix filter like operations (sort, cat, cut, ls, etc.),
 SQL like operations (join, group, etc.),
-other table operations (gsub, rename, cross, melt, unmelt, etc.),
+other table operations (search, gsub, rename, cross, melt, unmelt, etc.),
 information extractions (git, svn, tar),
 and more.
 
@@ -58,18 +58,18 @@ Also, the comparison method used in tb is smart to sort numbers correctly.
   BASIC,1964
   PL/I,1964
 
-"grep" subcommand search CSV file.
+"search" subcommand search CSV file.
 
-  % tb grep R sample/langs.csv
+  % tb search R sample/langs.csv
   language,year
   FORTRAN,1955
   Ruby,1993
 
-"grep" subcommand takes -f with field name and -v to show non-matching rows.
+"search" subcommand takes -f with field name and -v to show non-matching rows.
 You don't need to care field separators (comma) to match.
 Following example searches languages which name contains a non-alphabet character.
 
-  % tb grep -vf language '\A[A-Za-z]*\z' sample/langs.csv |cat
+  % tb search -vf language '\A[A-Za-z]*\z' sample/langs.csv
   language,year
   ALGOL 58,1958
   PL/I,1964
@@ -80,10 +80,10 @@ Following example searches languages which name contains a non-alphabet characte
   C#,2001
   F#,2002
 
-"grep" subcommand can take Ruby expression, instead of a regexp.
+"search" subcommand can take Ruby expression, instead of a regexp.
 The variable, "_", contains a hash which represents a record.
 
-  % tb grep --ruby '(1990..1999).include?(_["year"].to_i)' sample/langs.csv
+  % tb search --ruby '(1990..1999).include?(_["year"].to_i)' sample/langs.csv
   language,year
   Haskell,1990
   Python,1991
@@ -140,7 +140,7 @@ There are more subcommands.
     tb to-json [OPTS] [TABLE]
     tb to-yaml [OPTS] [TABLE]
     tb to-pp [OPTS] [TABLE]
-    tb grep [OPTS] REGEXP [TABLE ...]
+    tb search [OPTS] REGEXP [TABLE ...]
     tb gsub [OPTS] REGEXP STRING [TABLE ...]
     tb sort [OPTS] [TABLE]
     tb cut [OPTS] FIELD,... [TABLE]
@@ -174,7 +174,7 @@ tb help -s shows one line summary of the subcommands.
   to-json     : Convert a table to JSON (JavaScript Object Notation).
   to-yaml     : Convert a table to YAML (YAML Ain't a Markup Language).
   to-pp       : Convert a table to pretty printed format.
-  grep        : Search rows using regexp or ruby expression.
+  search      : Search rows using regexp or ruby expression.
   gsub        : Substitute cells.
   sort        : Sort rows.
   cut         : Select columns.
