@@ -41,6 +41,27 @@ def (Tb::Cmd).op_gsub
   op
 end
 
+Tb::Cmd.def_vhelp('gsub', <<'End')
+Example:
+
+  % cat tst.csv
+  foo,bar
+  baz,qux
+  hoge,moga
+  % tb gsub o X tst.csv
+  foo,bar
+  baz,qux
+  hXge,mXga
+  % tb gsub -f foo o X tst.csv
+  foo,bar
+  baz,qux
+  hXge,moga
+  % tb gsub '[aeiou]' '{\&}' tst.csv
+  foo,bar
+  b{a}z,q{u}x
+  h{o}g{e},m{o}g{a}
+End
+
 def (Tb::Cmd).main_gsub(argv)
   op_gsub.parse!(argv)
   exit_if_help('gsub')
