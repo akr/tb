@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = 'tb'
-  s.version = '0.9'
-  s.date = '2013-04-29'
+  s.version = '1.0'
+  s.date = '2014-10-29'
   s.author = 'Tanaka Akira'
   s.email = 'akr@fsij.org'
   s.required_ruby_version = '>= 1.9.2'
@@ -10,7 +10,6 @@ Gem::Specification.new do |s|
     README
     bin/tb
     lib/tb.rb
-    lib/tb/basic.rb
     lib/tb/catreader.rb
     lib/tb/cmd_cat.rb
     lib/tb/cmd_consecutive.rb
@@ -18,7 +17,6 @@ Gem::Specification.new do |s|
     lib/tb/cmd_cross.rb
     lib/tb/cmd_cut.rb
     lib/tb/cmd_git.rb
-    lib/tb/cmd_grep.rb
     lib/tb/cmd_group.rb
     lib/tb/cmd_gsub.rb
     lib/tb/cmd_help.rb
@@ -29,6 +27,7 @@ Gem::Specification.new do |s|
     lib/tb/cmd_nest.rb
     lib/tb/cmd_newfield.rb
     lib/tb/cmd_rename.rb
+    lib/tb/cmd_search.rb
     lib/tb/cmd_shape.rb
     lib/tb/cmd_sort.rb
     lib/tb/cmd_svn.rb
@@ -52,15 +51,19 @@ Gem::Specification.new do |s|
     lib/tb/enumerator.rb
     lib/tb/ex_enumerable.rb
     lib/tb/ex_enumerator.rb
-    lib/tb/fieldset.rb
     lib/tb/fileenumerator.rb
     lib/tb/func.rb
+    lib/tb/hashreader.rb
+    lib/tb/hashwriter.rb
+    lib/tb/headerreader.rb
+    lib/tb/headerwriter.rb
     lib/tb/json.rb
     lib/tb/ltsv.rb
+    lib/tb/ndjson.rb
+    lib/tb/numericreader.rb
+    lib/tb/numericwriter.rb
     lib/tb/pager.rb
     lib/tb/pnm.rb
-    lib/tb/reader.rb
-    lib/tb/record.rb
     lib/tb/revcmp.rb
     lib/tb/ropen.rb
     lib/tb/search.rb
@@ -73,11 +76,11 @@ Gem::Specification.new do |s|
     sample/poi-xls2csv.rb
     sample/poi-xls2csv.sh
     sample/tbplot
+    tb.gemspec
     test-all-cov.rb
     test-all.rb
   ]
   s.test_files = %w[
-    test/test_basic.rb
     test/test_catreader.rb
     test/test_cmd_cat.rb
     test/test_cmd_consecutive.rb
@@ -115,19 +118,21 @@ Gem::Specification.new do |s|
     test/test_customcmp.rb
     test/test_customeq.rb
     test/test_ex_enumerable.rb
-    test/test_fieldset.rb
     test/test_fileenumerator.rb
+    test/test_headercsv.rb
     test/test_json.rb
     test/test_ltsv.rb
+    test/test_ndjson.rb
+    test/test_numericcsv.rb
     test/test_pager.rb
     test/test_pnm.rb
     test/test_reader.rb
-    test/test_record.rb
     test/test_revcmp.rb
     test/test_search.rb
     test/test_tbenum.rb
     test/test_tsv.rb
     test/test_zipper.rb
+    test/util_tbtest.rb
   ]
   s.has_rdoc = true
   s.homepage = 'https://github.com/akr/tb'
