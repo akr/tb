@@ -138,6 +138,7 @@ Gem::Specification.new do |s|
   s.homepage = 'https://github.com/akr/tb'
   s.require_path = 'lib'
   s.executables << 'tb'
+  s.license = 'BSD-3-Clause'
   s.summary = 'manipulation tool for tables: CSV, TSV, LTSV, JSON, NDJSON, etc.'
   s.description = <<'End'
 tb is a manipulation tool for tables.
