@@ -45,7 +45,7 @@ $facet_y_field = nil
 $max_size = nil
 $logx = nil
 $logy = nil
-$prompt = nil
+$gnuplot_prompt = nil
 $gnuplot_terminal = nil
 
 def process_options(argv)
@@ -62,7 +62,7 @@ def process_options(argv)
   op.def_option('--loglog', 'use full log scale') {|v| $logx = $logy = true }
   op.def_option('--logx', 'use log scale for x-axis') {|v| $logx = true }
   op.def_option('--logy', 'use log scale for y-axis') {|v| $logy = true }
-  op.def_option('--prompt', 'enter gnuplot interactive mode') {|v| $prompt = true }
+  op.def_option('--gnuplot-prompt', 'enter gnuplot interactive mode') {|v| $gnuplot_prompt = true }
   op.def_option('--gnuplot-terminal=TERMINAL', 'gnuplot terminal.  e.g. "png size 500,500"') {|v| $gnuplot_terminal = v }
 
   op.parse!(argv)
@@ -420,7 +420,7 @@ def output_gnuplot(checkers, tmps, table_filename, image_filename)
   if use_multiplot
     gnuplot_command << "unset multiplot\n"
   end
-  if !image_filename && !$prompt
+  if !image_filename && !$gnuplot_prompt
     gnuplot_command << "pause mouse any\n"
   end
   tmp_gnuplot_command = Tempfile.new(['tbplot', '.gp'])
@@ -428,7 +428,7 @@ def output_gnuplot(checkers, tmps, table_filename, image_filename)
   tmp_gnuplot_command.close
   #puts gnuplot_command; sleep 100
   args = ['gnuplot', tmp_gnuplot_command.path]
-  if $prompt
+  if $gnuplot_prompt
     args << '-' # enter interactive mode.
   end
   system(*args)
