@@ -428,9 +428,14 @@ def output_gnuplot(checkers, tmps, table_filename, image_filename)
   tmp_gnuplot_command.close
   #puts gnuplot_command; sleep 100
   args = ['gnuplot', tmp_gnuplot_command.path]
+  opt = {}
   if $gnuplot_prompt
     args << '-' # enter interactive mode.
+    if !STDIN.tty?
+      opt[:in] = '/dev/tty'
+    end
   end
+  args << opt if !opt.empty?
   system(*args)
 end
 
